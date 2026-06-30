@@ -21,8 +21,8 @@ import {
   saveOriginalPDF,
   getOriginalPDF,
 } from "../lib/storage";
-import { parseResume, parseJD, tailorResume, exportPDF, exportDOCX, applyApprovedChanges } from "../lib/api-client";
-import type { ResumeData, TailoredResult } from "../lib/types";
+import { parseResume, parseJD, scoreResume, tailorSection, exportPDF, exportDOCX, applyApprovedChanges } from "../lib/api-client";
+import type { ResumeData, TailoredResult, TailoredChange, SkillsData } from "../lib/types";
 
 export default function SidePanel() {
   const [resume, setResume] = useState<ResumeData | null>(null);
@@ -147,7 +147,7 @@ export default function SidePanel() {
     }
   };
 
-  // Handler: Tailor Resume
+  // Handler: Tailor Resume (Progressive)
   const handleTailor = async () => {
     if (!resume || !jdInput.trim()) return;
 
@@ -160,9 +160,125 @@ export default function SidePanel() {
       const parsedJD = await parseJD({ text: jdInput });
       setIsParsingJD(false);
 
-      const tailored = await tailorResume(resume, parsedJD);
-      setTailoredResult(tailored);
-      await saveTailoredResult(tailored);
+      // 1. Get ATS Score immediately
+      const score = await scoreResume(resume, parsedJD);
+      
+      // Initialize TailoredResult with score so UI updates instantly
+      let currentResult: TailoredResult = {
+        tailoredResume: resume, // Note: no longer heavily used
+        changes: [],
+        atsScore: score.atsScore,
+        scoreReasoning: score.scoreReasoning,
+        matchedKeywords: score.matchedKeywords,
+        missingKeywords: score.missingKeywords,
+      };
+      
+      setTailoredResult({ ...currentResult });
+
+      // Helper to append changes and trigger re-render
+      const appendChanges = (newChanges: TailoredChange[]) => {
+        if (newChanges.length === 0) return;
+        currentResult = {
+          ...currentResult,
+          changes: [...currentResult.changes, ...newChanges]
+        };
+        setTailoredResult({ ...currentResult });
+        saveTailoredResult(currentResult);
+      };
+
+      const diffHelper = (section: string, field: string, label: string, orig: string, newVal: string): TailoredChange | null => {
+        if (!orig && !newVal) return null;
+        if (orig.trim() !== newVal.trim()) {
+          return { id: `change-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, section, field, label, originalValue: orig, newValue: newVal, status: "pending" };
+        }
+        return null;
+      };
+
+      // 2. Fetch Tailored Summary
+      if (resume.summary) {
+        try {
+          const res = await tailorSection("summary", resume.summary, parsedJD);
+          if (res.summary) {
+            const ch = diffHelper("summary", "summary", "Professional Summary", resume.summary, res.summary);
+            if (ch) appendChanges([ch]);
+          }
+        } catch (e) { console.error("Summary tailor failed", e); }
+      }
+
+      // 3. Fetch Tailored Experience
+      if (resume.experience && resume.experience.length > 0) {
+        try {
+          const res = await tailorSection("experience", resume.experience, parsedJD);
+          if (res.experience && Array.isArray(res.experience)) {
+            const newChanges: TailoredChange[] = [];
+            for (let i = 0; i < resume.experience.length; i++) {
+              const origJob = resume.experience[i];
+              const tailJob = res.experience[i];
+              if (!tailJob) continue;
+              
+              const maxBullets = Math.max(origJob.highlights?.length || 0, tailJob.highlights?.length || 0);
+              for (let j = 0; j < maxBullets; j++) {
+                const origB = origJob.highlights?.[j] || "";
+                const tailB = tailJob.highlights?.[j] || "";
+                const ch = diffHelper("experience", `experience[${i}].highlights[${j}]`, `${origJob.role} at ${origJob.company} — Bullet ${j + 1}`, origB, tailB);
+                if (ch) newChanges.push(ch);
+              }
+            }
+            appendChanges(newChanges);
+          }
+        } catch (e) { console.error("Experience tailor failed", e); }
+      }
+
+      // 4. Fetch Tailored Projects
+      if (resume.projects && resume.projects.length > 0) {
+        try {
+          const res = await tailorSection("projects", resume.projects, parsedJD);
+          if (res.projects && Array.isArray(res.projects)) {
+            const newChanges: TailoredChange[] = [];
+            for (let i = 0; i < resume.projects.length; i++) {
+              const origP = resume.projects[i];
+              const tailP = res.projects[i];
+              if (!tailP) continue;
+              
+              const chDesc = diffHelper("projects", `projects[${i}].description`, `${origP.name} — Description`, origP.description || "", tailP.description || "");
+              if (chDesc) newChanges.push(chDesc);
+              
+              const maxBullets = Math.max(origP.highlights?.length || 0, tailP.highlights?.length || 0);
+              for (let j = 0; j < maxBullets; j++) {
+                const origB = origP.highlights?.[j] || "";
+                const tailB = tailP.highlights?.[j] || "";
+                const chB = diffHelper("projects", `projects[${i}].highlights[${j}]`, `${origP.name} — Bullet ${j + 1}`, origB, tailB);
+                if (chB) newChanges.push(chB);
+              }
+            }
+            appendChanges(newChanges);
+          }
+        } catch (e) { console.error("Projects tailor failed", e); }
+      }
+
+      // 5. Fetch Tailored Skills
+      if (resume.skills) {
+        try {
+          const res = await tailorSection("skills", resume.skills, parsedJD);
+          if (res.skills) {
+            const newChanges: TailoredChange[] = [];
+            const cats: Array<{ key: keyof SkillsData; label: string }> = [
+              { key: "languages", label: "Skills — Languages" },
+              { key: "frameworks", label: "Skills — Frameworks" },
+              { key: "tools", label: "Skills — Tools/Databases" },
+              { key: "other", label: "Skills — Other" },
+            ];
+            for (const cat of cats) {
+              const origVal = (resume.skills[cat.key] || []).join(", ");
+              const tailVal = (res.skills[cat.key] || []).join(", ");
+              const ch = diffHelper("skills", `skills.${cat.key}`, cat.label, origVal, tailVal);
+              if (ch) newChanges.push(ch);
+            }
+            appendChanges(newChanges);
+          }
+        } catch (e) { console.error("Skills tailor failed", e); }
+      }
+
     } catch (err: any) {
       setError(err.message || "Failed to tailor resume. Please check your API keys or backend connectivity.");
     } finally {
@@ -175,7 +291,7 @@ export default function SidePanel() {
   const buildFinalResume = (): ResumeData | null => {
     if (!resume) return null;
     if (!tailoredResult) return resume;
-    return applyApprovedChanges(resume, tailoredResult.changes, tailoredResult.tailoredResume);
+    return applyApprovedChanges(resume, tailoredResult.changes);
   };
 
   // Handler: Export PDF — sends original PDF to backend for modification

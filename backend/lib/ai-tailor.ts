@@ -1,5 +1,5 @@
 import { callLLM, extractJSON } from "./llm-client";
-import type { ResumeData, JDData, TailoredResult, TailoredChange } from "./types";
+import type { ResumeData, JDData, TailoredResult, TailoredChange, ScoreResult, ExperienceEntry, ProjectEntry, SkillsData } from "./types";
 
 /**
  * AI-assisted parse of raw resume text into structured ResumeData JSON.
@@ -215,6 +215,171 @@ function generateChanges(
   }
 
   return changes;
+}
+
+ /**
+ * AI Tailor Logic: Scores the resume against the JD (Fast).
+ */
+export async function scoreResumeWithAI(
+  resume: ResumeData,
+  jd: JDData
+): Promise<ScoreResult> {
+  const systemPrompt = `You are an expert ATS (Applicant Tracking System) specialist.
+Your goal is to evaluate a candidate's resume against a Job Description (JD).
+
+Return ONLY a valid JSON object matching this exact structure:
+{
+  "atsScore": "Estimate a realistic ATS score (0-100)",
+  "scoreReasoning": "Brief constructive reasoning for the score",
+  "matchedKeywords": ["Keywords from JD present in resume"],
+  "missingKeywords": ["Keywords from JD missing from resume"]
+}
+`;
+
+  try {
+    const response = await callLLM({
+      systemPrompt,
+      userMessage: `Job Description:\n${JSON.stringify(jd)}\n\nCandidate Resume:\n${JSON.stringify(resume)}`,
+    });
+
+    const jsonStr = extractJSON(response.content);
+    return JSON.parse(jsonStr) as ScoreResult;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`Failed to score resume: ${msg}`);
+  }
+}
+
+/**
+ * AI Tailor Logic: Rewrites the Summary section.
+ */
+export async function tailorSummaryWithAI(
+  summary: string,
+  jd: JDData
+): Promise<{ summary: string }> {
+  const systemPrompt = `You are an expert resume optimizer. Rewrite the candidate's Professional Summary to align with the target role and key JD requirements.
+CRITICAL SAFETY RULES:
+1. NEVER invent experience, skills, or degrees.
+2. Keep it concise, punchy, and professional.
+
+Return ONLY a valid JSON object matching this exact structure:
+{
+  "summary": "Tailored professional summary"
+}
+`;
+
+  const response = await callLLM({
+    systemPrompt,
+    userMessage: `Job Description:\n${JSON.stringify(jd)}\n\nOriginal Summary:\n${summary}`,
+  });
+
+  return JSON.parse(extractJSON(response.content));
+}
+
+/**
+ * AI Tailor Logic: Rewrites the Experience section.
+ */
+export async function tailorExperienceWithAI(
+  experience: ExperienceEntry[],
+  jd: JDData
+): Promise<{ experience: ExperienceEntry[] }> {
+  const systemPrompt = `You are an expert resume optimizer. Rewrite the candidate's Work Experience bullet points to align with the JD's responsibilities and keywords.
+CRITICAL SAFETY RULES:
+1. NEVER invent any work experience, company names, dates, or locations.
+2. Keep all factual details (companies, degrees, years, roles) exactly the same.
+3. You may rewrite, reorder, and refine phrasing of bullet points to naturally incorporate keywords and highlight relevant aspects of the candidate's actual experience.
+4. Highlight outcomes and metrics if present.
+
+Return ONLY a valid JSON object matching this exact structure (keep the same array length and structure, just rewrite the highlights):
+{
+  "experience": [
+    {
+      "role": "Same role as original",
+      "company": "Same company as original",
+      "duration": "Same duration",
+      "location": "Same location",
+      "highlights": [
+        "Tailored bullet point 1",
+        "Tailored bullet point 2"
+      ]
+    }
+  ]
+}
+`;
+
+  const response = await callLLM({
+    systemPrompt,
+    userMessage: `Job Description:\n${JSON.stringify(jd)}\n\nOriginal Experience:\n${JSON.stringify(experience)}`,
+  });
+
+  return JSON.parse(extractJSON(response.content));
+}
+
+/**
+ * AI Tailor Logic: Rewrites the Projects section.
+ */
+export async function tailorProjectsWithAI(
+  projects: ProjectEntry[],
+  jd: JDData
+): Promise<{ projects: ProjectEntry[] }> {
+  const systemPrompt = `You are an expert resume optimizer. Rewrite the candidate's Projects section to align with the JD.
+CRITICAL SAFETY RULES:
+1. NEVER invent any projects, features, or tech stack not present in the original.
+2. You may refine phrasing of descriptions and bullet points to naturally incorporate keywords.
+
+Return ONLY a valid JSON object matching this exact structure (keep the same array length and structure):
+{
+  "projects": [
+    {
+      "name": "Same project name",
+      "description": "Tailored description",
+      "tech": ["Same tech stack"],
+      "highlights": [
+        "Tailored bullet point 1",
+        "Tailored bullet point 2"
+      ]
+    }
+  ]
+}
+`;
+
+  const response = await callLLM({
+    systemPrompt,
+    userMessage: `Job Description:\n${JSON.stringify(jd)}\n\nOriginal Projects:\n${JSON.stringify(projects)}`,
+  });
+
+  return JSON.parse(extractJSON(response.content));
+}
+
+/**
+ * AI Tailor Logic: Filters the Skills section.
+ */
+export async function tailorSkillsWithAI(
+  skills: SkillsData,
+  jd: JDData
+): Promise<{ skills: SkillsData }> {
+  const systemPrompt = `You are an expert resume optimizer. Filter and categorize the candidate's Skills, prioritizing those from the original list that are also present in the JD.
+CRITICAL SAFETY RULES:
+1. NEVER add skills to the candidate's skills list that are not present in the original resume.
+2. Only reorganize or select the most relevant existing skills.
+
+Return ONLY a valid JSON object matching this exact structure:
+{
+  "skills": {
+    "languages": ["Relevant languages"],
+    "frameworks": ["Relevant frameworks"],
+    "tools": ["Relevant tools"],
+    "other": ["Relevant other skills"]
+  }
+}
+`;
+
+  const response = await callLLM({
+    systemPrompt,
+    userMessage: `Job Description:\n${JSON.stringify(jd)}\n\nOriginal Skills:\n${JSON.stringify(skills)}`,
+  });
+
+  return JSON.parse(extractJSON(response.content));
 }
 
 /**

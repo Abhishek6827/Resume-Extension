@@ -9,8 +9,7 @@ const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000").repla
  */
 export function applyApprovedChanges(
   original: ResumeData,
-  changes: TailoredChange[],
-  tailored: ResumeData
+  changes: TailoredChange[]
 ): ResumeData {
   // Start with a deep clone of the original
   const result: ResumeData = JSON.parse(JSON.stringify(original));
@@ -19,9 +18,9 @@ export function applyApprovedChanges(
     if (change.status !== "approved") continue;
 
     if (change.field === "title") {
-      result.title = tailored.title;
+      result.title = change.newValue;
     } else if (change.field === "summary") {
-      result.summary = tailored.summary;
+      result.summary = change.newValue;
     } else if (change.field.startsWith("experience[")) {
       // Parse experience[i].highlights[j]
       const match = change.field.match(/^experience\[(\d+)\]\.highlights\[(\d+)\]$/);
@@ -51,8 +50,9 @@ export function applyApprovedChanges(
     } else if (change.field.startsWith("skills.")) {
       // Parse skills.languages, skills.frameworks, etc.
       const skillKey = change.field.replace("skills.", "") as keyof typeof result.skills;
-      if (result.skills && tailored.skills) {
-        result.skills[skillKey] = [...tailored.skills[skillKey]];
+      if (result.skills) {
+        // change.newValue is a comma separated string, so split it back to array
+        result.skills[skillKey] = change.newValue.split(",").map(s => s.trim()).filter(Boolean);
       }
     }
   }
@@ -116,13 +116,13 @@ export async function parseJD(options: { text?: string; url?: string }): Promise
 }
 
 /**
- * Sends structured resume and job description to get optimized resume, score, and keywords
+ * Sends structured resume and job description to get ATS score and keywords (Fast)
  */
-export async function tailorResume(
+export async function scoreResume(
   resumeData: ResumeData,
   jdData: JDData
-): Promise<TailoredResult> {
-  const response = await fetch(`${API_BASE}/api/tailor`, {
+): Promise<ScoreResult> {
+  const response = await fetch(`${API_BASE}/api/tailor/score`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -131,7 +131,7 @@ export async function tailorResume(
   });
 
   if (!response.ok) {
-    const errData = await response.json().catch(() => ({ error: "Failed to tailor resume" }));
+    const errData = await response.json().catch(() => ({ error: "Failed to score resume" }));
     throw new Error(errData.error || `HTTP error: ${response.status}`);
   }
 
@@ -139,6 +139,31 @@ export async function tailorResume(
 }
 
 /**
+ * Sends a specific resume section to get tailored (Progressive)
+ */
+export async function tailorSection(
+  section: "summary" | "experience" | "projects" | "skills",
+  sectionData: any,
+  jdData: JDData
+): Promise<any> {
+  const response = await fetch(`${API_BASE}/api/tailor/section`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ section, sectionData, jdData }),
+  });
+
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({ error: `Failed to tailor ${section}` }));
+    throw new Error(errData.error || `HTTP error: ${response.status}`);
+  }
+
+  return await response.json();
+}
+
+/**
+
  * Exports resume as PDF Blob.
  * If originalPdfBase64 + changes are provided, modifies the original PDF directly.
  * Otherwise falls back to generating a new PDF from structured data.

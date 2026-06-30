@@ -71,6 +71,13 @@ export interface TailoredChange {
   status: "pending" | "approved" | "rejected";
 }
 
+export interface ScoreResult {
+  atsScore: number;
+  scoreReasoning: string;
+  matchedKeywords: string[];
+  missingKeywords: string[];
+}
+
 export interface TailoredResult {
   tailoredResume: ResumeData;
   changes: TailoredChange[];
