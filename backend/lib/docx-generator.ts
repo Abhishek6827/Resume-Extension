@@ -28,7 +28,7 @@ export async function generateDOCX(resume: ResumeData): Promise<Buffer> {
       alignment: AlignmentType.CENTER,
       children: [
         new TextRun({
-          text: resume.name,
+          text: resume.name || "Professional Resume",
           bold: true,
           size: 32, // 16pt
           color: "111827",
@@ -58,12 +58,14 @@ export async function generateDOCX(resume: ResumeData): Promise<Buffer> {
 
   // Header: Contact Details
   const contactParts: string[] = [];
-  if (resume.contact.email) contactParts.push(resume.contact.email);
-  if (resume.contact.phone) contactParts.push(resume.contact.phone);
-  if (resume.contact.location) contactParts.push(resume.contact.location);
-  if (resume.contact.linkedin) contactParts.push(resume.contact.linkedin);
-  if (resume.contact.github) contactParts.push(resume.contact.github);
-  if (resume.contact.website) contactParts.push(resume.contact.website);
+  if (resume.contact) {
+    if (resume.contact.email) contactParts.push(resume.contact.email);
+    if (resume.contact.phone) contactParts.push(resume.contact.phone);
+    if (resume.contact.location) contactParts.push(resume.contact.location);
+    if (resume.contact.linkedin) contactParts.push(resume.contact.linkedin);
+    if (resume.contact.github) contactParts.push(resume.contact.github);
+    if (resume.contact.website) contactParts.push(resume.contact.website);
+  }
 
   children.push(
     new Paragraph({
@@ -142,7 +144,7 @@ export async function generateDOCX(resume: ResumeData): Promise<Buffer> {
           spacing: { before: 120, after: 40 },
           children: [
             new TextRun({
-              text: `${job.role} - ${job.company}`,
+              text: `${job.role || "Role"} - ${job.company || "Company"}`,
               bold: true,
               size: 20, // 10pt
               color: "111827",
@@ -158,7 +160,7 @@ export async function generateDOCX(resume: ResumeData): Promise<Buffer> {
             // Use tab/alignment for right-aligned dates, or just append spaces/dates
             // In DOCX, tabs can be complex, so we will append dates cleanly separated by tabs
             new TextRun({
-              text: `\t\t${job.duration}`,
+              text: `\t\t${job.duration || ""}`,
               size: 18,
               color: "4b5563",
               font: "Helvetica",
@@ -201,7 +203,7 @@ export async function generateDOCX(resume: ResumeData): Promise<Buffer> {
           spacing: { before: 120, after: 40 },
           children: [
             new TextRun({
-              text: proj.name,
+              text: proj.name || "Project",
               bold: true,
               size: 20, // 10pt
               color: "111827",
@@ -307,20 +309,20 @@ export async function generateDOCX(resume: ResumeData): Promise<Buffer> {
           spacing: { before: 120, after: 60 },
           children: [
             new TextRun({
-              text: edu.degree,
+              text: edu.degree || "Degree",
               bold: true,
               size: 20, // 10pt
               color: "111827",
               font: "Helvetica",
             }),
             new TextRun({
-              text: ` - ${edu.institution}${gpaStr}`,
+              text: ` - ${edu.institution || "Institution"}${gpaStr}`,
               size: 18, // 9pt
               color: "4b5563",
               font: "Helvetica",
             }),
             new TextRun({
-              text: `\t\t${edu.year}`,
+              text: `\t\t${edu.year || ""}`,
               size: 18,
               color: "4b5563",
               font: "Helvetica",
