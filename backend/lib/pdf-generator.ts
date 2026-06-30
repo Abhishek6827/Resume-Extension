@@ -35,7 +35,7 @@ export function generatePDF(resume: ResumeData): Promise<Buffer> {
         .fillColor(textColor)
         .font(fontBold)
         .fontSize(20)
-        .text(resume.name, { align: "center" });
+        .text(resume.name || "Professional Resume", { align: "center" });
       
       doc.moveDown(0.2);
 
@@ -51,18 +51,22 @@ export function generatePDF(resume: ResumeData): Promise<Buffer> {
 
       // Contact details inline (e.g. Email | Phone | LinkedIn)
       const contactParts: string[] = [];
-      if (resume.contact.email) contactParts.push(resume.contact.email);
-      if (resume.contact.phone) contactParts.push(resume.contact.phone);
-      if (resume.contact.location) contactParts.push(resume.contact.location);
-      if (resume.contact.linkedin) contactParts.push(resume.contact.linkedin);
-      if (resume.contact.github) contactParts.push(resume.contact.github);
-      if (resume.contact.website) contactParts.push(resume.contact.website);
+      if (resume.contact) {
+        if (resume.contact.email) contactParts.push(resume.contact.email);
+        if (resume.contact.phone) contactParts.push(resume.contact.phone);
+        if (resume.contact.location) contactParts.push(resume.contact.location);
+        if (resume.contact.linkedin) contactParts.push(resume.contact.linkedin);
+        if (resume.contact.github) contactParts.push(resume.contact.github);
+        if (resume.contact.website) contactParts.push(resume.contact.website);
+      }
 
-      doc
-        .fillColor(textMuted)
-        .font(fontRegular)
-        .fontSize(9)
-        .text(contactParts.join("  |  "), { align: "center" });
+      if (contactParts.length > 0) {
+        doc
+          .fillColor(textMuted)
+          .font(fontRegular)
+          .fontSize(9)
+          .text(contactParts.join("  |  "), { align: "center" });
+      }
 
       doc.moveDown(1.2);
 
