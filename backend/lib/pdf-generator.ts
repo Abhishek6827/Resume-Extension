@@ -20,10 +20,11 @@ export function generatePDF(resume: ResumeData): Promise<Buffer> {
       doc.on("end", () => resolve(Buffer.concat(chunks)));
       doc.on("error", (err) => reject(err));
 
-      // Resolve absolute paths for TrueType fonts to bypass Next.js virtual directory lookup errors
-      const fontRegularPath = path.resolve(process.cwd(), "node_modules/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf");
-      const fontBoldPath = path.resolve(process.cwd(), "node_modules/pdfjs-dist/standard_fonts/LiberationSans-Bold.ttf");
-      const fontObliquePath = path.resolve(process.cwd(), "node_modules/pdfjs-dist/standard_fonts/LiberationSans-Italic.ttf");
+      // Resolve absolute paths for TrueType fonts (public/fonts/ works on both local and Vercel)
+      const fontDir = path.resolve(process.cwd(), "public/fonts");
+      const fontRegularPath = path.join(fontDir, "LiberationSans-Regular.ttf");
+      const fontBoldPath = path.join(fontDir, "LiberationSans-Bold.ttf");
+      const fontObliquePath = path.join(fontDir, "LiberationSans-Italic.ttf");
 
       // Register custom fonts
       doc.registerFont("LiberationSans", fontRegularPath);

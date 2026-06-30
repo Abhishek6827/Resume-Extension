@@ -1,22 +1,39 @@
 // ─── Resume Parser — Extract text from PDF/DOCX ───────────
-import { PDFParse } from "pdf-parse";
-import path from "path";
-import { pathToFileURL } from "url";
-
-// Configure worker src dynamically to resolve Turbopack compilation errors
-const workerPath = path.resolve(process.cwd(), "node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs");
-PDFParse.setWorker(pathToFileURL(workerPath).href);
 
 /**
- * Extract raw text from a PDF buffer using pdf-parse
+ * Extract raw text from a PDF buffer using pdfjs-dist directly.
+ * Uses the legacy build with worker disabled for serverless compatibility.
  */
 export async function parsePDF(buffer: Buffer): Promise<string> {
   try {
-    const parser = new PDFParse({ data: new Uint8Array(buffer) });
-    const result = await parser.getText();
-    await parser.destroy();
-    
-    const text = (result.text || "").trim();
+    // Dynamic import to avoid Turbopack bundling issues
+    const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
+
+    // Disable worker for serverless (Vercel) compatibility
+    pdfjs.GlobalWorkerOptions.workerSrc = "";
+
+    const loadingTask = pdfjs.getDocument({
+      data: new Uint8Array(buffer),
+      useSystemFonts: true,
+    });
+
+    const doc = await loadingTask.promise;
+    const textParts: string[] = [];
+
+    for (let i = 1; i <= doc.numPages; i++) {
+      const page = await doc.getPage(i);
+      const content = await page.getTextContent();
+      const pageText = content.items
+        .filter((item: any) => "str" in item)
+        .map((item: any) => item.str)
+        .join(" ");
+      textParts.push(pageText);
+      page.cleanup();
+    }
+
+    await doc.destroy();
+
+    const text = textParts.join("\n\n").trim();
 
     if (!text) {
       throw new Error("No text extracted from PDF. File may be image-based.");
