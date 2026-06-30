@@ -285,21 +285,27 @@ export default function SidePanel() {
           </div>
           <span className="font-bold text-md tracking-tight">Resume Tailor</span>
         </div>
-        {resume && (
-          <button
-            onClick={handleReset}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-white/5 transition-all duration-200"
-            title="Reset Extension"
-          >
-            <Trash2 size={16} />
-          </button>
-        )}
+        <button
+          onClick={handleReset}
+          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-white/5 transition-all duration-200"
+          title="Reset App State"
+        >
+          <RefreshCw size={16} />
+        </button>
       </header>
 
       {error && (
-        <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex gap-2">
-          <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-          <span>{error}</span>
+        <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex flex-col gap-2">
+          <div className="flex gap-2 items-start">
+            <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
+          <button 
+            onClick={handleReset}
+            className="w-full mt-1 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 rounded text-rose-300 font-medium transition-colors"
+          >
+            Clear & Try Again
+          </button>
         </div>
       )}
 
