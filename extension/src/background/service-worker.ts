@@ -56,7 +56,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     cachedJDText = selection;
 
     chrome.storage.local.set({ rt_last_detected_jd: selection }).then(() => {
-      chrome.sidePanel.open({ tabId: tab.id }).catch((err) => {
+      chrome.sidePanel.open({ tabId: tab.id, windowId: tab.windowId }).catch((err: any) => {
         console.error("[service-worker] Failed to open side panel via context menu:", err);
       });
       chrome.action.setBadgeText({ text: "✨", tabId: tab.id });

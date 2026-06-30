@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Upload,
   FileText,
@@ -6,13 +6,8 @@ import {
   CheckCircle,
   AlertTriangle,
   Download,
-  Trash2,
   RefreshCw,
   Clipboard,
-  Check,
-  X,
-  CheckCheck,
-  XCircle,
   Eye,
 } from "lucide-react";
 import {
@@ -27,21 +22,19 @@ import {
   getOriginalPDF,
 } from "../lib/storage";
 import { parseResume, parseJD, tailorResume, exportPDF, exportDOCX, applyApprovedChanges } from "../lib/api-client";
-import type { ResumeData, JDData, TailoredResult, TailoredChange } from "../lib/types";
+import type { ResumeData, TailoredResult } from "../lib/types";
 
 export default function SidePanel() {
   const [resume, setResume] = useState<ResumeData | null>(null);
   const [originalPdf, setOriginalPdf] = useState<string | null>(null);
   const [rawResumeText, setRawResumeText] = useState("");
   const [jdInput, setJdInput] = useState("");
-  const [jdData, setJdData] = useState<JDData | null>(null);
   const [isParsingResume, setIsParsingResume] = useState(false);
   const [isParsingJD, setIsParsingJD] = useState(false);
   const [isTailoring, setIsTailoring] = useState(false);
   const [tailoredResult, setTailoredResult] = useState<TailoredResult | null>(null);
   const [error, setError] = useState("");
   const [step, setStep] = useState<1 | 2>(1);
-  const [expandedChangeId, setExpandedChangeId] = useState<string | null>(null);
 
   // Load saved state on mount
   useEffect(() => {
@@ -165,7 +158,6 @@ export default function SidePanel() {
     try {
       setIsParsingJD(true);
       const parsedJD = await parseJD({ text: jdInput });
-      setJdData(parsedJD);
       setIsParsingJD(false);
 
       const tailored = await tailorResume(resume, parsedJD);
@@ -228,19 +220,6 @@ export default function SidePanel() {
     a.remove();
   };
 
-  // Change approval handlers
-  const updateChangeStatus = (changeId: string, status: "approved" | "rejected") => {
-    if (!tailoredResult) return;
-    const updated = {
-      ...tailoredResult,
-      changes: tailoredResult.changes.map((c) =>
-        c.id === changeId ? { ...c, status } : c
-      ),
-    };
-    setTailoredResult(updated);
-    saveTailoredResult(updated);
-  };
-
   const approveAll = () => {
     if (!tailoredResult) return;
     const updated = {
@@ -268,7 +247,6 @@ export default function SidePanel() {
     setOriginalPdf(null);
     setRawResumeText("");
     setJdInput("");
-    setJdData(null);
     setTailoredResult(null);
     setStep(1);
     setError("");
@@ -283,24 +261,6 @@ export default function SidePanel() {
         pending: tailoredResult.changes.filter((c) => c.status === "pending").length,
       }
     : null;
-
-  // Helper: get value for a field in the resume preview (resolves which text to show based on change status)
-  const getResolvedValue = (field: string, originalValue: string): { text: string; isChanged: boolean; change: TailoredChange | null } => {
-    if (!tailoredResult) return { text: originalValue, isChanged: false, change: null };
-    const change = tailoredResult.changes.find((c) => c.field === field);
-    if (!change) return { text: originalValue, isChanged: false, change: null };
-
-    if (change.status === "approved") {
-      return { text: change.newValue, isChanged: true, change };
-    } else if (change.status === "rejected") {
-      return { text: originalValue, isChanged: false, change };
-    }
-    // pending — show AI suggestion with highlight
-    return { text: change.newValue, isChanged: true, change };
-  };
-
-  // Build the display resume from resolved values
-  const displayResume = resume;
 
 
   return (
@@ -596,14 +556,14 @@ export default function SidePanel() {
           )}
 
           {/* ═══════════════ FULL RESUME DOCUMENT VIEW ═══════════════ */}
-          {displayResume && (
+          {resume && (
             <div className="flex flex-col gap-0 mt-4 border-t border-gray-200 pt-4">
               <h3 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                 <Eye size={12} />
                 {tailoredResult ? "Tailored Resume — Review Changes" : "Master Resume Preview"}
               </h3>
 
-              {/* Resume Document Container — Always show original PDF if available */}
+              {/* Resume Document Container — Always show original PDF */}
               {originalPdf ? (
                 <div className="bg-white rounded-lg shadow-md border border-gray-200 w-full h-[600px] overflow-hidden">
                   <iframe 
@@ -613,201 +573,9 @@ export default function SidePanel() {
                   />
                 </div>
               ) : (
-                <div className="bg-white rounded-lg shadow-md border border-gray-200 p-5 text-[#111827] text-[11px] leading-relaxed max-h-[600px] overflow-y-auto">
-
-                  {/* ─── Header: Name & Contact ─── */}
-                <div className="text-center mb-3">
-                  <h1 className="text-base font-bold text-[#111827] mb-0.5">{displayResume.name}</h1>
-                  <ResumeField
-                    field="title"
-                    originalValue={displayResume.title || ""}
-                    getResolvedValue={getResolvedValue}
-                    onApprove={(id) => updateChangeStatus(id, "approved")}
-                    onReject={(id) => updateChangeStatus(id, "rejected")}
-                    expandedChangeId={expandedChangeId}
-                    setExpandedChangeId={setExpandedChangeId}
-                    className="text-xs font-bold text-[#1e40af] uppercase"
-                    as="p"
-                  />
-                  {/* Contact Line */}
-                  <div className="text-[9px] text-[#4b5563] mt-1">
-                    {[
-                      displayResume.contact?.email,
-                      displayResume.contact?.phone,
-                      displayResume.contact?.location,
-                      displayResume.contact?.linkedin,
-                      displayResume.contact?.github,
-                      displayResume.contact?.website,
-                    ].filter(Boolean).join("  |  ")}
-                  </div>
+                <div className="bg-white rounded-lg shadow-md border border-gray-200 p-5 text-center text-gray-500">
+                  <p>No original PDF available for preview.</p>
                 </div>
-
-                {/* ─── Summary ─── */}
-                {(displayResume.summary || tailoredResult?.changes.some(c => c.field === "summary")) && (
-                  <ResumeSection title="Summary">
-                    <ResumeField
-                      field="summary"
-                      originalValue={displayResume.summary || ""}
-                      getResolvedValue={getResolvedValue}
-                      onApprove={(id) => updateChangeStatus(id, "approved")}
-                      onReject={(id) => updateChangeStatus(id, "rejected")}
-                      expandedChangeId={expandedChangeId}
-                      setExpandedChangeId={setExpandedChangeId}
-                      className="text-[#111827]"
-                      as="p"
-                    />
-                  </ResumeSection>
-                )}
-
-                {/* ─── Experience ─── */}
-                {displayResume.experience && displayResume.experience.length > 0 && (
-                  <ResumeSection title="Experience">
-                    {displayResume.experience.map((job, i) => (
-                      <div key={i} className="mb-2">
-                        <div className="flex justify-between items-baseline">
-                          <span className="font-bold text-[11px] text-[#111827]">
-                            {job.role} — {job.company}
-                            {job.location ? <span className="font-normal text-[#4b5563] italic text-[10px]"> ({job.location})</span> : null}
-                          </span>
-                          <span className="text-[9px] text-[#4b5563] shrink-0 ml-2">{job.duration}</span>
-                        </div>
-                        {job.highlights && job.highlights.length > 0 && (
-                          <ul className="mt-1 space-y-0.5">
-                            {job.highlights.map((bullet, j) => (
-                              <li key={j} className="flex gap-1">
-                                <span className="shrink-0 text-[#4b5563]">•</span>
-                                <ResumeField
-                                  field={`experience[${i}].highlights[${j}]`}
-                                  originalValue={bullet}
-                                  getResolvedValue={getResolvedValue}
-                                  onApprove={(id) => updateChangeStatus(id, "approved")}
-                                  onReject={(id) => updateChangeStatus(id, "rejected")}
-                                  expandedChangeId={expandedChangeId}
-                                  setExpandedChangeId={setExpandedChangeId}
-                                  className="text-[#111827]"
-                                  as="span"
-                                />
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    ))}
-                  </ResumeSection>
-                )}
-
-                {/* ─── Projects ─── */}
-                {displayResume.projects && displayResume.projects.length > 0 && (
-                  <ResumeSection title="Projects">
-                    {displayResume.projects.map((proj, i) => (
-                      <div key={i} className="mb-2">
-                        <div className="flex items-baseline gap-1">
-                          <span className="font-bold text-[11px] text-[#111827]">{proj.name}</span>
-                          {proj.tech && proj.tech.length > 0 && (
-                            <span className="text-[9px] text-[#4b5563]">[{proj.tech.join(", ")}]</span>
-                          )}
-                        </div>
-                        <ResumeField
-                          field={`projects[${i}].description`}
-                          originalValue={proj.description || ""}
-                          getResolvedValue={getResolvedValue}
-                          onApprove={(id) => updateChangeStatus(id, "approved")}
-                          onReject={(id) => updateChangeStatus(id, "rejected")}
-                          expandedChangeId={expandedChangeId}
-                          setExpandedChangeId={setExpandedChangeId}
-                          className="text-[#111827]"
-                          as="p"
-                        />
-                        {proj.highlights && proj.highlights.length > 0 && (
-                          <ul className="mt-0.5 space-y-0.5">
-                            {proj.highlights.map((bullet, j) => (
-                              <li key={j} className="flex gap-1">
-                                <span className="shrink-0 text-[#4b5563]">•</span>
-                                <ResumeField
-                                  field={`projects[${i}].highlights[${j}]`}
-                                  originalValue={bullet}
-                                  getResolvedValue={getResolvedValue}
-                                  onApprove={(id) => updateChangeStatus(id, "approved")}
-                                  onReject={(id) => updateChangeStatus(id, "rejected")}
-                                  expandedChangeId={expandedChangeId}
-                                  setExpandedChangeId={setExpandedChangeId}
-                                  className="text-[#111827]"
-                                  as="span"
-                                />
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    ))}
-                  </ResumeSection>
-                )}
-
-                {/* ─── Skills ─── */}
-                {displayResume.skills && (
-                  <ResumeSection title="Skills">
-                    {([
-                      { key: "languages" as const, label: "Languages" },
-                      { key: "frameworks" as const, label: "Frameworks/Libraries" },
-                      { key: "tools" as const, label: "Tools/Databases" },
-                      { key: "other" as const, label: "Other" },
-                    ] as const).map((cat) => {
-                      const values = displayResume.skills?.[cat.key];
-                      if (!values || values.length === 0) return null;
-                      return (
-                        <div key={cat.key} className="mb-0.5">
-                          <span className="font-bold text-[#111827]">{cat.label}: </span>
-                          <ResumeField
-                            field={`skills.${cat.key}`}
-                            originalValue={values.join(", ")}
-                            getResolvedValue={getResolvedValue}
-                            onApprove={(id) => updateChangeStatus(id, "approved")}
-                            onReject={(id) => updateChangeStatus(id, "rejected")}
-                            expandedChangeId={expandedChangeId}
-                            setExpandedChangeId={setExpandedChangeId}
-                            className="text-[#111827]"
-                            as="span"
-                          />
-                        </div>
-                      );
-                    })}
-                  </ResumeSection>
-                )}
-
-                {/* ─── Education ─── */}
-                {displayResume.education && displayResume.education.length > 0 && (
-                  <ResumeSection title="Education">
-                    {displayResume.education.map((edu, i) => (
-                      <div key={i} className="flex justify-between items-baseline mb-1">
-                        <span>
-                          <span className="font-bold text-[#111827]">{edu.degree}</span>
-                          <span className="text-[#4b5563]"> — {edu.institution}</span>
-                          {edu.gpa && <span className="text-[#4b5563]"> (GPA: {edu.gpa})</span>}
-                        </span>
-                        <span className="text-[9px] text-[#4b5563] shrink-0 ml-2">{edu.year}</span>
-                      </div>
-                    ))}
-                  </ResumeSection>
-                )}
-
-                {/* ─── Certifications ─── */}
-                {displayResume.certifications && displayResume.certifications.length > 0 && (
-                  <ResumeSection title="Certifications">
-                    {displayResume.certifications.map((cert, i) => (
-                      <div key={i} className="text-[#111827]">• {cert}</div>
-                    ))}
-                  </ResumeSection>
-                )}
-
-                {/* ─── Achievements ─── */}
-                {displayResume.achievements && displayResume.achievements.length > 0 && (
-                  <ResumeSection title="Achievements">
-                    {displayResume.achievements.map((ach, i) => (
-                      <div key={i} className="text-[#111827]">• {ach}</div>
-                    ))}
-                  </ResumeSection>
-                )}
-              </div>
               )}
             </div>
           )}
@@ -818,146 +586,4 @@ export default function SidePanel() {
 }
 
 
-/* ═══════════════════════════════════════════════════════════
-   Sub-components for the resume document view
-   ═══════════════════════════════════════════════════════════ */
 
-/** Section header with underline */
-function ResumeSection({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="mt-3">
-      <h2 className="text-[11px] font-bold text-[#1e40af] uppercase tracking-wide border-b border-[#e5e7eb] pb-0.5 mb-1.5">
-        {title}
-      </h2>
-      {children}
-    </div>
-  );
-}
-
-/**
- * ResumeField — renders text with optional change highlighting.
- * If the field has an AI change, it shows a highlighted background with approve/reject controls.
- */
-function ResumeField({
-  field,
-  originalValue,
-  getResolvedValue,
-  onApprove,
-  onReject,
-  expandedChangeId,
-  setExpandedChangeId,
-  className = "",
-  as: Tag = "span",
-}: {
-  field: string;
-  originalValue: string;
-  getResolvedValue: (field: string, originalValue: string) => { text: string; isChanged: boolean; change: TailoredChange | null };
-  onApprove: (changeId: string) => void;
-  onReject: (changeId: string) => void;
-  expandedChangeId: string | null;
-  setExpandedChangeId: (id: string | null) => void;
-  className?: string;
-  as?: "span" | "p" | "div";
-}) {
-  const { text, isChanged, change } = getResolvedValue(field, originalValue);
-
-  if (!change) {
-    // No AI change — render plain text
-    return <Tag className={className}>{text || originalValue}</Tag>;
-  }
-
-  const isExpanded = expandedChangeId === change.id;
-  const isPending = change.status === "pending";
-  const isApproved = change.status === "approved";
-  const isRejected = change.status === "rejected";
-
-  // Determine display text based on status
-  const displayText = isRejected ? change.originalValue : change.newValue;
-
-  // Style classes for different states
-  const highlightClass = isPending
-    ? "bg-amber-50 border-l-2 border-amber-400 pl-1.5 pr-1"
-    : isApproved
-    ? "bg-emerald-50 border-l-2 border-emerald-500 pl-1.5 pr-1"
-    : "pl-1.5 pr-1 opacity-70";
-
-  return (
-    <div className="relative group/field">
-      <Tag
-        className={`${className} ${highlightClass} rounded-sm py-0.5 cursor-pointer transition-all duration-200 inline`}
-        onClick={() => setExpandedChangeId(isExpanded ? null : change.id)}
-      >
-        {displayText}
-        {/* Status indicator badge */}
-        {isPending && (
-          <span className="inline-flex ml-1 px-1 py-0 rounded text-[8px] font-bold bg-amber-100 text-amber-600 align-middle border border-amber-200">
-            AI ✨
-          </span>
-        )}
-        {isApproved && (
-          <span className="inline-flex ml-1 px-1 py-0 rounded text-[8px] font-bold bg-emerald-100 text-emerald-600 align-middle border border-emerald-200">
-            ✓
-          </span>
-        )}
-        {isRejected && (
-          <span className="inline-flex ml-1 px-1 py-0 rounded text-[8px] font-bold bg-rose-100 text-rose-500 align-middle border border-rose-200">
-            ✗
-          </span>
-        )}
-      </Tag>
-
-      {/* Expanded change detail panel */}
-      {isExpanded && (
-        <div className="mt-1.5 p-2 rounded-lg bg-gray-50 border border-gray-200 text-[10px] shadow-md">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="font-bold text-gray-700 text-[10px]">{change.label}</span>
-            <button
-              onClick={(e) => { e.stopPropagation(); setExpandedChangeId(null); }}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <X size={10} />
-            </button>
-          </div>
-
-          {/* Original vs New comparison */}
-          <div className="space-y-1.5">
-            <div className="p-1.5 rounded bg-rose-50 border border-rose-200">
-              <span className="text-[8px] font-bold text-rose-500 uppercase block mb-0.5">Original</span>
-              <span className="text-gray-700 leading-relaxed">{change.originalValue}</span>
-            </div>
-            <div className="p-1.5 rounded bg-emerald-50 border border-emerald-200">
-              <span className="text-[8px] font-bold text-emerald-500 uppercase block mb-0.5">AI Suggested</span>
-              <span className="text-gray-700 leading-relaxed">{change.newValue}</span>
-            </div>
-          </div>
-
-          {/* Approve / Reject buttons */}
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={(e) => { e.stopPropagation(); onApprove(change.id); setExpandedChangeId(null); }}
-              className={`flex-1 py-1.5 rounded-md text-[10px] font-semibold flex items-center justify-center gap-1 transition-all ${
-                isApproved
-                  ? "bg-emerald-500 text-white"
-                  : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200"
-              }`}
-            >
-              <Check size={10} />
-              Approve
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); onReject(change.id); setExpandedChangeId(null); }}
-              className={`flex-1 py-1.5 rounded-md text-[10px] font-semibold flex items-center justify-center gap-1 transition-all ${
-                isRejected
-                  ? "bg-rose-500 text-white"
-                  : "bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-              }`}
-            >
-              <X size={10} />
-              Reject
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}

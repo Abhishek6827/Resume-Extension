@@ -1,4 +1,5 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { inflateSync } from "zlib";
 
 /**
  * Represents a text change to apply to the original PDF.
@@ -13,65 +14,79 @@ interface TextChange {
  */
 interface PDFTextItem {
   text: string;
-  x: number;       // x position in PDF points
-  y: number;       // y position in PDF points
-  width: number;   // approximate text width
-  height: number;  // font size / height
+  x: number;       // x in pdf2json grid units
+  y: number;       // y in pdf2json grid units
+  fontSize: number;
+  isBold: boolean;
+  isItalic: boolean;
   pageIndex: number;
 }
 
 /**
- * Extract text items with (x, y) positions from a PDF buffer using pdf2json.
- * pdf2json provides page data with text items including coordinates.
+ * Page dimension info from pdf2json (in grid units).
  */
-function extractTextWithPositions(pdfBuffer: Buffer): Promise<PDFTextItem[]> {
+interface PageGridInfo {
+  width: number;
+  height: number;
+}
+
+/**
+ * Extract text items with positions and page dimensions from pdf2json.
+ * pdf2json gives coordinates in "grid units" — we convert to PDF points
+ * using the actual page dimensions from pdf-lib.
+ */
+function extractTextWithPositions(
+  pdfBuffer: Buffer
+): Promise<{ items: PDFTextItem[]; pages: PageGridInfo[] }> {
   return new Promise((resolve, reject) => {
     try {
       const PDFParser = require("pdf2json");
-      const pdfParser = new PDFParser(null, 0); // 0 = structured mode with positions
+      const pdfParser = new PDFParser(null, 0); // 0 = structured mode
 
       pdfParser.on("pdfParser_dataError", (errData: any) => {
-        reject(new Error(errData.parserError));
+        reject(new Error(errData.parserError || "pdf2json parse error"));
       });
 
       pdfParser.on("pdfParser_dataReady", (pdfData: any) => {
         try {
           const items: PDFTextItem[] = [];
-          const pages = pdfData.Pages || [];
+          const pages: PageGridInfo[] = [];
+          const pdfPages = pdfData.Pages || [];
 
-          for (let pageIdx = 0; pageIdx < pages.length; pageIdx++) {
-            const page = pages[pageIdx];
+          for (let pageIdx = 0; pageIdx < pdfPages.length; pageIdx++) {
+            const page = pdfPages[pageIdx];
+
+            pages.push({
+              width: page.Width || 1,
+              height: page.Height || 1,
+            });
+
             const texts = page.Texts || [];
-
             for (const textItem of texts) {
               if (!textItem.R || textItem.R.length === 0) continue;
-
-              // pdf2json coordinates are in "units" (1 unit = 1/4 of a PDF point)
-              // PDF points: 72 points = 1 inch
-              // pdf2json: x and y are in units where 1 unit ≈ 4.5 PDF points typically
-              const x = textItem.x * 4.5;   // Convert to approximate PDF points
-              const y = textItem.y * 4.5;
 
               for (const run of textItem.R) {
                 const text = decodeURIComponent(run.T || "");
                 if (!text.trim()) continue;
 
-                const fontSize = run.TS ? run.TS[1] : 10; // TS[1] = font size
-                const fontStyle = run.TS ? run.TS[2] : 0;  // TS[2] = bold/italic flags
+                const fontSize = run.TS ? run.TS[1] : 10;
+                const isBold = run.TS ? run.TS[2] === 1 : false;
+                const isItalic = run.TS ? run.TS[3] === 1 : false;
 
                 items.push({
                   text,
-                  x,
-                  y,
-                  width: text.length * fontSize * 0.5, // rough width estimate
-                  height: fontSize,
+                  x: textItem.x,
+                  y: textItem.y,
+                  fontSize,
+                  isBold,
+                  isItalic,
                   pageIndex: pageIdx,
                 });
               }
             }
           }
 
-          resolve(items);
+          resolve({ items, pages });
         } catch (err) {
           reject(err);
         }
@@ -85,140 +100,234 @@ function extractTextWithPositions(pdfBuffer: Buffer): Promise<PDFTextItem[]> {
 }
 
 /**
- * Find text items that match the given original text.
- * Uses substring matching since pdf2json may split text across items.
+ * Normalize text for fuzzy matching.
  */
-function findMatchingTextItems(
+function normalizeText(text: string): string {
+  return text
+    .replace(/\s+/g, " ")
+    .replace(/['']/g, "'")
+    .replace(/[""]/g, '"')
+    .trim()
+    .toLowerCase();
+}
+
+/**
+ * Find text items in the PDF that match (or contain) the given original text.
+ * Returns all matching items on any page.
+ */
+function findMatchingItems(
   items: PDFTextItem[],
   originalText: string
 ): PDFTextItem[] {
   const normalizedTarget = normalizeText(originalText);
   const matches: PDFTextItem[] = [];
 
-  // First: try exact match on individual items
+  // Strategy 1: Exact match on a single item
   for (const item of items) {
     if (normalizeText(item.text) === normalizedTarget) {
-      matches.push(item);
-      return matches;
+      return [item];
     }
   }
 
-  // Second: try finding items that contain the target as a substring
+  // Strategy 2: Item contains the target text
   for (const item of items) {
     if (normalizeText(item.text).includes(normalizedTarget)) {
-      matches.push(item);
-      return matches;
+      return [item];
     }
   }
 
-  // Third: try matching the beginning of the text (for long bullet points
-  // that may span multiple text items)
-  const targetWords = normalizedTarget.split(/\s+/);
-  if (targetWords.length >= 3) {
-    const firstFewWords = targetWords.slice(0, 5).join(" ");
-    for (const item of items) {
-      if (normalizeText(item.text).includes(firstFewWords)) {
-        matches.push(item);
-        // Also collect consecutive items on the same page with similar y position
-        const pageItems = items.filter(
-          (i) =>
-            i.pageIndex === item.pageIndex &&
-            i !== item &&
-            Math.abs(i.y - item.y) < item.height * 2 &&
-            i.x >= item.x
-        );
-        matches.push(...pageItems);
-        return matches;
+  // Strategy 3: Find consecutive items whose combined text contains the target.
+  // Group items by page and sort by y (top to bottom), then x (left to right).
+  const pageGroups = new Map<number, PDFTextItem[]>();
+  for (const item of items) {
+    const group = pageGroups.get(item.pageIndex) || [];
+    group.push(item);
+    pageGroups.set(item.pageIndex, group);
+  }
+
+  for (const [pageIdx, pageItems] of pageGroups) {
+    const sorted = pageItems.sort((a, b) => a.y - b.y || a.x - b.x);
+
+    for (let i = 0; i < sorted.length; i++) {
+      let combined = normalizeText(sorted[i].text);
+      const group = [sorted[i]];
+
+      if (combined.includes(normalizedTarget)) {
+        return group;
+      }
+
+      // Try combining with subsequent items on the same or next line
+      for (let j = i + 1; j < sorted.length && j < i + 10; j++) {
+        const yDiff = Math.abs(sorted[j].y - sorted[i].y);
+        if (yDiff > 2) break; // too far vertically (different line block)
+
+        combined += " " + normalizeText(sorted[j].text);
+        group.push(sorted[j]);
+
+        if (combined.includes(normalizedTarget)) {
+          return group;
+        }
       }
     }
   }
 
-  return matches;
+  // Strategy 4: Match by first significant words (for long bullet points)
+  const targetWords = normalizedTarget.split(/\s+/);
+  if (targetWords.length >= 4) {
+    const searchPhrase = targetWords.slice(0, 6).join(" ");
+    for (const item of items) {
+      if (normalizeText(item.text).includes(searchPhrase)) {
+        // Found the start — collect this item and nearby items
+        const result = [item];
+        const sameLineItems = items.filter(
+          (other) =>
+            other !== item &&
+            other.pageIndex === item.pageIndex &&
+            Math.abs(other.y - item.y) < 1.5
+        );
+        result.push(...sameLineItems);
+        return result;
+      }
+    }
+  }
+
+  return [];
 }
 
 /**
- * Normalize text for comparison — collapse whitespace, lowercase, trim.
- */
-function normalizeText(text: string): string {
-  return text.replace(/\s+/g, " ").trim().toLowerCase();
-}
-
-/**
- * Modify the original PDF by applying text changes.
+ * Modify the original PDF by overlaying text changes.
  *
- * Strategy: For each change, find the text position in the original PDF,
- * draw a white rectangle over it, then draw the new text at the same position.
+ * For each change:
+ * 1. Find where the original text appears (using pdf2json positions)
+ * 2. Draw a white rectangle to cover the old text
+ * 3. Draw the new text at the same position with matched font style
+ *
+ * Coordinates are properly converted from pdf2json grid units to PDF points
+ * using the actual page dimensions from both pdf-lib and pdf2json.
  */
 export async function modifyOriginalPDF(
   originalPdfBytes: Uint8Array,
   changes: TextChange[]
 ): Promise<Uint8Array> {
-  // Load the original PDF
   const pdfDoc = await PDFDocument.load(originalPdfBytes, {
     ignoreEncryption: true,
   });
 
-  // Extract text positions from the original PDF
-  const textItems = await extractTextWithPositions(
-    Buffer.from(originalPdfBytes)
+  const buffer = Buffer.from(originalPdfBytes);
+  const { items, pages: gridPages } = await extractTextWithPositions(buffer);
+
+  console.log(
+    `[pdf-modifier] Extracted ${items.length} text items from ${gridPages.length} pages`
   );
 
-  // Embed a standard font for re-drawing text
+  // Embed fonts for re-drawing
   const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const helveticaOblique = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+  const helveticaBoldOblique = await pdfDoc.embedFont(
+    StandardFonts.HelveticaBoldOblique
+  );
 
-  const pages = pdfDoc.getPages();
+  const pdfPages = pdfDoc.getPages();
+  let changesApplied = 0;
 
   for (const change of changes) {
-    const matchingItems = findMatchingTextItems(textItems, change.originalValue);
+    const matchedItems = findMatchingItems(items, change.originalValue);
 
-    if (matchingItems.length === 0) {
+    if (matchedItems.length === 0) {
       console.warn(
-        `[pdf-modifier] Could not find text position for: "${change.originalValue.substring(0, 50)}..."`
+        `[pdf-modifier] No match found for: "${change.originalValue.substring(0, 60)}..."`
       );
       continue;
     }
 
-    for (const item of matchingItems) {
-      if (item.pageIndex >= pages.length) continue;
-      const page = pages[item.pageIndex];
-      const pageHeight = page.getHeight();
+    console.log(
+      `[pdf-modifier] Found ${matchedItems.length} text item(s) for change: "${change.originalValue.substring(0, 40)}..."`
+    );
 
-      // pdf2json y-coordinate starts from top, PDF coordinate starts from bottom
-      // Convert: pdfY = pageHeight - pdf2jsonY
-      const pdfX = item.x;
-      const pdfY = pageHeight - item.y - item.height;
+    // Use the first matched item's position and page
+    const firstItem = matchedItems[0];
+    const pageIndex = firstItem.pageIndex;
 
-      // Calculate cover area — slightly larger than the text to fully cover it
-      const coverWidth = Math.max(item.width, page.getWidth() - pdfX - 30);
-      const coverHeight = item.height * 1.4;
-
-      // Draw white rectangle to cover original text
-      page.drawRectangle({
-        x: pdfX - 1,
-        y: pdfY - 2,
-        width: coverWidth,
-        height: coverHeight,
-        color: rgb(1, 1, 1), // white
-      });
-
-      // Determine font size — use the original item's height as font size
-      const fontSize = Math.max(item.height * 0.85, 8);
-      const isBold = item.height > 12; // rough heuristic
-      const font = isBold ? helveticaBold : helvetica;
-
-      // Draw the new text at the same position
-      page.drawText(change.newValue, {
-        x: pdfX,
-        y: pdfY,
-        size: fontSize,
-        font,
-        color: rgb(0.067, 0.094, 0.153), // #111827 equivalent
-        maxWidth: coverWidth - 5,
-        lineHeight: fontSize * 1.3,
-      });
+    if (pageIndex >= pdfPages.length || pageIndex >= gridPages.length) {
+      console.warn(`[pdf-modifier] Page index ${pageIndex} out of range`);
+      continue;
     }
+
+    const page = pdfPages[pageIndex];
+    const gridPage = gridPages[pageIndex];
+
+    // Calculate scale factors: PDF points / grid units
+    const pageWidth = page.getWidth();
+    const pageHeight = page.getHeight();
+    const scaleX = pageWidth / gridPage.width;
+    const scaleY = pageHeight / gridPage.height;
+
+    // Convert grid coordinates to PDF points
+    // pdf2json: origin is top-left, y increases downward
+    // PDF: origin is bottom-left, y increases upward
+    const pdfX = firstItem.x * scaleX;
+    const pdfY = pageHeight - firstItem.y * scaleY - firstItem.fontSize;
+
+    // Calculate the bounding box to cover all matched items
+    let minX = firstItem.x;
+    let maxX = firstItem.x;
+    let minY = firstItem.y;
+    let maxY = firstItem.y;
+
+    for (const item of matchedItems) {
+      minX = Math.min(minX, item.x);
+      maxX = Math.max(maxX, item.x + item.text.length * 0.3);
+      minY = Math.min(minY, item.y);
+      maxY = Math.max(maxY, item.y);
+    }
+
+    // Cover width: from the first item's x to the right margin
+    const coverX = pdfX - 2;
+    const rightMargin = 40; // approximate right margin in PDF points
+    const coverWidth = pageWidth - coverX - rightMargin;
+    // Cover height: from first item to last item + font height
+    const coverHeight =
+      (maxY - minY) * scaleY + firstItem.fontSize * 1.5;
+
+    // Draw white rectangle to cover the original text
+    page.drawRectangle({
+      x: coverX,
+      y: pdfY - coverHeight + firstItem.fontSize * 1.2,
+      width: coverWidth + 4,
+      height: coverHeight + 4,
+      color: rgb(1, 1, 1), // white
+    });
+
+    // Choose font based on the original text's style
+    let font = helvetica;
+    if (firstItem.isBold && firstItem.isItalic) {
+      font = helveticaBoldOblique;
+    } else if (firstItem.isBold) {
+      font = helveticaBold;
+    } else if (firstItem.isItalic) {
+      font = helveticaOblique;
+    }
+
+    const fontSize = Math.max(firstItem.fontSize * 0.9, 7);
+
+    // Draw the new text at the same position
+    page.drawText(change.newValue, {
+      x: pdfX,
+      y: pdfY,
+      size: fontSize,
+      font,
+      color: rgb(0.067, 0.094, 0.153), // #111827
+      maxWidth: coverWidth - 2,
+      lineHeight: fontSize * 1.35,
+    });
+
+    changesApplied++;
   }
+
+  console.log(
+    `[pdf-modifier] Applied ${changesApplied}/${changes.length} changes successfully`
+  );
 
   return await pdfDoc.save();
 }

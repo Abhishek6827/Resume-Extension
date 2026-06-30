@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCorsHeaders, handleOptions } from "../../../lib/cors";
-import { generatePDF } from "../../../lib/pdf-generator";
 import { modifyOriginalPDF } from "../../../lib/pdf-modifier";
 
 export const dynamic = "force-dynamic";
@@ -22,44 +21,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Extract the original PDF base64
+    const originalBase64 = body.originalPdfBase64;
+    if (!originalBase64) {
+      return NextResponse.json(
+        { error: "No original PDF provided. Upload a PDF first." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // Strip data URL prefix if present
+    const base64Data = originalBase64.replace(/^data:[^;]+;base64,/, "");
+    const originalBytes = Buffer.from(base64Data, "base64");
+
+    // Get approved changes
+    const changes = (body.changes || [])
+      .filter((c: any) => c.status === "approved")
+      .map((c: any) => ({
+        originalValue: c.originalValue,
+        newValue: c.newValue,
+      }));
+
     let pdfBuffer: Buffer | Uint8Array;
 
-    // If original PDF is provided, modify it directly to preserve formatting
-    if (body.originalPdfBase64 && body.changes && body.changes.length > 0) {
-      // Extract the base64 data (remove data:application/pdf;base64, prefix if present)
-      const base64Data = body.originalPdfBase64.replace(
-        /^data:[^;]+;base64,/,
-        ""
-      );
-      const originalBytes = new Uint8Array(
-        Buffer.from(base64Data, "base64")
-      );
-
-      // Filter to only approved changes
-      const approvedChanges = body.changes
-        .filter((c: any) => c.status === "approved")
-        .map((c: any) => ({
-          originalValue: c.originalValue,
-          newValue: c.newValue,
-        }));
-
-      if (approvedChanges.length > 0) {
-        pdfBuffer = await modifyOriginalPDF(originalBytes, approvedChanges);
-      } else {
-        // No approved changes — return original PDF as-is
-        pdfBuffer = Buffer.from(base64Data, "base64");
+    if (changes.length > 0) {
+      try {
+        // Modify the original PDF with approved changes
+        console.log(`[export-pdf] Modifying original PDF with ${changes.length} approved changes`);
+        pdfBuffer = await modifyOriginalPDF(new Uint8Array(originalBytes), changes);
+        console.log("[export-pdf] PDF modification successful");
+      } catch (modifyErr) {
+        // If modification fails, return original PDF as-is (not a custom template)
+        console.error("[export-pdf] PDF modification failed, returning original:", modifyErr);
+        pdfBuffer = originalBytes;
       }
-    } else if (body.originalPdfBase64 && (!body.changes || body.changes.length === 0)) {
-      // No changes at all — return original PDF as-is
-      const base64Data = body.originalPdfBase64.replace(
-        /^data:[^;]+;base64,/,
-        ""
-      );
-      pdfBuffer = Buffer.from(base64Data, "base64");
     } else {
-      // Fallback: generate new PDF from structured resume data
-      const resumeData = body.resumeData || body;
-      pdfBuffer = await generatePDF(resumeData);
+      // No approved changes — return original PDF as-is
+      console.log("[export-pdf] No approved changes, returning original PDF");
+      pdfBuffer = originalBytes;
     }
 
     const headers = new Headers(corsHeaders);

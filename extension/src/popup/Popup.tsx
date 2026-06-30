@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Sparkles, FileText, CheckCircle2, AlertCircle } from "lucide-react";
 import { getResume } from "../lib/storage";
 import type { ResumeData } from "../lib/types";
@@ -20,11 +20,11 @@ export default function Popup() {
 
   const openSidepanel = () => {
     if (typeof chrome !== "undefined" && chrome.tabs) {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs: chrome.tabs.Tab[]) => {
         const activeTab = tabs[0];
         if (activeTab?.id) {
           // Open the sidepanel programmatically on action button click
-          chrome.sidePanel.open({ tabId: activeTab.id }).catch((err) => {
+          chrome.sidePanel.open({ tabId: activeTab.id }).catch((err: Error) => {
             console.error("Failed to open side panel:", err);
           });
         }
