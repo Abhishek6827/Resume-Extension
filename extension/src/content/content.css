@@ -1,0 +1,16 @@
+/* Content script styles */
+#rt-floating-button {
+  animation: rt-pulse 2s infinite;
+}
+
+@keyframes rt-pulse {
+  0% {
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 22px rgba(99, 102, 241, 0.7);
+  }
+  100% {
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  }
+}
