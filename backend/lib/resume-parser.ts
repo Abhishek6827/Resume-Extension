@@ -1,13 +1,11 @@
 // ─── Resume Parser — Extract text from PDF/DOCX ───────────
+import pdfParse from "pdf-parse";
 
 /**
  * Extract raw text from a PDF buffer using pdf-parse
  */
 export async function parsePDF(buffer: Buffer): Promise<string> {
   try {
-    const pdfParseModule = await import("pdf-parse");
-    // @ts-ignore
-    const pdfParse = typeof pdfParseModule === "function" ? pdfParseModule : (pdfParseModule.default || pdfParseModule);
     const result = await pdfParse(buffer);
     const text = (result.text || "").trim();
 
