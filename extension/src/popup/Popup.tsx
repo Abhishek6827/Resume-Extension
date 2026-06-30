@@ -33,26 +33,26 @@ export default function Popup() {
   };
 
   return (
-    <div className="w-[320px] p-4 bg-[#090a0f] text-slate-200 select-none">
+    <div className="w-[320px] p-4 bg-white text-gray-800 select-none">
       {/* Title */}
       <div className="flex items-center gap-2 mb-4">
         <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
           <span className="font-bold text-xs text-white">RT</span>
         </div>
-        <span className="font-bold text-sm tracking-tight">Resume Tailor</span>
+        <span className="font-bold text-sm tracking-tight text-gray-900">Resume Tailor</span>
       </div>
 
       {/* Status Card */}
-      <div className="p-3 rounded-xl bg-white/2 border border-white/5 flex flex-col gap-3 mb-4">
+      <div className="p-3 rounded-xl bg-gray-50 border border-gray-200 flex flex-col gap-3 mb-4">
         <div className="flex items-center justify-between text-xs">
-          <span className="text-slate-400">Master Resume:</span>
+          <span className="text-gray-500">Master Resume:</span>
           {resume ? (
-            <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+            <span className="flex items-center gap-1 text-emerald-600 font-semibold">
               <CheckCircle2 size={12} />
               Uploaded
             </span>
           ) : (
-            <span className="flex items-center gap-1 text-rose-400 font-semibold">
+            <span className="flex items-center gap-1 text-rose-500 font-semibold">
               <AlertCircle size={12} />
               Not Uploaded
             </span>
@@ -60,7 +60,7 @@ export default function Popup() {
         </div>
 
         {resume && (
-          <div className="flex gap-2 items-center text-[10px] text-slate-500 border-t border-white/5 pt-2">
+          <div className="flex gap-2 items-center text-[10px] text-gray-500 border-t border-gray-200 pt-2">
             <FileText size={12} />
             <span className="truncate">{resume.name}</span>
           </div>
@@ -77,7 +77,7 @@ export default function Popup() {
       </button>
 
       {/* Guide Footer */}
-      <div className="mt-4 text-[10px] text-center text-slate-500 leading-normal">
+      <div className="mt-4 text-[10px] text-center text-gray-400 leading-normal">
         Open any job posting on LinkedIn or Indeed, highlight text, and right-click to instantly tailor.
       </div>
     </div>

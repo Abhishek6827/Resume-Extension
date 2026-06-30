@@ -139,15 +139,34 @@ export async function tailorResume(
 }
 
 /**
- * Exports structured resume JSON into PDF Blob
+ * Exports resume as PDF Blob.
+ * If originalPdfBase64 + changes are provided, modifies the original PDF directly.
+ * Otherwise falls back to generating a new PDF from structured data.
  */
-export async function exportPDF(resumeData: ResumeData): Promise<Blob> {
+export async function exportPDF(
+  resumeData: ResumeData,
+  originalPdfBase64?: string | null,
+  changes?: TailoredChange[]
+): Promise<Blob> {
+  let requestBody: Record<string, unknown>;
+
+  if (originalPdfBase64) {
+    // Send original PDF + changes so backend modifies the original
+    requestBody = {
+      originalPdfBase64,
+      changes: changes || [],
+      resumeData, // fallback data if modification fails
+    };
+  } else {
+    requestBody = { resumeData };
+  }
+
   const response = await fetch(`${API_BASE}/api/export-pdf`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(resumeData),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {

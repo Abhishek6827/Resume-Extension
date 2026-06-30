@@ -186,13 +186,18 @@ export default function SidePanel() {
     return applyApprovedChanges(resume, tailoredResult.changes, tailoredResult.tailoredResume);
   };
 
-  // Handler: Export PDF
+  // Handler: Export PDF — sends original PDF to backend for modification
   const handleDownloadPDF = async () => {
     const dataToExport = buildFinalResume();
     if (!dataToExport) return;
 
     try {
-      const blob = await exportPDF(dataToExport);
+      // Pass original PDF + changes so backend modifies the original PDF directly
+      const blob = await exportPDF(
+        dataToExport,
+        originalPdf,
+        tailoredResult?.changes
+      );
       triggerDownload(blob, `${dataToExport.name.replace(/\s+/g, "_")}_Tailored.pdf`);
     } catch (err: any) {
       setError("PDF generation failed. Check backend server logs.");
@@ -299,18 +304,18 @@ export default function SidePanel() {
 
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#090a0f] text-slate-100 p-4">
+    <div className="flex flex-col min-h-screen bg-white text-gray-900 p-4">
       {/* Header */}
-      <header className="flex items-center justify-between pb-4 border-b border-white/5 mb-4">
+      <header className="flex items-center justify-between pb-4 border-b border-gray-200 mb-4">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
             <span className="font-bold text-sm text-white">RT</span>
           </div>
-          <span className="font-bold text-md tracking-tight">Resume Tailor</span>
+          <span className="font-bold text-md tracking-tight text-gray-900">Resume Tailor</span>
         </div>
         <button
           onClick={handleReset}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-white/5 transition-all duration-200"
+          className="p-1.5 rounded-lg text-gray-400 hover:text-rose-500 hover:bg-gray-100 transition-all duration-200"
           title="Reset App State"
         >
           <RefreshCw size={16} />
@@ -318,14 +323,14 @@ export default function SidePanel() {
       </header>
 
       {error && (
-        <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex flex-col gap-2">
+        <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs flex flex-col gap-2">
           <div className="flex gap-2 items-start">
             <AlertTriangle size={14} className="shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
           <button 
             onClick={handleReset}
-            className="w-full mt-1 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 rounded text-rose-300 font-medium transition-colors"
+            className="w-full mt-1 py-1.5 bg-rose-100 hover:bg-rose-200 rounded text-rose-600 font-medium transition-colors"
           >
             Clear & Try Again
           </button>
@@ -336,22 +341,22 @@ export default function SidePanel() {
       {step === 1 && (
         <div className="flex flex-col gap-5 flex-1">
           <div className="text-center py-4">
-            <h2 className="text-lg font-bold bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent mb-1">
+            <h2 className="text-lg font-bold text-gray-900 mb-1">
               Upload Your Master Resume
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-gray-500">
               PDF or DOCX. We parse details to match against JDs.
             </p>
           </div>
 
           {/* File Dropzone */}
           <div className="relative group">
-            <label className="flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-2xl p-8 hover:border-indigo-500/30 hover:bg-white/2 cursor-pointer transition-all duration-300 text-center">
-              <Upload size={32} className="text-indigo-400 mb-3 group-hover:scale-110 transition-transform duration-300" />
-              <span className="text-xs font-semibold mb-1 text-slate-200">
+            <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl p-8 hover:border-indigo-400 hover:bg-indigo-50/30 cursor-pointer transition-all duration-300 text-center">
+              <Upload size={32} className="text-indigo-500 mb-3 group-hover:scale-110 transition-transform duration-300" />
+              <span className="text-xs font-semibold mb-1 text-gray-700">
                 Drag & Drop or Click to Upload
               </span>
-              <span className="text-[10px] text-slate-500">PDF, DOCX (Max 5MB)</span>
+              <span className="text-[10px] text-gray-400">PDF, DOCX (Max 5MB)</span>
               <input
                 type="file"
                 accept=".pdf,.docx"
@@ -361,17 +366,17 @@ export default function SidePanel() {
               />
             </label>
             {isParsingResume && (
-              <div className="absolute inset-0 bg-[#090a0f]/80 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center gap-3">
-                <RefreshCw size={24} className="text-indigo-400 animate-spin" />
-                <span className="text-xs text-indigo-300 font-medium">Parsing resume data...</span>
+              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center gap-3">
+                <RefreshCw size={24} className="text-indigo-500 animate-spin" />
+                <span className="text-xs text-indigo-600 font-medium">Parsing resume data...</span>
               </div>
             )}
           </div>
 
-          <div className="flex items-center my-2 text-slate-600 text-xs">
-            <div className="flex-1 h-px bg-white/5"></div>
+          <div className="flex items-center my-2 text-gray-400 text-xs">
+            <div className="flex-1 h-px bg-gray-200"></div>
             <span className="px-3">OR PASTE TEXT</span>
-            <div className="flex-1 h-px bg-white/5"></div>
+            <div className="flex-1 h-px bg-gray-200"></div>
           </div>
 
           {/* Text Area Input */}
@@ -381,7 +386,7 @@ export default function SidePanel() {
               value={rawResumeText}
               onChange={(e) => setRawResumeText(e.target.value)}
               rows={8}
-              className="w-full text-xs bg-white/3 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-indigo-500/50 resize-none placeholder:text-slate-600"
+              className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 resize-none placeholder:text-gray-400 text-gray-800"
             />
             <button
               onClick={handleResumeTextSubmit}
@@ -398,17 +403,17 @@ export default function SidePanel() {
       {step === 2 && resume && (
         <div className="flex flex-col gap-4 flex-1">
           {/* Resume Uploaded Status Card */}
-          <div className="p-3 rounded-xl bg-white/2 border border-white/5 flex items-center justify-between">
+          <div className="p-3 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FileText size={18} className="text-indigo-400" />
+              <FileText size={18} className="text-indigo-500" />
               <div>
-                <h4 className="text-xs font-semibold leading-tight">{resume.name}</h4>
-                <p className="text-[10px] text-slate-500">{resume.title || "Resume Uploaded"}</p>
+                <h4 className="text-xs font-semibold leading-tight text-gray-900">{resume.name}</h4>
+                <p className="text-[10px] text-gray-500">{resume.title || "Resume Uploaded"}</p>
               </div>
             </div>
             <button
               onClick={() => setStep(1)}
-              className="text-[10px] text-indigo-400 hover:underline"
+              className="text-[10px] text-indigo-500 hover:underline"
             >
               Change
             </button>
@@ -417,10 +422,10 @@ export default function SidePanel() {
           {/* JD Input Panel */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-300">Job Description (JD)</label>
+              <label className="text-xs font-bold text-gray-700">Job Description (JD)</label>
               <button
                 onClick={handlePasteClipboard}
-                className="flex items-center gap-1 text-[10px] text-indigo-400 hover:text-indigo-300 hover:underline"
+                className="flex items-center gap-1 text-[10px] text-indigo-500 hover:text-indigo-600 hover:underline"
               >
                 <Clipboard size={10} />
                 Paste Clipboard
@@ -432,7 +437,7 @@ export default function SidePanel() {
               value={jdInput}
               onChange={(e) => setJdInput(e.target.value)}
               rows={5}
-              className="w-full text-xs bg-white/3 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-indigo-500/50 resize-none placeholder:text-slate-600"
+              className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 resize-none placeholder:text-gray-400 text-gray-800"
             />
 
             <button
@@ -458,10 +463,10 @@ export default function SidePanel() {
           {tailoredResult && (
             <div className="flex flex-col gap-4 mt-2">
               {/* ATS SCORE RING & REASONING */}
-              <div className="p-4 rounded-2xl bg-white/2 border border-white/5 flex items-center gap-4">
+              <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 flex items-center gap-4">
                 <div className="relative h-16 w-16 shrink-0">
                   <svg className="h-full w-full transform -rotate-90">
-                    <circle cx="32" cy="32" r="28" className="stroke-white/5 fill-none" strokeWidth="5" />
+                    <circle cx="32" cy="32" r="28" className="stroke-gray-200 fill-none" strokeWidth="5" />
                     <circle
                       cx="32" cy="32" r="28"
                       className={`fill-none transition-all duration-1000 ${
@@ -474,13 +479,13 @@ export default function SidePanel() {
                       strokeDashoffset={175 - (175 * tailoredResult.atsScore) / 100}
                     />
                   </svg>
-                  <div className="absolute inset-0 flex items-center justify-center font-bold text-sm">
+                  <div className="absolute inset-0 flex items-center justify-center font-bold text-sm text-gray-900">
                     {tailoredResult.atsScore}%
                   </div>
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold mb-1">ATS Compatibility Score</h3>
-                  <p className="text-[10px] text-slate-400 line-clamp-3">{tailoredResult.scoreReasoning}</p>
+                  <h3 className="text-xs font-bold mb-1 text-gray-900">ATS Compatibility Score</h3>
+                  <p className="text-[10px] text-gray-500 line-clamp-3">{tailoredResult.scoreReasoning}</p>
                 </div>
               </div>
 
@@ -488,13 +493,13 @@ export default function SidePanel() {
               <div className="flex flex-col gap-3">
                 {tailoredResult.matchedKeywords.length > 0 && (
                   <div>
-                    <h4 className="text-[10px] font-bold uppercase text-slate-500 mb-1 flex items-center gap-1">
-                      <CheckCircle size={10} className="text-emerald-400" />
+                    <h4 className="text-[10px] font-bold uppercase text-gray-500 mb-1 flex items-center gap-1">
+                      <CheckCircle size={10} className="text-emerald-500" />
                       Matched Keywords ({tailoredResult.matchedKeywords.length})
                     </h4>
                     <div className="flex flex-wrap gap-1.5">
                       {tailoredResult.matchedKeywords.map((kw, i) => (
-                        <span key={i} className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-medium">
+                        <span key={i} className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-medium border border-emerald-200">
                           {kw}
                         </span>
                       ))}
@@ -503,13 +508,13 @@ export default function SidePanel() {
                 )}
                 {tailoredResult.missingKeywords.length > 0 && (
                   <div>
-                    <h4 className="text-[10px] font-bold uppercase text-slate-500 mb-1 flex items-center gap-1">
-                      <AlertTriangle size={10} className="text-amber-400" />
+                    <h4 className="text-[10px] font-bold uppercase text-gray-500 mb-1 flex items-center gap-1">
+                      <AlertTriangle size={10} className="text-amber-500" />
                       Missing Gaps ({tailoredResult.missingKeywords.length})
                     </h4>
                     <div className="flex flex-wrap gap-1.5">
                       {tailoredResult.missingKeywords.map((kw, i) => (
-                        <span key={i} className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-medium">
+                        <span key={i} className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 text-[10px] font-medium border border-amber-200">
                           {kw}
                         </span>
                       ))}
@@ -520,29 +525,29 @@ export default function SidePanel() {
 
               {/* CHANGE REVIEW BAR */}
               {changeStats && changeStats.total > 0 && (
-                <div className="p-3 rounded-xl bg-white/2 border border-white/5">
+                <div className="p-3 rounded-xl bg-gray-50 border border-gray-200">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
-                      <Sparkles size={12} className="text-amber-400" />
+                    <h4 className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                      <Sparkles size={12} className="text-amber-500" />
                       {changeStats.total} AI Changes to Review
                     </h4>
                     <div className="flex gap-1.5">
                       <button
                         onClick={approveAll}
-                        className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 text-[10px] font-medium hover:bg-emerald-500/20 transition-colors"
+                        className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-medium hover:bg-emerald-100 transition-colors border border-emerald-200"
                       >
                         ✅ Approve All
                       </button>
                       <button
                         onClick={rejectAll}
-                        className="px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-400 text-[10px] font-medium hover:bg-rose-500/20 transition-colors"
+                        className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 text-[10px] font-medium hover:bg-rose-100 transition-colors border border-rose-200"
                       >
                         ❌ Reject All
                       </button>
                     </div>
                   </div>
                   {/* Progress bar */}
-                  <div className="flex gap-0.5 h-1.5 rounded-full overflow-hidden bg-white/5">
+                  <div className="flex gap-0.5 h-1.5 rounded-full overflow-hidden bg-gray-200">
                     {changeStats.approved > 0 && (
                       <div
                         className="bg-emerald-500 rounded-full transition-all duration-300"
@@ -557,15 +562,15 @@ export default function SidePanel() {
                     )}
                     {changeStats.pending > 0 && (
                       <div
-                        className="bg-amber-500/50 rounded-full transition-all duration-300"
+                        className="bg-amber-400 rounded-full transition-all duration-300"
                         style={{ width: `${(changeStats.pending / changeStats.total) * 100}%` }}
                       />
                     )}
                   </div>
-                  <div className="flex gap-3 mt-1.5 text-[10px] text-slate-500">
+                  <div className="flex gap-3 mt-1.5 text-[10px] text-gray-500">
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" />{changeStats.approved} approved</span>
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500" />{changeStats.rejected} rejected</span>
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500/50" />{changeStats.pending} pending</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" />{changeStats.pending} pending</span>
                   </div>
                 </div>
               )}
@@ -574,14 +579,14 @@ export default function SidePanel() {
               <div className="grid grid-cols-2 gap-3 mt-2">
                 <button
                   onClick={handleDownloadPDF}
-                  className="py-3 px-4 rounded-xl bg-white/5 border border-white/10 font-semibold text-xs text-white hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2"
+                  className="py-3 px-4 rounded-xl bg-gray-50 border border-gray-200 font-semibold text-xs text-gray-800 hover:bg-gray-100 hover:border-gray-300 transition-all flex items-center justify-center gap-2"
                 >
                   <Download size={14} />
                   Download PDF
                 </button>
                 <button
                   onClick={handleDownloadDOCX}
-                  className="py-3 px-4 rounded-xl bg-white/5 border border-white/10 font-semibold text-xs text-white hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2"
+                  className="py-3 px-4 rounded-xl bg-gray-50 border border-gray-200 font-semibold text-xs text-gray-800 hover:bg-gray-100 hover:border-gray-300 transition-all flex items-center justify-center gap-2"
                 >
                   <Download size={14} />
                   Download DOCX
@@ -592,23 +597,23 @@ export default function SidePanel() {
 
           {/* ═══════════════ FULL RESUME DOCUMENT VIEW ═══════════════ */}
           {displayResume && (
-            <div className="flex flex-col gap-0 mt-4 border-t border-white/5 pt-4">
-              <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <div className="flex flex-col gap-0 mt-4 border-t border-gray-200 pt-4">
+              <h3 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
                 <Eye size={12} />
                 {tailoredResult ? "Tailored Resume — Review Changes" : "Master Resume Preview"}
               </h3>
 
-              {/* Resume Document Container */}
-              {(!tailoredResult && originalPdf) ? (
-                <div className="bg-white rounded-lg shadow-xl shadow-black/30 w-full h-[600px] overflow-hidden">
+              {/* Resume Document Container — Always show original PDF if available */}
+              {originalPdf ? (
+                <div className="bg-white rounded-lg shadow-md border border-gray-200 w-full h-[600px] overflow-hidden">
                   <iframe 
                     src={originalPdf} 
                     className="w-full h-full border-none"
-                    title="Original Resume Preview"
+                    title="Resume Preview"
                   />
                 </div>
               ) : (
-                <div className="bg-white rounded-lg shadow-xl shadow-black/30 p-5 text-[#111827] text-[11px] leading-relaxed max-h-[600px] overflow-y-auto">
+                <div className="bg-white rounded-lg shadow-md border border-gray-200 p-5 text-[#111827] text-[11px] leading-relaxed max-h-[600px] overflow-y-auto">
 
                   {/* ─── Header: Name & Contact ─── */}
                 <div className="text-center mb-3">
@@ -871,9 +876,9 @@ function ResumeField({
 
   // Style classes for different states
   const highlightClass = isPending
-    ? "bg-amber-400/15 border-l-2 border-amber-400 pl-1.5 pr-1"
+    ? "bg-amber-50 border-l-2 border-amber-400 pl-1.5 pr-1"
     : isApproved
-    ? "bg-emerald-400/10 border-l-2 border-emerald-500 pl-1.5 pr-1"
+    ? "bg-emerald-50 border-l-2 border-emerald-500 pl-1.5 pr-1"
     : "pl-1.5 pr-1 opacity-70";
 
   return (
@@ -885,17 +890,17 @@ function ResumeField({
         {displayText}
         {/* Status indicator badge */}
         {isPending && (
-          <span className="inline-flex ml-1 px-1 py-0 rounded text-[8px] font-bold bg-amber-500/20 text-amber-500 align-middle">
+          <span className="inline-flex ml-1 px-1 py-0 rounded text-[8px] font-bold bg-amber-100 text-amber-600 align-middle border border-amber-200">
             AI ✨
           </span>
         )}
         {isApproved && (
-          <span className="inline-flex ml-1 px-1 py-0 rounded text-[8px] font-bold bg-emerald-500/20 text-emerald-500 align-middle">
+          <span className="inline-flex ml-1 px-1 py-0 rounded text-[8px] font-bold bg-emerald-100 text-emerald-600 align-middle border border-emerald-200">
             ✓
           </span>
         )}
         {isRejected && (
-          <span className="inline-flex ml-1 px-1 py-0 rounded text-[8px] font-bold bg-rose-500/20 text-rose-400 align-middle">
+          <span className="inline-flex ml-1 px-1 py-0 rounded text-[8px] font-bold bg-rose-100 text-rose-500 align-middle border border-rose-200">
             ✗
           </span>
         )}
@@ -903,12 +908,12 @@ function ResumeField({
 
       {/* Expanded change detail panel */}
       {isExpanded && (
-        <div className="mt-1.5 p-2 rounded-lg bg-[#1a1b23] border border-white/10 text-[10px] shadow-lg">
+        <div className="mt-1.5 p-2 rounded-lg bg-gray-50 border border-gray-200 text-[10px] shadow-md">
           <div className="flex items-center justify-between mb-1.5">
-            <span className="font-bold text-slate-300 text-[10px]">{change.label}</span>
+            <span className="font-bold text-gray-700 text-[10px]">{change.label}</span>
             <button
               onClick={(e) => { e.stopPropagation(); setExpandedChangeId(null); }}
-              className="text-slate-500 hover:text-slate-300"
+              className="text-gray-400 hover:text-gray-600"
             >
               <X size={10} />
             </button>
@@ -916,13 +921,13 @@ function ResumeField({
 
           {/* Original vs New comparison */}
           <div className="space-y-1.5">
-            <div className="p-1.5 rounded bg-rose-500/5 border border-rose-500/10">
-              <span className="text-[8px] font-bold text-rose-400 uppercase block mb-0.5">Original</span>
-              <span className="text-slate-300 leading-relaxed">{change.originalValue}</span>
+            <div className="p-1.5 rounded bg-rose-50 border border-rose-200">
+              <span className="text-[8px] font-bold text-rose-500 uppercase block mb-0.5">Original</span>
+              <span className="text-gray-700 leading-relaxed">{change.originalValue}</span>
             </div>
-            <div className="p-1.5 rounded bg-emerald-500/5 border border-emerald-500/10">
-              <span className="text-[8px] font-bold text-emerald-400 uppercase block mb-0.5">AI Suggested</span>
-              <span className="text-slate-300 leading-relaxed">{change.newValue}</span>
+            <div className="p-1.5 rounded bg-emerald-50 border border-emerald-200">
+              <span className="text-[8px] font-bold text-emerald-500 uppercase block mb-0.5">AI Suggested</span>
+              <span className="text-gray-700 leading-relaxed">{change.newValue}</span>
             </div>
           </div>
 
@@ -933,7 +938,7 @@ function ResumeField({
               className={`flex-1 py-1.5 rounded-md text-[10px] font-semibold flex items-center justify-center gap-1 transition-all ${
                 isApproved
                   ? "bg-emerald-500 text-white"
-                  : "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+                  : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200"
               }`}
             >
               <Check size={10} />
@@ -944,7 +949,7 @@ function ResumeField({
               className={`flex-1 py-1.5 rounded-md text-[10px] font-semibold flex items-center justify-center gap-1 transition-all ${
                 isRejected
                   ? "bg-rose-500 text-white"
-                  : "bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
+                  : "bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
               }`}
             >
               <X size={10} />
