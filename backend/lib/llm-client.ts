@@ -26,7 +26,10 @@ function stripThinkTags(text: string): string {
 export function extractJSON(text: string): string {
   const cleaned = stripThinkTags(text);
   const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-  if (jsonMatch) return jsonMatch[0];
+  if (jsonMatch) {
+    // Repair common trailing commas issue before returning
+    return jsonMatch[0].replace(/,\s*([\}\]])/g, "$1");
+  }
   throw new Error("No JSON object found in LLM response");
 }
 
@@ -45,7 +48,8 @@ async function tryGroq(options: LLMCallOptions): Promise<LLMResponse> {
       { role: "user", content: options.userMessage },
     ],
     temperature: options.temperature ?? 0.3,
-    max_tokens: options.maxTokens ?? 4096,
+    max_tokens: options.maxTokens ?? 8000,
+    response_format: { type: "json_object" },
   });
 
   const content = response.choices[0]?.message?.content || "";
@@ -73,7 +77,7 @@ async function tryNvidia(options: LLMCallOptions): Promise<LLMResponse> {
       { role: "user", content: options.userMessage },
     ],
     temperature: options.temperature ?? 0.3,
-    max_tokens: options.maxTokens ?? 4096,
+    max_tokens: options.maxTokens ?? 8000,
   });
 
   const content = response.choices[0]?.message?.content || "";
@@ -101,7 +105,7 @@ async function tryOpenRouter(options: LLMCallOptions): Promise<LLMResponse> {
       { role: "user", content: options.userMessage },
     ],
     temperature: options.temperature ?? 0.3,
-    max_tokens: options.maxTokens ?? 4096,
+    max_tokens: options.maxTokens ?? 8000,
   });
 
   const content = response.choices[0]?.message?.content || "";
