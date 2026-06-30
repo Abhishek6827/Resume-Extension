@@ -59,8 +59,19 @@ export interface JDData {
   keywords: string[];
 }
 
+export interface TailoredChange {
+  id: string;
+  section: string;
+  field: string;
+  label: string;
+  originalValue: string;
+  newValue: string;
+  status: "pending" | "approved" | "rejected";
+}
+
 export interface TailoredResult {
   tailoredResume: ResumeData;
+  changes: TailoredChange[];
   atsScore: number;
   scoreReasoning: string;
   matchedKeywords: string[];

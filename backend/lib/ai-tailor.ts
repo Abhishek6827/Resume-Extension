@@ -1,5 +1,5 @@
 import { callLLM, extractJSON } from "./llm-client";
-import type { ResumeData, JDData, TailoredResult } from "./types";
+import type { ResumeData, JDData, TailoredResult, TailoredChange } from "./types";
 
 /**
  * AI-assisted parse of raw resume text into structured ResumeData JSON.
@@ -111,6 +111,113 @@ Return ONLY a valid JSON object matching this exact structure (no markdown wrapp
 }
 
 /**
+ * Generates a list of individual changes by diffing original vs tailored resume.
+ * Each change has a unique id, section, field path, label, and original/new values.
+ */
+function generateChanges(
+  original: ResumeData,
+  tailored: ResumeData
+): TailoredChange[] {
+  const changes: TailoredChange[] = [];
+  let counter = 0;
+
+  const addChange = (
+    section: string,
+    field: string,
+    label: string,
+    originalValue: string,
+    newValue: string
+  ) => {
+    if (originalValue.trim() !== newValue.trim()) {
+      counter++;
+      changes.push({
+        id: `change-${counter}`,
+        section,
+        field,
+        label,
+        originalValue,
+        newValue,
+        status: "pending",
+      });
+    }
+  };
+
+  // Title
+  addChange("title", "title", "Professional Title", original.title || "", tailored.title || "");
+
+  // Summary
+  addChange("summary", "summary", "Professional Summary", original.summary || "", tailored.summary || "");
+
+  // Experience — compare each job's highlights individually
+  const maxExp = Math.max(original.experience?.length || 0, tailored.experience?.length || 0);
+  for (let i = 0; i < maxExp; i++) {
+    const origJob = original.experience?.[i];
+    const tailJob = tailored.experience?.[i];
+    if (!origJob || !tailJob) continue;
+
+    const maxBullets = Math.max(origJob.highlights?.length || 0, tailJob.highlights?.length || 0);
+    for (let j = 0; j < maxBullets; j++) {
+      const origBullet = origJob.highlights?.[j] || "";
+      const tailBullet = tailJob.highlights?.[j] || "";
+      addChange(
+        "experience",
+        `experience[${i}].highlights[${j}]`,
+        `${origJob.role} at ${origJob.company} — Bullet ${j + 1}`,
+        origBullet,
+        tailBullet
+      );
+    }
+  }
+
+  // Projects — compare each project's description and highlights
+  const maxProj = Math.max(original.projects?.length || 0, tailored.projects?.length || 0);
+  for (let i = 0; i < maxProj; i++) {
+    const origProj = original.projects?.[i];
+    const tailProj = tailored.projects?.[i];
+    if (!origProj || !tailProj) continue;
+
+    addChange(
+      "projects",
+      `projects[${i}].description`,
+      `${origProj.name} — Description`,
+      origProj.description || "",
+      tailProj.description || ""
+    );
+
+    const maxProjBullets = Math.max(origProj.highlights?.length || 0, tailProj.highlights?.length || 0);
+    for (let j = 0; j < maxProjBullets; j++) {
+      const origBullet = origProj.highlights?.[j] || "";
+      const tailBullet = tailProj.highlights?.[j] || "";
+      addChange(
+        "projects",
+        `projects[${i}].highlights[${j}]`,
+        `${origProj.name} — Bullet ${j + 1}`,
+        origBullet,
+        tailBullet
+      );
+    }
+  }
+
+  // Skills — compare each category as a joined string
+  if (original.skills && tailored.skills) {
+    const categories: Array<{ key: keyof typeof original.skills; label: string }> = [
+      { key: "languages", label: "Skills — Languages" },
+      { key: "frameworks", label: "Skills — Frameworks" },
+      { key: "tools", label: "Skills — Tools/Databases" },
+      { key: "other", label: "Skills — Other" },
+    ];
+
+    for (const cat of categories) {
+      const origVal = (original.skills[cat.key] || []).join(", ");
+      const tailVal = (tailored.skills[cat.key] || []).join(", ");
+      addChange("skills", `skills.${cat.key}`, cat.label, origVal, tailVal);
+    }
+  }
+
+  return changes;
+}
+
+/**
  * AI Tailor Logic: Rewrites resume sections to align with Job Description.
  * Rule: NEVER invent experience, titles, companies, dates, or degrees.
  */
@@ -209,7 +316,15 @@ ${JSON.stringify(jd, null, 2)}
     });
 
     const jsonStr = extractJSON(response.content);
-    return JSON.parse(jsonStr) as TailoredResult;
+    const rawResult = JSON.parse(jsonStr) as Omit<TailoredResult, "changes">;
+
+    // Post-process: diff original vs tailored to generate per-field changes
+    const changes = generateChanges(resume, rawResult.tailoredResume);
+
+    return {
+      ...rawResult,
+      changes,
+    };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(`Failed to tailor resume: ${msg}`);

@@ -1,7 +1,64 @@
-import type { ResumeData, JDData, TailoredResult } from "./types";
+import type { ResumeData, JDData, TailoredResult, TailoredChange } from "./types";
 
 // Fallback to localhost:3000 during local testing
 const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\/$/, "");
+
+/**
+ * Applies only approved changes to the original resume, keeping rejected/pending fields as original.
+ * Returns a new ResumeData ready for export.
+ */
+export function applyApprovedChanges(
+  original: ResumeData,
+  changes: TailoredChange[],
+  tailored: ResumeData
+): ResumeData {
+  // Start with a deep clone of the original
+  const result: ResumeData = JSON.parse(JSON.stringify(original));
+
+  for (const change of changes) {
+    if (change.status !== "approved") continue;
+
+    if (change.field === "title") {
+      result.title = tailored.title;
+    } else if (change.field === "summary") {
+      result.summary = tailored.summary;
+    } else if (change.field.startsWith("experience[")) {
+      // Parse experience[i].highlights[j]
+      const match = change.field.match(/^experience\[(\d+)\]\.highlights\[(\d+)\]$/);
+      if (match) {
+        const expIdx = parseInt(match[1], 10);
+        const bulletIdx = parseInt(match[2], 10);
+        if (result.experience[expIdx]?.highlights) {
+          result.experience[expIdx].highlights[bulletIdx] = change.newValue;
+        }
+      }
+    } else if (change.field.startsWith("projects[")) {
+      // Parse projects[i].description or projects[i].highlights[j]
+      const descMatch = change.field.match(/^projects\[(\d+)\]\.description$/);
+      const bulletMatch = change.field.match(/^projects\[(\d+)\]\.highlights\[(\d+)\]$/);
+      if (descMatch) {
+        const projIdx = parseInt(descMatch[1], 10);
+        if (result.projects[projIdx]) {
+          result.projects[projIdx].description = change.newValue;
+        }
+      } else if (bulletMatch) {
+        const projIdx = parseInt(bulletMatch[1], 10);
+        const bulletIdx = parseInt(bulletMatch[2], 10);
+        if (result.projects[projIdx]?.highlights) {
+          result.projects[projIdx].highlights[bulletIdx] = change.newValue;
+        }
+      }
+    } else if (change.field.startsWith("skills.")) {
+      // Parse skills.languages, skills.frameworks, etc.
+      const skillKey = change.field.replace("skills.", "") as keyof typeof result.skills;
+      if (result.skills && tailored.skills) {
+        result.skills[skillKey] = [...tailored.skills[skillKey]];
+      }
+    }
+  }
+
+  return result;
+}
 
 /**
  * Uploads a file (PDF/DOCX) or sends raw text to parse into structured ResumeData JSON

@@ -61,8 +61,19 @@ export interface JDData {
   keywords: string[];
 }
 
+export interface TailoredChange {
+  id: string;
+  section: string;       // e.g. "summary", "experience", "projects", "skills", "title"
+  field: string;         // e.g. "summary", "experience[0].highlights[1]", "skills.languages"
+  label: string;         // Human-readable label e.g. "Professional Summary", "Bullet #2 at CHINTU AI"
+  originalValue: string;
+  newValue: string;
+  status: "pending" | "approved" | "rejected";
+}
+
 export interface TailoredResult {
   tailoredResume: ResumeData;
+  changes: TailoredChange[];
   atsScore: number;
   scoreReasoning: string;
   matchedKeywords: string[];
