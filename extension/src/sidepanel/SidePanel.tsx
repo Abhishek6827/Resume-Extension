@@ -200,25 +200,42 @@ export default function SidePanel() {
 
   // Inline editing handler
   const saveInlineEdit = (section: string, idx: number, bulletIdx?: number) => {
-    if (!tailoredResult) return;
+    if (tailoredResult) {
+      const updated = { ...tailoredResult };
+      const resumeObj = updated.tailoredResume;
 
-    const updated = { ...tailoredResult };
-    const resume = updated.tailoredResume;
+      if (section === "summary") {
+        resumeObj.summary = editValue;
+      } else if (section === "experience" && typeof bulletIdx === "number") {
+        resumeObj.experience[idx].highlights[bulletIdx] = editValue;
+      } else if (section === "experience" && bulletIdx === undefined) {
+        resumeObj.experience[idx].role = editValue;
+      } else if (section === "projects" && typeof bulletIdx === "number") {
+        resumeObj.projects[idx].highlights[bulletIdx] = editValue;
+      } else if (section === "projects" && bulletIdx === undefined) {
+        resumeObj.projects[idx].name = editValue;
+      }
 
-    if (section === "summary") {
-      resume.summary = editValue;
-    } else if (section === "experience" && typeof bulletIdx === "number") {
-      resume.experience[idx].highlights[bulletIdx] = editValue;
-    } else if (section === "experience" && bulletIdx === undefined) {
-      resume.experience[idx].role = editValue;
-    } else if (section === "projects" && typeof bulletIdx === "number") {
-      resume.projects[idx].highlights[bulletIdx] = editValue;
-    } else if (section === "projects" && bulletIdx === undefined) {
-      resume.projects[idx].name = editValue;
+      setTailoredResult(updated);
+      saveTailoredResult(updated);
+    } else if (resume) {
+      const updatedResume = { ...resume };
+
+      if (section === "summary") {
+        updatedResume.summary = editValue;
+      } else if (section === "experience" && typeof bulletIdx === "number") {
+        updatedResume.experience[idx].highlights[bulletIdx] = editValue;
+      } else if (section === "experience" && bulletIdx === undefined) {
+        updatedResume.experience[idx].role = editValue;
+      } else if (section === "projects" && typeof bulletIdx === "number") {
+        updatedResume.projects[idx].highlights[bulletIdx] = editValue;
+      } else if (section === "projects" && bulletIdx === undefined) {
+        updatedResume.projects[idx].name = editValue;
+      }
+
+      setResume(updatedResume);
+      saveResume(updatedResume);
     }
-
-    setTailoredResult(updated);
-    saveTailoredResult(updated);
     setActiveEditIndex(null);
   };
 
@@ -243,6 +260,9 @@ export default function SidePanel() {
     setStep(1);
     setError("");
   };
+
+  const displayResume = tailoredResult ? tailoredResult.tailoredResume : resume;
+
 
   return (
     <div className="flex flex-col min-h-screen bg-[#090a0f] text-slate-100 p-4">
@@ -394,7 +414,7 @@ export default function SidePanel() {
             </button>
           </div>
 
-          {/* AI TAILORED RESULTS */}
+          {/* AI TAILORED STATS & DOWNLOADS */}
           {tailoredResult && (
             <div className="flex flex-col gap-4 mt-2">
               {/* ATS SCORE RING & REASONING */}
@@ -481,32 +501,61 @@ export default function SidePanel() {
                 )}
               </div>
 
-              {/* VIEW SELECTOR */}
-              <div className="flex border-b border-white/5 mb-1 mt-2">
+              {/* DOWNLOAD BUTTONS */}
+              <div className="grid grid-cols-2 gap-3 mt-2">
                 <button
-                  onClick={() => setViewTab("diff")}
-                  className={`flex-1 py-2 text-center text-xs font-semibold border-b-2 transition-colors ${
-                    viewTab === "diff"
-                      ? "border-indigo-500 text-indigo-400"
-                      : "border-transparent text-slate-400 hover:text-slate-200"
-                  }`}
+                  onClick={handleDownloadPDF}
+                  className="py-3 px-4 rounded-xl bg-white/5 border border-white/10 font-semibold text-xs text-white hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2"
                 >
-                  Inline Tailoring & Edit
+                  <Download size={14} />
+                  Download PDF
                 </button>
                 <button
-                  onClick={() => setViewTab("full")}
-                  className={`flex-1 py-2 text-center text-xs font-semibold border-b-2 transition-colors ${
-                    viewTab === "full"
-                      ? "border-indigo-500 text-indigo-400"
-                      : "border-transparent text-slate-400 hover:text-slate-200"
-                  }`}
+                  onClick={handleDownloadDOCX}
+                  className="py-3 px-4 rounded-xl bg-white/5 border border-white/10 font-semibold text-xs text-white hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2"
                 >
-                  Full Preview
+                  <Download size={14} />
+                  Download DOCX
                 </button>
               </div>
+            </div>
+          )}
 
-              {/* TAB 1: INLINE TAILORING & EDIT */}
-              {viewTab === "diff" && (
+          {/* UNIFIED RESUME PREVIEW & INLINE EDITOR */}
+          {displayResume && (
+            <div className="flex flex-col gap-4 mt-4 border-t border-white/5 pt-4">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-wider">
+                  {tailoredResult ? "✨ Tailored Resume Preview" : "📄 Master Resume Preview"}
+                </h3>
+                {tailoredResult && (
+                  <div className="flex border border-white/10 rounded-lg p-0.5 bg-black/30 text-[10px]">
+                    <button
+                      onClick={() => setViewTab("diff")}
+                      className={`px-2.5 py-1 rounded-md transition-all ${
+                        viewTab === "diff"
+                          ? "bg-indigo-500 text-white font-medium shadow-sm"
+                          : "text-slate-400 hover:text-slate-200"
+                      }`}
+                    >
+                      Inline Editor
+                    </button>
+                    <button
+                      onClick={() => setViewTab("full")}
+                      className={`px-2.5 py-1 rounded-md transition-all ${
+                        viewTab === "full"
+                          ? "bg-indigo-500 text-white font-medium shadow-sm"
+                          : "text-slate-400 hover:text-slate-200"
+                      }`}
+                    >
+                      Full View
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* RENDER ACTIVE TAB */}
+              {(!tailoredResult || viewTab === "diff") ? (
                 <div className="flex flex-col gap-4 text-xs">
                   {/* Summary Section */}
                   <div className="p-3 rounded-xl bg-white/2 border border-white/5">
@@ -520,7 +569,7 @@ export default function SidePanel() {
                           value={editValue}
                           onChange={(e) => setEditValue(e.target.value)}
                           rows={3}
-                          className="w-full p-2 bg-black border border-white/10 rounded-lg text-xs"
+                          className="w-full p-2 bg-black border border-white/10 rounded-lg text-xs focus:outline-none focus:border-indigo-500/50"
                         />
                         <div className="flex justify-end gap-2">
                           <button
@@ -540,11 +589,11 @@ export default function SidePanel() {
                     ) : (
                       <p
                         onClick={() =>
-                          startInlineEdit("summary", 0, tailoredResult.tailoredResume.summary)
+                          startInlineEdit("summary", 0, displayResume.summary)
                         }
-                        className="text-slate-300 cursor-pointer hover:bg-white/2 p-1 rounded transition-colors"
+                        className="text-slate-300 cursor-pointer hover:bg-white/2 p-1.5 rounded transition-colors border border-transparent hover:border-white/5"
                       >
-                        {tailoredResult.tailoredResume.summary}
+                        {displayResume.summary || "Click to add a professional summary..."}
                       </p>
                     )}
                   </div>
@@ -552,31 +601,34 @@ export default function SidePanel() {
                   {/* Experience Section */}
                   <div className="flex flex-col gap-3">
                     <h4 className="font-bold text-slate-400 px-1">Work Experience Highlights</h4>
-                    {tailoredResult.tailoredResume.experience.map((job, jobIdx) => (
+                    {displayResume.experience?.map((job, jobIdx) => (
                       <div key={jobIdx} className="p-3 rounded-xl bg-white/2 border border-white/5 flex flex-col gap-2">
-                        <div className="flex justify-between">
-                          <h5 className="font-semibold text-slate-200">
-                            {job.role} at {job.company}
-                          </h5>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h5 className="font-semibold text-slate-200">
+                              {job.role}
+                            </h5>
+                            <p className="text-[10px] text-indigo-300">{job.company}</p>
+                          </div>
                           <span className="text-[10px] text-slate-500">{job.duration}</span>
                         </div>
 
                         <ul className="list-disc pl-4 flex flex-col gap-2 text-slate-300">
-                          {job.highlights.map((bullet, bulletIdx) => {
+                          {job.highlights?.map((bullet, bulletIdx) => {
                             const isEditing =
                               activeEditIndex?.section === "experience" &&
                               activeEditIndex.idx === jobIdx &&
                               activeEditIndex.bulletIdx === bulletIdx;
 
                             return (
-                              <li key={bulletIdx}>
+                              <li key={bulletIdx} className="hover:bg-white/1 flex gap-2 justify-between group rounded p-1">
                                 {isEditing ? (
-                                  <div className="flex flex-col gap-2 mt-1">
+                                  <div className="flex flex-col gap-2 mt-1 w-full">
                                     <textarea
                                       value={editValue}
                                       onChange={(e) => setEditValue(e.target.value)}
                                       rows={2}
-                                      className="w-full p-2 bg-black border border-white/10 rounded-lg text-xs"
+                                      className="w-full p-2 bg-black border border-white/10 rounded-lg text-xs focus:outline-none focus:border-indigo-500/50"
                                     />
                                     <div className="flex justify-end gap-2">
                                       <button
@@ -596,14 +648,17 @@ export default function SidePanel() {
                                     </div>
                                   </div>
                                 ) : (
-                                  <span
-                                    onClick={() =>
-                                      startInlineEdit("experience", jobIdx, bullet, bulletIdx)
-                                    }
-                                    className="cursor-pointer hover:underline"
-                                  >
-                                    {bullet}
-                                  </span>
+                                  <>
+                                    <span
+                                      onClick={() =>
+                                        startInlineEdit("experience", jobIdx, bullet, bulletIdx)
+                                      }
+                                      className="cursor-pointer flex-1"
+                                    >
+                                      {bullet}
+                                    </span>
+                                    <Edit2 size={10} className="text-slate-600 group-hover:text-indigo-400 shrink-0 self-start mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                  </>
                                 )}
                               </li>
                             );
@@ -613,14 +668,12 @@ export default function SidePanel() {
                     ))}
                   </div>
                 </div>
-              )}
-
-              {/* TAB 2: FULL PREVIEW */}
-              {viewTab === "full" && (
+              ) : (
+                /* FULL PREVIEW TAB */
                 <div className="p-4 rounded-xl bg-white/2 border border-white/5 text-xs flex flex-col gap-4 max-h-[400px] overflow-y-auto">
                   <div className="text-center">
-                    <h3 className="font-bold text-sm">{tailoredResult.tailoredResume.name}</h3>
-                    <p className="text-slate-400 text-[10px]">{tailoredResult.tailoredResume.title}</p>
+                    <h3 className="font-bold text-sm">{displayResume.name}</h3>
+                    <p className="text-slate-400 text-[10px]">{displayResume.title}</p>
                   </div>
 
                   <div>
@@ -628,7 +681,7 @@ export default function SidePanel() {
                       Summary
                     </h4>
                     <p className="mt-1 text-slate-300 leading-relaxed">
-                      {tailoredResult.tailoredResume.summary}
+                      {displayResume.summary}
                     </p>
                   </div>
 
@@ -637,7 +690,7 @@ export default function SidePanel() {
                       Experience
                     </h4>
                     <div className="flex flex-col gap-3 mt-2">
-                      {tailoredResult.tailoredResume.experience.map((exp, i) => (
+                      {displayResume.experience?.map((exp, i) => (
                         <div key={i}>
                           <div className="flex justify-between font-semibold text-slate-200">
                             <span>
@@ -648,7 +701,7 @@ export default function SidePanel() {
                             </span>
                           </div>
                           <ul className="list-disc pl-4 mt-1 text-slate-300 flex flex-col gap-1">
-                            {exp.highlights.map((h, j) => (
+                            {exp.highlights?.map((h, j) => (
                               <li key={j}>{h}</li>
                             ))}
                           </ul>
@@ -662,46 +715,28 @@ export default function SidePanel() {
                       Skills
                     </h4>
                     <div className="flex flex-col gap-1 mt-1 text-slate-300">
-                      {tailoredResult.tailoredResume.skills.languages?.length > 0 && (
+                      {displayResume.skills?.languages?.length > 0 && (
                         <div>
                           <strong>Languages:</strong>{" "}
-                          {tailoredResult.tailoredResume.skills.languages.join(", ")}
+                          {displayResume.skills.languages.join(", ")}
                         </div>
                       )}
-                      {tailoredResult.tailoredResume.skills.frameworks?.length > 0 && (
+                      {displayResume.skills?.frameworks?.length > 0 && (
                         <div>
                           <strong>Frameworks:</strong>{" "}
-                          {tailoredResult.tailoredResume.skills.frameworks.join(", ")}
+                          {displayResume.skills.frameworks.join(", ")}
                         </div>
                       )}
-                      {tailoredResult.tailoredResume.skills.tools?.length > 0 && (
+                      {displayResume.skills?.tools?.length > 0 && (
                         <div>
                           <strong>Tools/Databases:</strong>{" "}
-                          {tailoredResult.tailoredResume.skills.tools.join(", ")}
+                          {displayResume.skills.tools.join(", ")}
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
               )}
-
-              {/* DOWNLOAD BUTTONS */}
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <button
-                  onClick={handleDownloadPDF}
-                  className="py-3 px-4 rounded-xl bg-white/5 border border-white/10 font-semibold text-xs text-white hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2"
-                >
-                  <Download size={14} />
-                  Download PDF
-                </button>
-                <button
-                  onClick={handleDownloadDOCX}
-                  className="py-3 px-4 rounded-xl bg-white/5 border border-white/10 font-semibold text-xs text-white hover:bg-white/10 hover:border-white/20 transition-all flex items-center justify-center gap-2"
-                >
-                  <Download size={14} />
-                  Download DOCX
-                </button>
-              </div>
             </div>
           )}
         </div>
