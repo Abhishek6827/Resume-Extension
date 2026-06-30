@@ -4,6 +4,7 @@ import { parseResumeFile } from "../../../lib/resume-parser";
 import { parseResumeWithAI } from "../../../lib/ai-tailor";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60; // Allow up to 60 seconds on Vercel for LLM processing
 
 export async function OPTIONS(request: NextRequest) {
   return handleOptions(request);

@@ -1,39 +1,15 @@
 // ─── Resume Parser — Extract text from PDF/DOCX ───────────
 
 /**
- * Extract raw text from a PDF buffer using pdfjs-dist directly.
- * Uses the legacy build with worker disabled for serverless compatibility.
+ * Extract raw text from a PDF buffer using pdf-parse.
  */
 export async function parsePDF(buffer: Buffer): Promise<string> {
   try {
-    // Dynamic import to avoid Turbopack bundling issues
-    const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-
-    // Disable worker for serverless (Vercel) compatibility
-    pdfjs.GlobalWorkerOptions.workerSrc = "";
-
-    const loadingTask = pdfjs.getDocument({
-      data: new Uint8Array(buffer),
-      useSystemFonts: true,
-    });
-
-    const doc = await loadingTask.promise;
-    const textParts: string[] = [];
-
-    for (let i = 1; i <= doc.numPages; i++) {
-      const page = await doc.getPage(i);
-      const content = await page.getTextContent();
-      const pageText = content.items
-        .filter((item: any) => "str" in item)
-        .map((item: any) => item.str)
-        .join(" ");
-      textParts.push(pageText);
-      page.cleanup();
-    }
-
-    await doc.destroy();
-
-    const text = textParts.join("\n\n").trim();
+    // Dynamic import/require to prevent Turbopack ESM errors
+    const pdfParseModule: any = await import("pdf-parse");
+    const pdfParse = pdfParseModule.default || pdfParseModule;
+    const result = await pdfParse(buffer);
+    const text = (result.text || "").trim();
 
     if (!text) {
       throw new Error("No text extracted from PDF. File may be image-based.");
