@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: ["pdfkit", "pdf2json"],
+  outputFileTracingIncludes: {
+    "/api/**/*": ["./node_modules/pdfkit/js/data/**/*"],
+  },
 };
 
 export default nextConfig;
