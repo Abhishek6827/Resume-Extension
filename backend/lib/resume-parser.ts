@@ -1,5 +1,11 @@
 // ─── Resume Parser — Extract text from PDF/DOCX ───────────
 import { PDFParse } from "pdf-parse";
+import path from "path";
+import { pathToFileURL } from "url";
+
+// Configure worker src dynamically to resolve Turbopack compilation errors
+const workerPath = path.resolve(process.cwd(), "node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs");
+PDFParse.setWorker(pathToFileURL(workerPath).href);
 
 /**
  * Extract raw text from a PDF buffer using pdf-parse
