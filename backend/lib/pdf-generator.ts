@@ -1,4 +1,5 @@
 import PDFDocument from "pdfkit";
+import path from "path";
 import type { ResumeData } from "./types";
 
 /**
@@ -19,10 +20,20 @@ export function generatePDF(resume: ResumeData): Promise<Buffer> {
       doc.on("end", () => resolve(Buffer.concat(chunks)));
       doc.on("error", (err) => reject(err));
 
+      // Resolve absolute paths for TrueType fonts to bypass Next.js virtual directory lookup errors
+      const fontRegularPath = path.resolve(process.cwd(), "node_modules/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf");
+      const fontBoldPath = path.resolve(process.cwd(), "node_modules/pdfjs-dist/standard_fonts/LiberationSans-Bold.ttf");
+      const fontObliquePath = path.resolve(process.cwd(), "node_modules/pdfjs-dist/standard_fonts/LiberationSans-Italic.ttf");
+
+      // Register custom fonts
+      doc.registerFont("LiberationSans", fontRegularPath);
+      doc.registerFont("LiberationSans-Bold", fontBoldPath);
+      doc.registerFont("LiberationSans-Oblique", fontObliquePath);
+
       // Fonts & Styling Setup
-      const fontRegular = "Helvetica";
-      const fontBold = "Helvetica-Bold";
-      const fontOblique = "Helvetica-Oblique";
+      const fontRegular = "LiberationSans";
+      const fontBold = "LiberationSans-Bold";
+      const fontOblique = "LiberationSans-Oblique";
 
       const textColor = "#111827"; // Tailwind Slate-900
       const textMuted = "#4b5563"; // Tailwind Slate-600
