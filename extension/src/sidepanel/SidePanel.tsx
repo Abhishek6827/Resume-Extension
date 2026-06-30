@@ -23,12 +23,15 @@ import {
   getTailoredResult,
   saveTailoredResult,
   clearAllStorage,
+  saveOriginalPDF,
+  getOriginalPDF,
 } from "../lib/storage";
 import { parseResume, parseJD, tailorResume, exportPDF, exportDOCX, applyApprovedChanges } from "../lib/api-client";
 import type { ResumeData, JDData, TailoredResult, TailoredChange } from "../lib/types";
 
 export default function SidePanel() {
   const [resume, setResume] = useState<ResumeData | null>(null);
+  const [originalPdf, setOriginalPdf] = useState<string | null>(null);
   const [rawResumeText, setRawResumeText] = useState("");
   const [jdInput, setJdInput] = useState("");
   const [jdData, setJdData] = useState<JDData | null>(null);
@@ -47,6 +50,7 @@ export default function SidePanel() {
         const savedResume = await getResume();
         const savedResult = await getTailoredResult();
         const savedJD = await getLastDetectedJD();
+        const savedPdf = await getOriginalPDF();
 
         if (savedResume) {
           setResume(savedResume);
@@ -57,6 +61,9 @@ export default function SidePanel() {
         }
         if (savedJD) {
           setJdInput(savedJD);
+        }
+        if (savedPdf) {
+          setOriginalPdf(savedPdf);
         }
       } catch (err) {
         console.error("Error loading saved data:", err);
@@ -84,6 +91,21 @@ export default function SidePanel() {
   const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (file.type === "application/pdf") {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        if (event.target?.result) {
+          const base64 = event.target.result as string;
+          setOriginalPdf(base64);
+          await saveOriginalPDF(base64);
+        }
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setOriginalPdf(null);
+      await saveOriginalPDF("");
+    }
 
     setIsParsingResume(true);
     setError("");
@@ -238,6 +260,7 @@ export default function SidePanel() {
   const handleReset = async () => {
     await clearAllStorage();
     setResume(null);
+    setOriginalPdf(null);
     setRawResumeText("");
     setJdInput("");
     setJdData(null);
@@ -576,9 +599,18 @@ export default function SidePanel() {
               </h3>
 
               {/* Resume Document Container */}
-              <div className="bg-white rounded-lg shadow-xl shadow-black/30 p-5 text-[#111827] text-[11px] leading-relaxed max-h-[600px] overflow-y-auto">
+              {(!tailoredResult && originalPdf) ? (
+                <div className="bg-white rounded-lg shadow-xl shadow-black/30 w-full h-[600px] overflow-hidden">
+                  <iframe 
+                    src={originalPdf} 
+                    className="w-full h-full border-none"
+                    title="Original Resume Preview"
+                  />
+                </div>
+              ) : (
+                <div className="bg-white rounded-lg shadow-xl shadow-black/30 p-5 text-[#111827] text-[11px] leading-relaxed max-h-[600px] overflow-y-auto">
 
-                {/* ─── Header: Name & Contact ─── */}
+                  {/* ─── Header: Name & Contact ─── */}
                 <div className="text-center mb-3">
                   <h1 className="text-base font-bold text-[#111827] mb-0.5">{displayResume.name}</h1>
                   <ResumeField
@@ -771,6 +803,7 @@ export default function SidePanel() {
                   </ResumeSection>
                 )}
               </div>
+              )}
             </div>
           )}
         </div>

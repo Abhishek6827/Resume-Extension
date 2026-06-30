@@ -6,6 +6,7 @@ import type { ResumeData, TailoredResult } from "./types";
 const KEYS = {
   RESUME_DATA: "rt_resume_data",
   RESUME_RAW_TEXT: "rt_resume_raw_text",
+  ORIGINAL_PDF: "rt_original_pdf",
   LAST_DETECTED_JD: "rt_last_detected_jd",
   TAILORED_RESULT: "rt_tailored_result",
 };
@@ -57,6 +58,14 @@ export async function saveResumeRawText(text: string): Promise<void> {
 
 export async function getResumeRawText(): Promise<string | null> {
   return await storage.get(KEYS.RESUME_RAW_TEXT);
+}
+
+export async function saveOriginalPDF(base64: string): Promise<void> {
+  await storage.set(KEYS.ORIGINAL_PDF, base64);
+}
+
+export async function getOriginalPDF(): Promise<string | null> {
+  return await storage.get(KEYS.ORIGINAL_PDF);
 }
 
 export async function saveLastDetectedJD(text: string): Promise<void> {
