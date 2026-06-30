@@ -20,21 +20,10 @@ export function generatePDF(resume: ResumeData): Promise<Buffer> {
       doc.on("end", () => resolve(Buffer.concat(chunks)));
       doc.on("error", (err) => reject(err));
 
-      // Resolve absolute paths for TrueType fonts (public/fonts/ works on both local and Vercel)
-      const fontDir = path.resolve(process.cwd(), "public/fonts");
-      const fontRegularPath = path.join(fontDir, "LiberationSans-Regular.ttf");
-      const fontBoldPath = path.join(fontDir, "LiberationSans-Bold.ttf");
-      const fontObliquePath = path.join(fontDir, "LiberationSans-Italic.ttf");
-
-      // Register custom fonts
-      doc.registerFont("LiberationSans", fontRegularPath);
-      doc.registerFont("LiberationSans-Bold", fontBoldPath);
-      doc.registerFont("LiberationSans-Oblique", fontObliquePath);
-
-      // Fonts & Styling Setup
-      const fontRegular = "LiberationSans";
-      const fontBold = "LiberationSans-Bold";
-      const fontOblique = "LiberationSans-Oblique";
+      // Fonts & Styling Setup (Use built-in standard PDF fonts for 100% Vercel compatibility)
+      const fontRegular = "Helvetica";
+      const fontBold = "Helvetica-Bold";
+      const fontOblique = "Helvetica-Oblique";
 
       const textColor = "#111827"; // Tailwind Slate-900
       const textMuted = "#4b5563"; // Tailwind Slate-600
