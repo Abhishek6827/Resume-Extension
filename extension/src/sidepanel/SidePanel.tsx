@@ -296,7 +296,7 @@ export default function SidePanel() {
                 type="file"
                 accept=".pdf,.docx"
                 onChange={handleResumeUpload}
-                className="hidden"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 disabled={isParsingResume}
               />
             </label>
