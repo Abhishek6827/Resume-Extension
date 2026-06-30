@@ -1,24 +1,30 @@
 // ─── Resume Parser — Extract text from PDF/DOCX ───────────
 
 /**
- * Extract raw text from a PDF buffer using pdf-parse.
+ * Extract raw text from a PDF buffer using pdf2json.
+ * This is 100% serverless-safe and doesn't require browser polyfills (like DOMMatrix).
  */
 export async function parsePDF(buffer: Buffer): Promise<string> {
-  try {
-    // Dynamic import/require to prevent Turbopack ESM errors
-    const pdfParseModule: any = await import("pdf-parse");
-    const pdfParse = pdfParseModule.default || pdfParseModule;
-    const result = await pdfParse(buffer);
-    const text = (result.text || "").trim();
-
-    if (!text) {
-      throw new Error("No text extracted from PDF. File may be image-based.");
+  return new Promise((resolve, reject) => {
+    try {
+      const PDFParser = require("pdf2json");
+      const pdfParser = new PDFParser(null, 1); // 1 indicates raw text extraction
+      
+      pdfParser.on("pdfParser_dataError", (errData: any) => reject(new Error(errData.parserError)));
+      pdfParser.on("pdfParser_dataReady", () => {
+        const text = pdfParser.getRawTextContent().replace(/\r\n/g, " ").replace(/\s+/g, " ").trim();
+        if (!text) {
+          reject(new Error("No text extracted from PDF. File may be image-based."));
+          return;
+        }
+        resolve(text);
+      });
+      
+      pdfParser.parseBuffer(buffer);
+    } catch (err) {
+      reject(err);
     }
-    return text;
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    throw new Error(`PDF parsing failed: ${message}`);
-  }
+  });
 }
 
 /**
