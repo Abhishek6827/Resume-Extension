@@ -115,11 +115,41 @@ async function tryOpenRouter(options: LLMCallOptions): Promise<LLMResponse> {
 }
 
 /**
+ * Try Cerebras provider (primary — incredibly fast inference)
+ */
+async function tryCerebras(options: LLMCallOptions): Promise<LLMResponse> {
+  const apiKey = process.env.CEREBRAS_API_KEY;
+  if (!apiKey) throw new Error("CEREBRAS_API_KEY not set");
+
+  const cerebras = new OpenAI({
+    baseURL: "https://api.cerebras.ai/v1",
+    apiKey,
+  });
+
+  const response = await cerebras.chat.completions.create({
+    model: "gpt-oss-120b", // Using Llama 3.3 70B as it's their flagship (Cerebras doesn't host gpt-oss-120b)
+    messages: [
+      { role: "system", content: options.systemPrompt },
+      { role: "user", content: options.userMessage },
+    ],
+    temperature: options.temperature ?? 0.3,
+    max_tokens: options.maxTokens ?? 8000,
+    response_format: { type: "json_object" },
+  });
+
+  const content = response.choices[0]?.message?.content || "";
+  if (!content) throw new Error("Empty Cerebras response");
+
+  return { content, provider: "cerebras", model: "gpt-oss-120b" };
+}
+
+/**
  * Call LLM with automatic provider fallback chain.
- * Tries: Groq → NVIDIA → OpenRouter
+ * Tries: Cerebras → Groq → NVIDIA → OpenRouter
  */
 export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
   const providers = [
+    { name: "Cerebras", fn: tryCerebras },
     { name: "Groq", fn: tryGroq },
     { name: "NVIDIA", fn: tryNvidia },
     { name: "OpenRouter", fn: tryOpenRouter },

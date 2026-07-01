@@ -1,4 +1,4 @@
-import type { ResumeData, JDData, TailoredResult, TailoredChange } from "./types";
+import type { ResumeData, JDData, TailoredChange, ScoreResult } from "./types";
 
 // Fallback to localhost:3000 during local testing
 const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3000").replace(/\/$/, "");

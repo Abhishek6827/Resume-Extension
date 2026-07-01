@@ -77,3 +77,10 @@ export interface TailoredResult {
   matchedKeywords: string[];
   missingKeywords: string[];
 }
+
+export interface ScoreResult {
+  atsScore: number;
+  scoreReasoning: string;
+  matchedKeywords: string[];
+  missingKeywords: string[];
+}

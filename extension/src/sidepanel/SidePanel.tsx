@@ -9,6 +9,7 @@ import {
   RefreshCw,
   Clipboard,
   Eye,
+  XCircle,
 } from "lucide-react";
 import {
   getResume,
@@ -35,6 +36,44 @@ export default function SidePanel() {
   const [tailoredResult, setTailoredResult] = useState<TailoredResult | null>(null);
   const [error, setError] = useState("");
   const [step, setStep] = useState<1 | 2>(1);
+  const [previewPdfUrl, setPreviewPdfUrl] = useState<string | null>(null);
+  const [lastTailoredJd, setLastTailoredJd] = useState<string>("");
+
+  useEffect(() => {
+    if (originalPdf) setPreviewPdfUrl(originalPdf);
+  }, [originalPdf]);
+
+  // Auto-tailor when JD changes
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (step === 2 && resume && jdInput.trim().length > 50 && !isTailoring && jdInput !== lastTailoredJd) {
+        handleTailor();
+      }
+    }, 1000);
+    return () => clearTimeout(handler);
+  }, [jdInput, step, resume, isTailoring, lastTailoredJd]);
+
+  // Update PDF preview when changes are approved/rejected
+  useEffect(() => {
+    let url: string | null = null;
+    const timer = setTimeout(async () => {
+      if (!tailoredResult || !originalPdf) return;
+      const dataToExport = buildFinalResume();
+      if (!dataToExport) return;
+      try {
+        const blob = await exportPDF(dataToExport, originalPdf, tailoredResult.changes);
+        url = window.URL.createObjectURL(blob);
+        setPreviewPdfUrl(url);
+      } catch (err) {
+        console.error("Failed to update PDF preview", err);
+      }
+    }, 800);
+
+    return () => {
+      clearTimeout(timer);
+      if (url) window.URL.revokeObjectURL(url);
+    };
+  }, [tailoredResult, originalPdf]);
 
   // Load saved state on mount
   useEffect(() => {
@@ -161,6 +200,7 @@ export default function SidePanel() {
       setIsParsingJD(false);
 
       // 1. Get ATS Score immediately
+      setLastTailoredJd(jdInput);
       const score = await scoreResume(resume, parsedJD);
       
       // Initialize TailoredResult with score so UI updates instantly
@@ -516,23 +556,16 @@ export default function SidePanel() {
               className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 resize-none placeholder:text-gray-400 text-gray-800"
             />
 
-            <button
-              onClick={handleTailor}
-              disabled={isTailoring || !jdInput.trim()}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 font-semibold text-xs text-white flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 hover:opacity-95 transition-all duration-300 disabled:opacity-50"
-            >
-              {isTailoring ? (
-                <>
-                  <RefreshCw size={14} className="animate-spin" />
-                  {isParsingJD ? "Structuring Job Description..." : "AI Customizing Resume..."}
-                </>
-              ) : (
-                <>
-                  <Sparkles size={14} />
-                  Tailor My Resume
-                </>
-              )}
-            </button>
+            {isTailoring ? (
+              <div className="w-full py-3 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 font-semibold text-xs flex items-center justify-center gap-2 animate-pulse">
+                <RefreshCw size={14} className="animate-spin" />
+                {isParsingJD ? "Structuring Job Description..." : "AI Customizing Resume..."}
+              </div>
+            ) : (
+              <div className="w-full py-2 text-center text-[10px] text-gray-400">
+                AI will automatically tailor your resume when you paste a JD.
+              </div>
+            )}
           </div>
 
           {/* AI TAILORED STATS */}
@@ -643,10 +676,43 @@ export default function SidePanel() {
                       />
                     )}
                   </div>
-                  <div className="flex gap-3 mt-1.5 text-[10px] text-gray-500">
+                  <div className="flex gap-3 mt-1.5 text-[10px] text-gray-500 mb-4">
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" />{changeStats.approved} approved</span>
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500" />{changeStats.rejected} rejected</span>
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" />{changeStats.pending} pending</span>
+                  </div>
+
+                  {/* Individual Changes List */}
+                  <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
+                    {tailoredResult.changes.map((change) => (
+                      <div key={change.id} className="p-3 rounded-lg border bg-white flex flex-col gap-2 shadow-sm border-gray-200">
+                        <div className="flex justify-between items-start">
+                          <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">{change.label}</span>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => {
+                                const up = { ...tailoredResult, changes: tailoredResult.changes.map(c => c.id === change.id ? { ...c, status: "approved" as const } : c) };
+                                setTailoredResult(up); saveTailoredResult(up);
+                              }}
+                              className={`p-1 rounded-md transition-colors ${change.status === "approved" ? "bg-emerald-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-emerald-100 hover:text-emerald-600"}`}
+                            >
+                              <CheckCircle size={14} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                const up = { ...tailoredResult, changes: tailoredResult.changes.map(c => c.id === change.id ? { ...c, status: "rejected" as const } : c) };
+                                setTailoredResult(up); saveTailoredResult(up);
+                              }}
+                              className={`p-1 rounded-md transition-colors ${change.status === "rejected" ? "bg-rose-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-rose-100 hover:text-rose-600"}`}
+                            >
+                              <XCircle size={14} />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="text-[10px] text-gray-500 line-through decoration-rose-300">{change.originalValue}</div>
+                        <div className="text-xs text-gray-800 font-medium">{change.newValue}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -679,11 +745,11 @@ export default function SidePanel() {
                 {tailoredResult ? "Tailored Resume — Review Changes" : "Master Resume Preview"}
               </h3>
 
-              {/* Resume Document Container — Always show original PDF */}
-              {originalPdf ? (
+              {/* Resume Document Container — Shows real-time preview */}
+              {previewPdfUrl ? (
                 <div className="bg-white rounded-lg shadow-md border border-gray-200 w-full h-[600px] overflow-hidden">
                   <iframe 
-                    src={originalPdf} 
+                    src={previewPdfUrl} 
                     className="w-full h-full border-none"
                     title="Resume Preview"
                   />
