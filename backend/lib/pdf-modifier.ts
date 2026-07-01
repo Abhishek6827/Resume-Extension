@@ -172,9 +172,9 @@ function findMatchingItems(
   }
 
   // Strategy 4: Match by first significant words (for long bullet points)
-  const targetWords = normalizedTarget.split(/\s+/);
-  if (targetWords.length >= 4) {
-    const searchPhrase = targetWords.slice(0, 6).join(" ");
+  const targetWords = normalizedTarget.split(/\s+/).filter(w => w.length > 2); // Ignore tiny words like 'a', 'in'
+  if (targetWords.length >= 2) {
+    const searchPhrase = targetWords.slice(0, 3).join(" ");
     for (const item of items) {
       if (normalizeText(item.text).includes(searchPhrase)) {
         // Found the start — collect this item and nearby items
@@ -183,7 +183,26 @@ function findMatchingItems(
           (other) =>
             other !== item &&
             other.pageIndex === item.pageIndex &&
-            Math.abs(other.y - item.y) < 1.5
+            Math.abs(other.y - item.y) < 2.5
+        );
+        result.push(...sameLineItems);
+        return result;
+      }
+    }
+  }
+
+  // Strategy 5: Super aggressive match (just the first highly unique word > 5 chars)
+  const longWords = normalizedTarget.split(/\s+/).filter(w => w.length > 5);
+  if (longWords.length > 0) {
+    const searchPhrase = longWords[0];
+    for (const item of items) {
+      if (normalizeText(item.text).includes(searchPhrase)) {
+        const result = [item];
+        const sameLineItems = items.filter(
+          (other) =>
+            other !== item &&
+            other.pageIndex === item.pageIndex &&
+            Math.abs(other.y - item.y) < 3.0
         );
         result.push(...sameLineItems);
         return result;

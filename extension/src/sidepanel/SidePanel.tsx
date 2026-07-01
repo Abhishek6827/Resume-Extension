@@ -55,15 +55,21 @@ export default function SidePanel() {
 
   // Update PDF preview when changes are approved/rejected
   useEffect(() => {
-    let url: string | null = null;
     const timer = setTimeout(async () => {
       if (!tailoredResult || !originalPdf) return;
       const dataToExport = buildFinalResume();
       if (!dataToExport) return;
       try {
         const blob = await exportPDF(dataToExport, originalPdf, tailoredResult.changes);
-        url = window.URL.createObjectURL(blob);
-        setPreviewPdfUrl(url);
+        
+        // Convert Blob to Base64 Data URL to bypass Chrome Extension CSP iframe restrictions
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === 'string') {
+            setPreviewPdfUrl(reader.result);
+          }
+        };
+        reader.readAsDataURL(blob);
       } catch (err) {
         console.error("Failed to update PDF preview", err);
       }
@@ -71,7 +77,6 @@ export default function SidePanel() {
 
     return () => {
       clearTimeout(timer);
-      if (url) window.URL.revokeObjectURL(url);
     };
   }, [tailoredResult, originalPdf]);
 
@@ -710,7 +715,15 @@ export default function SidePanel() {
                           </div>
                         </div>
                         <div className="text-[10px] text-gray-500 line-through decoration-rose-300">{change.originalValue}</div>
-                        <div className="text-xs text-gray-800 font-medium">{change.newValue}</div>
+                        <textarea
+                          value={change.newValue}
+                          onChange={(e) => {
+                            const up = { ...tailoredResult, changes: tailoredResult.changes.map(c => c.id === change.id ? { ...c, newValue: e.target.value } : c) };
+                            setTailoredResult(up);
+                            saveTailoredResult(up);
+                          }}
+                          className="text-xs text-gray-800 font-medium bg-gray-50 border border-gray-200 rounded p-2 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 w-full resize-y min-h-[60px]"
+                        />
                       </div>
                     ))}
                   </div>
