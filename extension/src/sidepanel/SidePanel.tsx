@@ -488,7 +488,7 @@ export default function SidePanel() {
           <span className="font-bold text-md tracking-tight text-gray-900">Resume Tailor</span>
         </div>
         <div className="flex items-center gap-2">
-          {!isInsideIframe && (
+          {!isInsideIframe && tailoredResult && (
             <button
               onClick={() => {
                 if (chrome.runtime && chrome.runtime.sendMessage) {

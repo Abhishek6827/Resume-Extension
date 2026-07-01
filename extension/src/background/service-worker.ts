@@ -38,10 +38,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     
     sendResponse({ status: "success" });
   } else if (message.type === "OPEN_CUSTOMIZER") {
-    // Send message to active tab to open in-page modal
+    // Close the side panel first, then open in-page modal
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]?.id) {
-        chrome.tabs.sendMessage(tabs[0].id, { type: "OPEN_IN_PAGE_MODAL" }).catch(err => {
+      const tabId = tabs[0]?.id;
+      const windowId = tabs[0]?.windowId;
+      if (tabId && windowId) {
+        // Close side panel so the user gets full page space
+        chrome.sidePanel.close({ windowId }).catch(() => {
+          // Ignore if already closed or API not available
+        });
+        chrome.tabs.sendMessage(tabId, { type: "OPEN_IN_PAGE_MODAL" }).catch(err => {
           console.error("Failed to send OPEN_IN_PAGE_MODAL to tab:", err);
         });
       }
