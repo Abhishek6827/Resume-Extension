@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCorsHeaders, handleOptions } from "../../../lib/cors";
-import { generatePDF } from "../../../lib/pdf-generator";
+import { modifyOriginalPDF } from "../../../lib/pdf-modifier";
 
 export const dynamic = "force-dynamic";
 
@@ -21,24 +21,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // We now just generate a fresh ATS-friendly PDF using the latest resumeData.
-    // This perfectly supports live-updates on approval since it just rebuilds the PDF.
-    const resumeData = body.resumeData;
-    if (!resumeData) {
+    // Extract the original PDF base64
+    const originalBase64 = body.originalPdfBase64;
+    if (!originalBase64) {
       return NextResponse.json(
-        { error: "No resumeData provided." },
+        { error: "No original PDF provided. Upload a PDF first." },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    let pdfBuffer: Buffer;
-    try {
-      console.log(`[export-pdf] Generating fresh PDF from updated resumeData`);
-      pdfBuffer = await generatePDF(resumeData);
-      console.log("[export-pdf] PDF generation successful");
-    } catch (err) {
-      console.error("[export-pdf] PDF generation failed:", err);
-      throw err;
+    // Strip data URL prefix if present
+    const base64Data = originalBase64.replace(/^data:[^;]+;base64,/, "");
+    const originalBytes = Buffer.from(base64Data, "base64");
+
+    // Get approved changes
+    const changes = (body.changes || [])
+      .filter((c: any) => c.status === "approved")
+      .map((c: any) => ({
+        originalValue: c.originalValue,
+        newValue: c.newValue,
+      }));
+
+    let pdfBuffer: Buffer | Uint8Array;
+
+    if (changes.length > 0) {
+      try {
+        // Modify the original PDF with approved changes
+        console.log(`[export-pdf] Modifying original PDF with ${changes.length} approved changes`);
+        pdfBuffer = await modifyOriginalPDF(new Uint8Array(originalBytes), changes);
+        console.log("[export-pdf] PDF modification successful");
+      } catch (modifyErr) {
+        // If modification fails, return original PDF as-is
+        console.error("[export-pdf] PDF modification failed, returning original:", modifyErr);
+        pdfBuffer = originalBytes;
+      }
+    } else {
+      // No approved changes — return original PDF as-is
+      console.log("[export-pdf] No approved changes, returning original PDF");
+      pdfBuffer = originalBytes;
     }
 
     const headers = new Headers(corsHeaders);
