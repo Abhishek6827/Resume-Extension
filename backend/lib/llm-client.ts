@@ -42,7 +42,7 @@ async function tryGroq(options: LLMCallOptions): Promise<LLMResponse> {
 
   const groq = new Groq({ apiKey, maxRetries: 1, timeout: 30000 });
   const response = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    model: "gpt-oss-120b",
     messages: [
       { role: "system", content: options.systemPrompt },
       { role: "user", content: options.userMessage },
@@ -55,7 +55,7 @@ async function tryGroq(options: LLMCallOptions): Promise<LLMResponse> {
   const content = response.choices[0]?.message?.content || "";
   if (!content) throw new Error("Empty Groq response");
 
-  return { content, provider: "groq", model: "llama-3.3-70b-versatile" };
+  return { content, provider: "groq", model: "gpt-oss-120b" };
 }
 
 /**
@@ -101,7 +101,7 @@ async function tryOpenRouter(options: LLMCallOptions): Promise<LLMResponse> {
   });
 
   const response = await openrouter.chat.completions.create({
-    model: "google/gemini-2.5-flash:free",
+    model: "openrouter/free",
     messages: [
       { role: "system", content: options.systemPrompt },
       { role: "user", content: options.userMessage },
@@ -113,7 +113,7 @@ async function tryOpenRouter(options: LLMCallOptions): Promise<LLMResponse> {
   const content = response.choices[0]?.message?.content || "";
   if (!content) throw new Error("Empty OpenRouter response");
 
-  return { content, provider: "openrouter", model: "google/gemini-2.5-flash:free" };
+  return { content, provider: "openrouter", model: "openrouter/free" };
 }
 
 /**
@@ -154,8 +154,6 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
   const providers = [
     { name: "Cerebras", fn: tryCerebras },
     { name: "Groq", fn: tryGroq },
-    { name: "NVIDIA", fn: tryNvidia },
-    { name: "OpenRouter", fn: tryOpenRouter },
   ];
 
   const errors: string[] = [];

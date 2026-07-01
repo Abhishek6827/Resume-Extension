@@ -5,10 +5,10 @@ const KNOWN_SELECTORS: Record<string, string[]> = {
   "linkedin.com": [
     "#job-details",
     ".jobs-description__container",
-    ".job-details-jobs-unified-top-card__container ~ div",
+    ".jobs-box__html-content",
+    ".jobs-description-content__text",
     ".jobs-description__content",
     ".jobs-description",
-    "[class*='description__text']",
     ".job-view-layout .description",
   ],
   "indeed.com": [
