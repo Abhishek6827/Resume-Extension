@@ -42,7 +42,7 @@ async function tryGroq(options: LLMCallOptions): Promise<LLMResponse> {
 
   const groq = new Groq({ apiKey, maxRetries: 1, timeout: 30000 });
   const response = await groq.chat.completions.create({
-    model: "gpt-oss-120b",
+    model: "openai/gpt-oss-120b",
     messages: [
       { role: "system", content: options.systemPrompt },
       { role: "user", content: options.userMessage },
@@ -55,7 +55,7 @@ async function tryGroq(options: LLMCallOptions): Promise<LLMResponse> {
   const content = response.choices[0]?.message?.content || "";
   if (!content) throw new Error("Empty Groq response");
 
-  return { content, provider: "groq", model: "gpt-oss-120b" };
+  return { content, provider: "groq", model: "openai/gpt-oss-120b" };
 }
 
 /**
