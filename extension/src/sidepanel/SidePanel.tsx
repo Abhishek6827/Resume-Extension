@@ -449,11 +449,11 @@ export default function SidePanel() {
     });
 
     const totalChanges = tailoredResult.changes.length;
-    let score = tailoredResult.atsScore;
+    let score = Number(tailoredResult.atsScore) || 0;
     if (totalChanges > 0) {
       const approvedRatio = approvedChanges.length / totalChanges;
       // Interpolate from initial score to 95% maximum
-      score = Math.round(tailoredResult.atsScore + approvedRatio * (95 - tailoredResult.atsScore));
+      score = Math.round(score + approvedRatio * (95 - score));
     }
 
     return {
