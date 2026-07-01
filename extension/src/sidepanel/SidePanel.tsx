@@ -49,14 +49,16 @@ export default function SidePanel() {
   // Auto-tailor when JD changes
   useEffect(() => {
     const handler = setTimeout(() => {
-      if (step === 2 && resume && jdInput.trim().length > 50 && !isTailoring && jdInput !== lastTailoredJd) {
+      const normInput = jdInput.toLowerCase().replace(/\s+/g, " ").trim();
+      const normLast = lastTailoredJd.toLowerCase().replace(/\s+/g, " ").trim();
+      if (step === 2 && resume && normInput.length > 50 && !isTailoring && normInput !== normLast) {
         handleTailor();
       }
     }, 1000);
     return () => clearTimeout(handler);
   }, [jdInput, step, resume, isTailoring, lastTailoredJd]);
 
-  // Update PDF preview when changes are approved/rejected
+  // Update PDF preview when changes are approved/rejected (debounced to group consecutive clicks)
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (!tailoredResult || !originalPdf) return;
@@ -76,7 +78,7 @@ export default function SidePanel() {
       } catch (err) {
         console.error("Failed to update PDF preview", err);
       }
-    }, 800);
+    }, 2000); // 2000ms debounce to group approvals together
 
     return () => {
       clearTimeout(timer);
