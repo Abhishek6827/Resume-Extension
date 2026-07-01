@@ -47,7 +47,7 @@ async function tryGroq(options: LLMCallOptions): Promise<LLMResponse> {
     .replace(/[ \t]+/g, " ")
     .trim();
 
-  const groq = new Groq({ apiKey, maxRetries: 1, timeout: 30000 });
+  const groq = new Groq({ apiKey, maxRetries: 1, timeout: 12000 });
   
   try {
     const response = await groq.chat.completions.create({
@@ -109,7 +109,7 @@ async function tryNvidia(options: LLMCallOptions): Promise<LLMResponse> {
   const nvidia = new OpenAI({
     baseURL: "https://integrate.api.nvidia.com/v1",
     apiKey,
-    timeout: 30000,
+    timeout: 18000,
   });
 
   // Compress whitespace to save precious tokens
@@ -175,7 +175,7 @@ async function tryCerebras(options: LLMCallOptions): Promise<LLMResponse> {
   const cerebras = new OpenAI({
     baseURL: "https://api.cerebras.ai/v1",
     apiKey,
-    timeout: 30000,
+    timeout: 12000,
   });
 
   // Compress whitespace to save precious tokens
@@ -230,3 +230,32 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
 
   throw new Error(`All LLM providers failed:\n${errors.join("\n")}`);
 }
+
+/**
+ * Call LLM prioritizing speed (Cerebras → Groq → NVIDIA) for large payload tasks (like full resume parsing) to prevent Vercel Serverless timeouts.
+ */
+export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse> {
+  const providers = [
+    { name: "Cerebras", fn: tryCerebras },
+    { name: "Groq", fn: tryGroq },
+    { name: "NVIDIA", fn: tryNvidia },
+  ];
+
+  const errors: string[] = [];
+
+  for (const provider of providers) {
+    try {
+      console.log(`[LLM Fast] Trying ${provider.name}...`);
+      const result = await provider.fn(options);
+      console.log(`[LLM Fast] Success with ${provider.name}`);
+      return result;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[LLM Fast] ${provider.name} failed: ${message}`);
+      errors.push(`${provider.name}: ${message}`);
+    }
+  }
+
+  throw new Error(`All Fast LLM providers failed:\n${errors.join("\n")}`);
+}
+

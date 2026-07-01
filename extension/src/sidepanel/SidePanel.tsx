@@ -255,23 +255,41 @@ export default function SidePanel() {
       const parsedJD = await parseJD({ text: jdInput });
       setIsParsingJD(false);
 
+      const failedSections: { section: string; error: string }[] = [];
+
       // Start all calls in parallel
       const scorePromise = scoreResume(resume, parsedJD);
       
       const summaryPromise = resume.summary
-        ? tailorSection("summary", resume.summary, parsedJD).catch(e => { console.error("Summary tailor failed", e); return null; })
+        ? tailorSection("summary", resume.summary, parsedJD).catch(e => {
+            console.error("Summary tailor failed", e);
+            failedSections.push({ section: "Summary", error: e.message || String(e) });
+            return null;
+          })
         : Promise.resolve(null);
         
       const experiencePromise = resume.experience && resume.experience.length > 0
-        ? tailorSection("experience", resume.experience, parsedJD).catch(e => { console.error("Experience tailor failed", e); return null; })
+        ? tailorSection("experience", resume.experience, parsedJD).catch(e => {
+            console.error("Experience tailor failed", e);
+            failedSections.push({ section: "Experience", error: e.message || String(e) });
+            return null;
+          })
         : Promise.resolve(null);
         
       const projectsPromise = resume.projects && resume.projects.length > 0
-        ? tailorSection("projects", resume.projects, parsedJD).catch(e => { console.error("Projects tailor failed", e); return null; })
+        ? tailorSection("projects", resume.projects, parsedJD).catch(e => {
+            console.error("Projects tailor failed", e);
+            failedSections.push({ section: "Projects", error: e.message || String(e) });
+            return null;
+          })
         : Promise.resolve(null);
         
       const skillsPromise = resume.skills
-        ? tailorSection("skills", resume.skills, parsedJD).catch(e => { console.error("Skills tailor failed", e); return null; })
+        ? tailorSection("skills", resume.skills, parsedJD).catch(e => {
+            console.error("Skills tailor failed", e);
+            failedSections.push({ section: "Skills", error: e.message || String(e) });
+            return null;
+          })
         : Promise.resolve(null);
 
       // Await score first to initialize result
@@ -308,6 +326,12 @@ export default function SidePanel() {
         projectsPromise,
         skillsPromise
       ]);
+
+      if (failedSections.length > 0) {
+        const errorMsg = "Failed to tailor some sections due to LLM provider errors:\n" + 
+          failedSections.map(f => `• ${f.section}: ${f.error}`).join("\n");
+        setError(errorMsg);
+      }
 
       const allNewChanges: TailoredChange[] = [];
 

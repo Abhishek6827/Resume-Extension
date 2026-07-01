@@ -1,4 +1,4 @@
-import { callLLM, extractJSON } from "./llm-client";
+import { callLLM, callFastLLM, extractJSON } from "./llm-client";
 import type { ResumeData, JDData, TailoredResult, TailoredChange, ScoreResult, ExperienceEntry, ProjectEntry, SkillsData } from "./types";
 
 /**
@@ -65,7 +65,7 @@ CRITICAL: You must extract all text values (summary, experience highlights, proj
 `;
 
   try {
-    const response = await callLLM({
+    const response = await callFastLLM({
       systemPrompt,
       userMessage: `Resume text:\n${rawText}`,
     });
