@@ -44,6 +44,28 @@ function safeDecodeURIComponent(str: string): string {
 }
 
 /**
+ * Sanitize strings to avoid WinAnsi encoding crashes in pdf-lib standard fonts.
+ * Maps common non-ASCII symbols like tilde operators, em-dashes, and bullets to standard characters.
+ */
+function sanitizeForWinAnsi(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/[\u223c\u223C\u203E]/g, "~")  // tilde operators/overline to standard tilde
+    .replace(/[\u2013\u2014]/g, "-")        // en-dash, em-dash to hyphen
+    .replace(/[\u2018\u2019\u201a\u201b]/g, "'") // curly single quotes to straight single quotes
+    .replace(/[\u201c\u201d\u201e\u201f]/g, '"') // curly double quotes to straight double quotes
+    .replace(/[\u2022\u2023\u2043\u204c\u204d\u2219]/g, "*") // bullets/dots to asterisk
+    .split("")
+    .filter(char => {
+      const code = char.charCodeAt(0);
+      // WinAnsi supports standard ASCII (32-126) and Latin-1 supplement (160-255)
+      // Plus standard tab (9) and newline (10)
+      return (code >= 32 && code <= 126) || (code >= 160 && code <= 255) || code === 9 || code === 10;
+    })
+    .join("");
+}
+
+/**
  * Extract text items with positions and page dimensions from pdf2json.
  * pdf2json gives coordinates in "grid units" — we convert to PDF points
  * using the actual page dimensions from pdf-lib.
@@ -294,7 +316,8 @@ export async function modifyOriginalPDF(
       }
 
       // Measure character length accurately to draw white box only over it
-      const itemWidth = itemFont.widthOfTextAtSize(item.text, item.fontSize) + 2;
+      const cleanText = sanitizeForWinAnsi(item.text);
+      const itemWidth = itemFont.widthOfTextAtSize(cleanText, item.fontSize) + 2;
       const itemHeight = item.fontSize * 1.25;
 
       page.drawRectangle({
@@ -323,7 +346,8 @@ export async function modifyOriginalPDF(
     const maxWidth = pageWidth - pdfX - rightMargin;
 
     // Draw the new text at the same position
-    page.drawText(change.newValue, {
+    const cleanReplacement = sanitizeForWinAnsi(change.newValue);
+    page.drawText(cleanReplacement, {
       x: pdfX,
       y: pdfY,
       size: fontSize,
