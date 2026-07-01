@@ -83,6 +83,16 @@ export default function SidePanel() {
     };
   }, [tailoredResult, originalPdf]);
 
+  const triggerPageScan = () => {
+    if (typeof chrome !== "undefined" && chrome.tabs) {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+          chrome.tabs.sendMessage(tabs[0].id, { type: "REQUEST_PAGE_SCAN" }).catch(() => {});
+        }
+      });
+    }
+  };
+
   // Load saved state on mount
   useEffect(() => {
     async function loadData() {
@@ -109,6 +119,7 @@ export default function SidePanel() {
       } catch (err) {
         console.error("Error loading saved data:", err);
       }
+      triggerPageScan();
     }
     loadData();
   }, []);
@@ -126,6 +137,29 @@ export default function SidePanel() {
       chrome.runtime.onMessage.addListener(handleMessage);
       return () => chrome.runtime.onMessage.removeListener(handleMessage);
     }
+  }, []);
+
+  // Track SidePanel open state in storage and notify active tab to hide floating button
+  useEffect(() => {
+    if (typeof chrome !== "undefined" && chrome.storage?.local) {
+      chrome.storage.local.set({ rt_sidepanel_open: true });
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) {
+          chrome.tabs.sendMessage(tabs[0].id, { type: "SIDEPANEL_OPENED" }).catch(() => {});
+        }
+      });
+    }
+
+    return () => {
+      if (typeof chrome !== "undefined" && chrome.storage?.local) {
+        chrome.storage.local.set({ rt_sidepanel_open: false });
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          if (tabs[0]?.id) {
+            chrome.tabs.sendMessage(tabs[0].id, { type: "SIDEPANEL_CLOSED" }).catch(() => {});
+          }
+        });
+      }
+    };
   }, []);
 
   // Handler: Parse Resume File
@@ -156,6 +190,7 @@ export default function SidePanel() {
       setResume(parsed);
       await saveResume(parsed);
       setStep(2);
+      triggerPageScan();
     } catch (err: any) {
       setError(err.message || "Failed to parse resume file.");
     } finally {
@@ -175,6 +210,7 @@ export default function SidePanel() {
       setResume(parsed);
       await saveResume(parsed);
       setStep(2);
+      triggerPageScan();
     } catch (err: any) {
       setError(err.message || "Failed to parse resume text.");
     } finally {
@@ -431,6 +467,7 @@ export default function SidePanel() {
     setTailoredResult(null);
     setStep(1);
     setError("");
+    triggerPageScan();
   };
 
   // Compute dynamic stats based on approved changes

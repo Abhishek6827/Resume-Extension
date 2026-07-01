@@ -40,7 +40,7 @@ async function tryGroq(options: LLMCallOptions): Promise<LLMResponse> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("GROQ_API_KEY not set");
 
-  const groq = new Groq({ apiKey, maxRetries: 1 });
+  const groq = new Groq({ apiKey, maxRetries: 1, timeout: 30000 });
   const response = await groq.chat.completions.create({
     model: "llama-3.3-70b-versatile",
     messages: [
@@ -68,10 +68,11 @@ async function tryNvidia(options: LLMCallOptions): Promise<LLMResponse> {
   const nvidia = new OpenAI({
     baseURL: "https://integrate.api.nvidia.com/v1",
     apiKey,
+    timeout: 30000,
   });
 
   const response = await nvidia.chat.completions.create({
-    model: "moonshotai/kimi-k2.6",
+    model: "meta/llama-3.3-70b-instruct",
     messages: [
       { role: "system", content: options.systemPrompt },
       { role: "user", content: options.userMessage },
@@ -83,7 +84,7 @@ async function tryNvidia(options: LLMCallOptions): Promise<LLMResponse> {
   const content = response.choices[0]?.message?.content || "";
   if (!content) throw new Error("Empty NVIDIA response");
 
-  return { content, provider: "nvidia", model: "moonshotai/kimi-k2.6" };
+  return { content, provider: "nvidia", model: "meta/llama-3.3-70b-instruct" };
 }
 
 /**
@@ -96,10 +97,11 @@ async function tryOpenRouter(options: LLMCallOptions): Promise<LLMResponse> {
   const openrouter = new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
     apiKey,
+    timeout: 30000,
   });
 
   const response = await openrouter.chat.completions.create({
-    model: "openai/gpt-oss-120b",
+    model: "google/gemini-2.5-flash:free",
     messages: [
       { role: "system", content: options.systemPrompt },
       { role: "user", content: options.userMessage },
@@ -111,7 +113,7 @@ async function tryOpenRouter(options: LLMCallOptions): Promise<LLMResponse> {
   const content = response.choices[0]?.message?.content || "";
   if (!content) throw new Error("Empty OpenRouter response");
 
-  return { content, provider: "openrouter", model: "openai/gpt-oss-120b" };
+  return { content, provider: "openrouter", model: "google/gemini-2.5-flash:free" };
 }
 
 /**
@@ -124,6 +126,7 @@ async function tryCerebras(options: LLMCallOptions): Promise<LLMResponse> {
   const cerebras = new OpenAI({
     baseURL: "https://api.cerebras.ai/v1",
     apiKey,
+    timeout: 30000,
   });
 
   const response = await cerebras.chat.completions.create({
