@@ -1,15 +1,8 @@
 // ─── Resume Tailor — Background Service Worker ─────────────
 
-// Open customization window on extension toolbar icon click
-chrome.action.onClicked.addListener(() => {
-  chrome.windows.create({
-    url: chrome.runtime.getURL("src/sidepanel/index.html"),
-    type: "popup",
-    width: 1050,
-    height: 850,
-    focused: true
-  }).catch((err) => console.error("[service-worker] Failed to open customization window:", err));
-});
+// Open Side Panel on extension toolbar icon click
+chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true })
+  .catch((error) => console.error(error));
 
 // Create context menu for manual highlights
 chrome.runtime.onInstalled.addListener(() => {
@@ -45,14 +38,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     
     sendResponse({ status: "success" });
   } else if (message.type === "OPEN_CUSTOMIZER") {
-    chrome.windows.create({
-      url: chrome.runtime.getURL("src/sidepanel/index.html"),
-      type: "popup",
-      width: 1050,
-      height: 850,
-      focused: true
-    }).catch((err) => {
-      console.error("[service-worker] Failed to open customizer window:", err);
+    // Send message to active tab to open in-page modal
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]?.id) {
+        chrome.tabs.sendMessage(tabs[0].id, { type: "OPEN_IN_PAGE_MODAL" }).catch(err => {
+          console.error("Failed to send OPEN_IN_PAGE_MODAL to tab:", err);
+        });
+      }
     });
     sendResponse({ status: "success" });
   } else if (message.type === "GET_CACHED_JD") {
@@ -70,14 +62,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     cachedJDText = selection;
 
     chrome.storage.local.set({ rt_last_detected_jd: selection }).then(() => {
-      chrome.windows.create({
-        url: chrome.runtime.getURL("src/sidepanel/index.html"),
-        type: "popup",
-        width: 1050,
-        height: 850,
-        focused: true
-      }).catch((err: any) => {
-        console.error("[service-worker] Failed to open full page tab via context menu:", err);
+      chrome.tabs.sendMessage(tab.id, { type: "OPEN_IN_PAGE_MODAL" }).catch(err => {
+        console.error("Failed to send OPEN_IN_PAGE_MODAL to tab:", err);
       });
       chrome.action.setBadgeText({ text: "✨", tabId: tab.id });
     });

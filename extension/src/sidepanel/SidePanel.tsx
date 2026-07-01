@@ -484,13 +484,27 @@ export default function SidePanel() {
           </div>
           <span className="font-bold text-md tracking-tight text-gray-900">Resume Tailor</span>
         </div>
-        <button
-          onClick={handleReset}
-          className="p-1.5 rounded-lg text-gray-400 hover:text-rose-500 hover:bg-gray-100 transition-all duration-200"
-          title="Reset App State"
-        >
-          <RefreshCw size={16} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (chrome.runtime && chrome.runtime.sendMessage) {
+                chrome.runtime.sendMessage({ type: "OPEN_CUSTOMIZER" });
+              }
+            }}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-gray-100 transition-all duration-200 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider"
+            title="Expand to Full Page Pop-up"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+            Expand
+          </button>
+          <button
+            onClick={handleReset}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-rose-500 hover:bg-gray-100 transition-all duration-200"
+            title="Reset App State"
+          >
+            <RefreshCw size={16} />
+          </button>
+        </div>
       </header>
 
       {error && (

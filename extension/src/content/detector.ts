@@ -19,6 +19,101 @@ function injectStyles() {
   document.head.appendChild(style);
 }
 
+let modalElement: HTMLDivElement | null = null;
+
+function openInPageModal() {
+  if (modalElement) return; // already open
+
+  // Create full-screen fixed backdrop
+  modalElement = document.createElement("div");
+  modalElement.id = "rt-customizer-modal";
+  modalElement.style.position = "fixed";
+  modalElement.style.top = "0";
+  modalElement.style.left = "0";
+  modalElement.style.width = "100vw";
+  modalElement.style.height = "100vh";
+  modalElement.style.backgroundColor = "rgba(0,0,0,0.6)";
+  modalElement.style.backdropFilter = "blur(4px)";
+  modalElement.style.zIndex = "2147483647"; // max z-index
+  modalElement.style.display = "flex";
+  modalElement.style.alignItems = "center";
+  modalElement.style.justifyContent = "center";
+  modalElement.style.padding = "20px";
+  modalElement.style.boxSizing = "border-box";
+
+  // Create container for iframe
+  const container = document.createElement("div");
+  container.style.width = "95%";
+  container.style.maxWidth = "1400px";
+  container.style.height = "95%";
+  container.style.backgroundColor = "#ffffff";
+  container.style.borderRadius = "16px";
+  container.style.boxShadow = "0 25px 50px -12px rgba(0, 0, 0, 0.5)";
+  container.style.overflow = "hidden";
+  container.style.display = "flex";
+  container.style.flexDirection = "column";
+  container.style.position = "relative";
+
+  // Add Close Button inside the container (top right absolute)
+  const closeBtn = document.createElement("button");
+  closeBtn.innerHTML = "&times;";
+  closeBtn.style.position = "absolute";
+  closeBtn.style.top = "12px";
+  closeBtn.style.right = "16px";
+  closeBtn.style.width = "36px";
+  closeBtn.style.height = "36px";
+  closeBtn.style.borderRadius = "50%";
+  closeBtn.style.backgroundColor = "#f3f4f6";
+  closeBtn.style.border = "none";
+  closeBtn.style.fontSize = "24px";
+  closeBtn.style.lineHeight = "1";
+  closeBtn.style.color = "#4b5563";
+  closeBtn.style.cursor = "pointer";
+  closeBtn.style.display = "flex";
+  closeBtn.style.alignItems = "center";
+  closeBtn.style.justifyContent = "center";
+  closeBtn.style.zIndex = "10";
+  closeBtn.style.transition = "background-color 0.2s";
+  closeBtn.onmouseenter = () => closeBtn.style.backgroundColor = "#e5e7eb";
+  closeBtn.onmouseleave = () => closeBtn.style.backgroundColor = "#f3f4f6";
+
+  closeBtn.onclick = () => {
+    if (modalElement) {
+      document.body.removeChild(modalElement);
+      modalElement = null;
+    }
+  };
+
+  // Iframe to load the Customizer UI
+  const iframe = document.createElement("iframe");
+  iframe.src = chrome.runtime.getURL("src/sidepanel/index.html");
+  iframe.style.width = "100%";
+  iframe.style.height = "100%";
+  iframe.style.border = "none";
+
+  container.appendChild(closeBtn);
+  container.appendChild(iframe);
+  modalElement.appendChild(container);
+
+  // Click on backdrop to close
+  modalElement.addEventListener("click", (e) => {
+    if (e.target === modalElement) {
+      document.body.removeChild(modalElement);
+      modalElement = null;
+    }
+  });
+
+  document.body.appendChild(modalElement);
+}
+
+// Listen for messages to open the modal from the background/sidepanel
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "OPEN_IN_PAGE_MODAL") {
+    openInPageModal();
+    sendResponse({ status: "success" });
+  }
+});
+
 function createFloatingButton() {
   if (document.getElementById("rt-floating-button")) return;
 
@@ -31,7 +126,7 @@ function createFloatingButton() {
   btn.style.position = "fixed";
   btn.style.bottom = "24px";
   btn.style.right = "24px";
-  btn.style.zIndex = "2147483647"; // absolute maximum z-index to stay on top
+  btn.style.zIndex = "2147483646"; // just below modal
   btn.style.width = "50px";
   btn.style.height = "50px";
   btn.style.borderRadius = "50%";
@@ -61,9 +156,9 @@ function createFloatingButton() {
     btn.style.transform = "scale(1.0)";
   });
 
-  // Action: Open Customizer Window
+  // Action: Open Customizer in-page modal directly
   btn.addEventListener("click", () => {
-    chrome.runtime.sendMessage({ type: "OPEN_CUSTOMIZER" });
+    openInPageModal();
   });
 
   document.body.appendChild(btn);
