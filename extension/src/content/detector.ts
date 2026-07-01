@@ -173,9 +173,9 @@ function createFloatingButton() {
       btn.style.transform = "scale(1.0)";
     });
 
-    // Action: Open Customizer in-page modal directly
+    // Action: Open Sidepanel
     btn.addEventListener("click", () => {
-      openInPageModal();
+      chrome.runtime.sendMessage({ type: "OPEN_SIDEPANEL" });
     });
 
     document.body.appendChild(btn);
@@ -223,3 +223,17 @@ observer.observe(document.body, {
   childList: true,
   subtree: true,
 });
+
+// Sync floating button visibility when SidePanel storage state changes (across all frames/windows)
+if (typeof chrome !== "undefined" && chrome.storage?.onChanged) {
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === "local" && "rt_sidepanel_open" in changes) {
+      const isOpen = changes.rt_sidepanel_open.newValue;
+      const btn = document.getElementById("rt-floating-button");
+      if (btn) {
+        btn.style.display = isOpen ? "none" : "flex";
+      }
+    }
+  });
+}
+

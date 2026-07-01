@@ -53,6 +53,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
     });
     sendResponse({ status: "success" });
+  } else if (message.type === "OPEN_SIDEPANEL") {
+    const tabId = sender.tab?.id;
+    const windowId = sender.tab?.windowId;
+    if (tabId) {
+      chrome.sidePanel.open({ tabId }).catch(() => {
+        if (windowId) {
+          chrome.sidePanel.open({ windowId }).catch(console.error);
+        }
+      });
+    }
+    sendResponse({ status: "success" });
   } else if (message.type === "GET_CACHED_JD") {
     sendResponse({ jdText: cachedJDText });
   }
