@@ -29,12 +29,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       console.log("[service-worker] Job description cached in storage");
     });
 
-    // Auto open side panel on matching active tab
+    // JD is cached. User can open the popup manually to customize.
+
     if (sender.tab?.id) {
-      chrome.sidePanel.open({ tabId: sender.tab.id }).catch((err) => {
-        console.error("[service-worker] Failed to open side panel:", err);
-      });
-      
       // Update extension badge to signal JD detected
       chrome.action.setBadgeText({ text: "✨", tabId: sender.tab.id });
       chrome.action.setBadgeBackgroundColor({ color: "#6366f1", tabId: sender.tab.id });
@@ -56,8 +53,8 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     cachedJDText = selection;
 
     chrome.storage.local.set({ rt_last_detected_jd: selection }).then(() => {
-      chrome.sidePanel.open({ tabId: tab.id, windowId: tab.windowId }).catch((err: any) => {
-        console.error("[service-worker] Failed to open side panel via context menu:", err);
+      chrome.tabs.create({ url: chrome.runtime.getURL("src/sidepanel/index.html") }).catch((err: any) => {
+        console.error("[service-worker] Failed to open full page tab via context menu:", err);
       });
       chrome.action.setBadgeText({ text: "✨", tabId: tab.id });
     });

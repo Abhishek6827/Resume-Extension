@@ -171,21 +171,35 @@ function findMatchingItems(
     }
   }
 
-  // Strategy 4: Match by first significant words (for long bullet points)
-  const targetWords = normalizedTarget.split(/\s+/).filter(w => w.length > 2); // Ignore tiny words like 'a', 'in'
-  if (targetWords.length >= 2) {
-    const searchPhrase = targetWords.slice(0, 3).join(" ");
-    for (const item of items) {
+  // Strategy 4: Match by first significant words (for long paragraphs/bullets)
+  const targetWords = normalizedTarget.split(/\s+/);
+  if (targetWords.length >= 3) {
+    const searchPhrase = targetWords.slice(0, 4).join(" ");
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
       if (normalizeText(item.text).includes(searchPhrase)) {
-        // Found the start — collect this item and nearby items
         const result = [item];
-        const sameLineItems = items.filter(
+        
+        // Find other text items on the same page that fall within the vertical span of this paragraph
+        // A paragraph line height is typically 1.5-3 grid units. Let's look for subsequent lines (up to 12 grid units down)
+        const subsequentItems = items.filter(
           (other) =>
             other !== item &&
             other.pageIndex === item.pageIndex &&
-            Math.abs(other.y - item.y) < 2.5
+            other.y > item.y &&
+            other.y - item.y < 12 // cover up to 4-5 lines of text
         );
-        result.push(...sameLineItems);
+        
+        // Filter those subsequent items to only include ones that contain words from our target text
+        const targetWordSet = new Set(targetWords);
+        for (const sub of subsequentItems) {
+          const subWords = normalizeText(sub.text).split(/\s+/);
+          const matchCount = subWords.filter(w => targetWordSet.has(w)).length;
+          // If the line shares at least one word (or is short), it's likely part of the same paragraph
+          if (matchCount > 0 || subWords.length <= 2) {
+            result.push(sub);
+          }
+        }
         return result;
       }
     }

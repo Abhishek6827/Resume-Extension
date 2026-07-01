@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Upload,
   FileText,
@@ -98,6 +98,7 @@ export default function SidePanel() {
         }
         if (savedJD) {
           setJdInput(savedJD);
+          setLastTailoredJd(savedJD);
         }
         if (savedPdf) {
           setOriginalPdf(savedPdf);
@@ -196,6 +197,7 @@ export default function SidePanel() {
     if (!resume || !jdInput.trim()) return;
 
     setIsTailoring(true);
+    setLastTailoredJd(jdInput); // Set immediately to prevent auto-tailoring loop on errors
     setError("");
     setTailoredResult(null);
 
@@ -205,7 +207,6 @@ export default function SidePanel() {
       setIsParsingJD(false);
 
       // 1. Get ATS Score immediately
-      setLastTailoredJd(jdInput);
       const score = await scoreResume(resume, parsedJD);
       
       // Initialize TailoredResult with score so UI updates instantly
@@ -413,6 +414,41 @@ export default function SidePanel() {
     setError("");
   };
 
+  // Compute dynamic stats based on approved changes
+  const dynamicStats = useMemo(() => {
+    if (!tailoredResult) return null;
+
+    let matched = [...tailoredResult.matchedKeywords];
+    let missing = [...tailoredResult.missingKeywords];
+    const approvedChanges = tailoredResult.changes.filter((c) => c.status === "approved");
+
+    // Move resolved keywords to matched list
+    approvedChanges.forEach((change) => {
+      const text = change.newValue.toLowerCase();
+      missing = missing.filter((kw) => {
+        const isMatch = text.includes(kw.toLowerCase());
+        if (isMatch && !matched.includes(kw)) {
+          matched.push(kw);
+        }
+        return !isMatch;
+      });
+    });
+
+    const totalChanges = tailoredResult.changes.length;
+    let score = tailoredResult.atsScore;
+    if (totalChanges > 0) {
+      const approvedRatio = approvedChanges.length / totalChanges;
+      // Interpolate from initial score to 95% maximum
+      score = Math.round(tailoredResult.atsScore + approvedRatio * (95 - tailoredResult.atsScore));
+    }
+
+    return {
+      score,
+      matchedKeywords: matched,
+      missingKeywords: missing,
+    };
+  }, [tailoredResult]);
+
   // Compute change stats
   const changeStats = tailoredResult
     ? {
@@ -522,7 +558,9 @@ export default function SidePanel() {
 
       {/* STEP 2: Tailoring Interface */}
       {step === 2 && resume && (
-        <div className="flex flex-col gap-4 flex-1">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start flex-1 w-full">
+          {/* Left Panel: Configuration and Changes */}
+          <div className="flex flex-col gap-4 w-full">
           {/* Resume Uploaded Status Card */}
           <div className="p-3 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -574,7 +612,7 @@ export default function SidePanel() {
           </div>
 
           {/* AI TAILORED STATS */}
-          {tailoredResult && (
+          {tailoredResult && dynamicStats && (
             <div className="flex flex-col gap-4 mt-2">
               {/* ATS SCORE RING & REASONING */}
               <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 flex items-center gap-4">
@@ -584,17 +622,17 @@ export default function SidePanel() {
                     <circle
                       cx="32" cy="32" r="28"
                       className={`fill-none transition-all duration-1000 ${
-                        tailoredResult.atsScore >= 70 ? "stroke-emerald-500"
-                        : tailoredResult.atsScore >= 40 ? "stroke-amber-500"
+                        dynamicStats.score >= 70 ? "stroke-emerald-500"
+                        : dynamicStats.score >= 40 ? "stroke-amber-500"
                         : "stroke-rose-500"
                       }`}
                       strokeWidth="5"
                       strokeDasharray="175"
-                      strokeDashoffset={175 - (175 * tailoredResult.atsScore) / 100}
+                      strokeDashoffset={175 - (175 * dynamicStats.score) / 100}
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center font-bold text-sm text-gray-900">
-                    {tailoredResult.atsScore}%
+                    {dynamicStats.score}%
                   </div>
                 </div>
                 <div>
@@ -605,14 +643,14 @@ export default function SidePanel() {
 
               {/* KEYWORD BADGES */}
               <div className="flex flex-col gap-3">
-                {tailoredResult.matchedKeywords.length > 0 && (
+                {dynamicStats.matchedKeywords.length > 0 && (
                   <div>
                     <h4 className="text-[10px] font-bold uppercase text-gray-500 mb-1 flex items-center gap-1">
                       <CheckCircle size={10} className="text-emerald-500" />
-                      Matched Keywords ({tailoredResult.matchedKeywords.length})
+                      Matched Keywords ({dynamicStats.matchedKeywords.length})
                     </h4>
                     <div className="flex flex-wrap gap-1.5">
-                      {tailoredResult.matchedKeywords.map((kw, i) => (
+                      {dynamicStats.matchedKeywords.map((kw, i) => (
                         <span key={i} className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-medium border border-emerald-200">
                           {kw}
                         </span>
@@ -620,14 +658,14 @@ export default function SidePanel() {
                     </div>
                   </div>
                 )}
-                {tailoredResult.missingKeywords.length > 0 && (
+                {dynamicStats.missingKeywords.length > 0 && (
                   <div>
                     <h4 className="text-[10px] font-bold uppercase text-gray-500 mb-1 flex items-center gap-1">
                       <AlertTriangle size={10} className="text-amber-500" />
-                      Missing Gaps ({tailoredResult.missingKeywords.length})
+                      Missing Gaps ({dynamicStats.missingKeywords.length})
                     </h4>
                     <div className="flex flex-wrap gap-1.5">
-                      {tailoredResult.missingKeywords.map((kw, i) => (
+                      {dynamicStats.missingKeywords.map((kw, i) => (
                         <span key={i} className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 text-[10px] font-medium border border-amber-200">
                           {kw}
                         </span>
@@ -750,30 +788,30 @@ export default function SidePanel() {
             </div>
           )}
 
-          {/* ═══════════════ FULL RESUME DOCUMENT VIEW ═══════════════ */}
-          {resume && (
-            <div className="flex flex-col gap-0 mt-4 border-t border-gray-200 pt-4">
-              <h3 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                <Eye size={12} />
-                {tailoredResult ? "Tailored Resume — Review Changes" : "Master Resume Preview"}
-              </h3>
+          </div>
 
-              {/* Resume Document Container — Shows real-time preview */}
-              {previewPdfUrl ? (
-                <div className="bg-white rounded-lg shadow-md border border-gray-200 w-full h-[600px] overflow-hidden">
-                  <iframe 
-                    src={previewPdfUrl} 
-                    className="w-full h-full border-none"
-                    title="Resume Preview"
-                  />
-                </div>
-              ) : (
-                <div className="bg-white rounded-lg shadow-md border border-gray-200 p-5 text-center text-gray-500">
-                  <p>No original PDF available for preview.</p>
-                </div>
-              )}
-            </div>
-          )}
+          {/* Right Panel: Full Resume Document View */}
+          <div className="flex flex-col gap-0 border-t lg:border-t-0 lg:border-l border-gray-200 pt-4 lg:pt-0 lg:pl-6 w-full lg:sticky lg:top-4">
+            <h3 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <Eye size={12} />
+              {tailoredResult ? "Tailored Resume — Review Changes" : "Master Resume Preview"}
+            </h3>
+
+            {/* Resume Document Container — Shows real-time preview (borderless, no grey toolbar) */}
+            {previewPdfUrl ? (
+              <div className="w-full h-[600px] lg:h-[calc(100vh-100px)] overflow-hidden">
+                <iframe 
+                  src={`${previewPdfUrl}#toolbar=0`} 
+                  className="w-full h-full border-none"
+                  title="Resume Preview"
+                />
+              </div>
+            ) : (
+              <div className="p-5 text-center text-gray-500">
+                <p>No original PDF available for preview.</p>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

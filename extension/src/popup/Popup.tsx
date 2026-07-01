@@ -18,16 +18,16 @@ export default function Popup() {
     loadResume();
   }, []);
 
-  const openSidepanel = () => {
-    if (typeof chrome !== "undefined" && chrome.tabs) {
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs: chrome.tabs.Tab[]) => {
-        const activeTab = tabs[0];
-        if (activeTab?.id) {
-          // Open the sidepanel programmatically on action button click
-          chrome.sidePanel.open({ tabId: activeTab.id }).catch((err: Error) => {
-            console.error("Failed to open side panel:", err);
-          });
-        }
+  const openCustomizerWindow = () => {
+    if (typeof chrome !== "undefined" && chrome.windows) {
+      chrome.windows.create({
+        url: chrome.runtime.getURL("src/sidepanel/index.html"),
+        type: "popup",
+        width: 1050,
+        height: 850,
+        focused: true
+      }).catch((err: Error) => {
+        console.error("Failed to open customizer window:", err);
       });
     }
   };
@@ -69,7 +69,7 @@ export default function Popup() {
 
       {/* Open Button */}
       <button
-        onClick={openSidepanel}
+        onClick={openCustomizerWindow}
         className="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 font-semibold text-xs text-white shadow-lg shadow-indigo-500/20 hover:opacity-95 transition-opacity flex items-center justify-center gap-2"
       >
         <Sparkles size={12} />
