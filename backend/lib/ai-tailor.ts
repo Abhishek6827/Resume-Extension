@@ -155,7 +155,7 @@ function generateChanges(
     const tailJob = tailored.experience?.[i];
     if (!origJob || !tailJob) continue;
 
-    const maxBullets = Math.max(origJob.highlights?.length || 0, tailJob.highlights?.length || 0);
+    const maxBullets = Math.min(origJob.highlights?.length || 0, tailJob.highlights?.length || 0);
     for (let j = 0; j < maxBullets; j++) {
       const origBullet = origJob.highlights?.[j] || "";
       const tailBullet = tailJob.highlights?.[j] || "";
@@ -184,7 +184,7 @@ function generateChanges(
       tailProj.description || ""
     );
 
-    const maxProjBullets = Math.max(origProj.highlights?.length || 0, tailProj.highlights?.length || 0);
+    const maxProjBullets = Math.min(origProj.highlights?.length || 0, tailProj.highlights?.length || 0);
     for (let j = 0; j < maxProjBullets; j++) {
       const origBullet = origProj.highlights?.[j] || "";
       const tailBullet = tailProj.highlights?.[j] || "";
