@@ -30,6 +30,19 @@ interface PageGridInfo {
   height: number;
 }
 
+function safeDecodeURIComponent(str: string): string {
+  try {
+    return decodeURIComponent(str);
+  } catch {
+    try {
+      // Escape any lone percent signs (percent not followed by two hex digits) and try decoding again
+      return decodeURIComponent(str.replace(/%(?![0-9a-fA-F]{2})/g, "%25"));
+    } catch {
+      return str;
+    }
+  }
+}
+
 /**
  * Extract text items with positions and page dimensions from pdf2json.
  * pdf2json gives coordinates in "grid units" — we convert to PDF points
@@ -66,7 +79,7 @@ function extractTextWithPositions(
               if (!textItem.R || textItem.R.length === 0) continue;
 
               for (const run of textItem.R) {
-                const text = decodeURIComponent(run.T || "");
+                const text = safeDecodeURIComponent(run.T || "");
                 if (!text.trim()) continue;
 
                 const fontSize = run.TS ? run.TS[1] : 10;
