@@ -57,15 +57,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
  * Context menu listener
  */
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === "rt-use-as-jd" && tab?.id) {
+  const tabId = tab?.id;
+  if (info.menuItemId === "rt-use-as-jd" && tabId) {
     const selection = info.selectionText || "";
     cachedJDText = selection;
 
     chrome.storage.local.set({ rt_last_detected_jd: selection }).then(() => {
-      chrome.tabs.sendMessage(tab.id, { type: "OPEN_IN_PAGE_MODAL" }).catch(err => {
+      chrome.tabs.sendMessage(tabId, { type: "OPEN_IN_PAGE_MODAL" }).catch(err => {
         console.error("Failed to send OPEN_IN_PAGE_MODAL to tab:", err);
       });
-      chrome.action.setBadgeText({ text: "✨", tabId: tab.id });
+      chrome.action.setBadgeText({ text: "✨", tabId: tabId });
     });
   }
 });

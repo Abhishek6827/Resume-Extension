@@ -97,7 +97,7 @@ function openInPageModal() {
 
   // Click on backdrop to close
   modalElement.addEventListener("click", (e) => {
-    if (e.target === modalElement) {
+    if (modalElement && e.target === modalElement) {
       document.body.removeChild(modalElement);
       modalElement = null;
     }
@@ -107,7 +107,7 @@ function openInPageModal() {
 }
 
 // Listen for messages to open the modal from the background/sidepanel
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === "OPEN_IN_PAGE_MODAL") {
     openInPageModal();
     sendResponse({ status: "success" });
