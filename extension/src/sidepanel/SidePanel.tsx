@@ -317,86 +317,96 @@ export default function SidePanel() {
           ...currentResult,
           changes: [...currentResult.changes, ...newChanges]
         };
-        setTailoredResult({ ...currentResult });
-        saveTailoredResult(currentResult);
+        setTailoredResult(prev => {
+          if (!prev) return currentResult;
+          const updated = {
+            ...prev,
+            changes: [...prev.changes, ...newChanges]
+          };
+          saveTailoredResult(updated);
+          return updated;
+        });
       };
 
-      // Await all other tailoring tasks in parallel
-      const [summaryRes, experienceRes, projectsRes, skillsRes] = await Promise.all([
-        summaryPromise,
-        experiencePromise,
-        projectsPromise,
-        skillsPromise
-      ]);
+      // Wait for all other tailoring tasks in parallel but append their results instantly as they finish
+      const tasks = [];
+
+      tasks.push(summaryPromise.then(summaryRes => {
+        if (summaryRes && summaryRes.summary) {
+          const ch = diffHelper("summary", "summary", "Professional Summary", resume.summary, summaryRes.summary);
+          if (ch) appendChanges([ch]);
+        }
+      }));
+
+      tasks.push(experiencePromise.then(experienceRes => {
+        const newCh: TailoredChange[] = [];
+        if (experienceRes && experienceRes.experience && Array.isArray(experienceRes.experience)) {
+          for (let i = 0; i < resume.experience.length; i++) {
+            const origJob = resume.experience[i];
+            const tailJob = experienceRes.experience[i];
+            if (!tailJob) continue;
+            
+            const maxBullets = Math.max(origJob.highlights?.length || 0, tailJob.highlights?.length || 0);
+            for (let j = 0; j < maxBullets; j++) {
+              const origB = origJob.highlights?.[j] || "";
+              const tailB = tailJob.highlights?.[j] || "";
+              const ch = diffHelper("experience", `experience[${i}].highlights[${j}]`, `${origJob.role} at ${origJob.company} — Bullet ${j + 1}`, origB, tailB);
+              if (ch) newCh.push(ch);
+            }
+          }
+        }
+        appendChanges(newCh);
+      }));
+
+      tasks.push(projectsPromise.then(projectsRes => {
+        const newCh: TailoredChange[] = [];
+        if (projectsRes && projectsRes.projects && Array.isArray(projectsRes.projects)) {
+          for (let i = 0; i < resume.projects.length; i++) {
+            const origP = resume.projects[i];
+            const tailP = projectsRes.projects[i];
+            if (!tailP) continue;
+            
+            const chDesc = diffHelper("projects", `projects[${i}].description`, `${origP.name} — Description`, origP.description || "", tailP.description || "");
+            if (chDesc) newCh.push(chDesc);
+            
+            const maxBullets = Math.max(origP.highlights?.length || 0, tailP.highlights?.length || 0);
+            for (let j = 0; j < maxBullets; j++) {
+              const origB = origP.highlights?.[j] || "";
+              const tailB = tailP.highlights?.[j] || "";
+              const chB = diffHelper("projects", `projects[${i}].highlights[${j}]`, `${origP.name} — Bullet ${j + 1}`, origB, tailB);
+              if (chB) newCh.push(chB);
+            }
+          }
+        }
+        appendChanges(newCh);
+      }));
+
+      tasks.push(skillsPromise.then(skillsRes => {
+        const newCh: TailoredChange[] = [];
+        if (skillsRes && skillsRes.skills) {
+          const cats: Array<{ key: keyof SkillsData; label: string }> = [
+            { key: "languages", label: "Skills — Languages" },
+            { key: "frameworks", label: "Skills — Frameworks" },
+            { key: "tools", label: "Skills — Tools/Databases" },
+            { key: "other", label: "Skills — Other" },
+          ];
+          for (const cat of cats) {
+            const origVal = (resume.skills[cat.key] || []).join(", ");
+            const tailVal = (skillsRes.skills[cat.key] || []).join(", ");
+            const ch = diffHelper("skills", `skills.${cat.key}`, cat.label, origVal, tailVal);
+            if (ch) newCh.push(ch);
+          }
+        }
+        appendChanges(newCh);
+      }));
+
+      await Promise.all(tasks);
 
       if (failedSections.length > 0) {
         const errorMsg = "Failed to tailor some sections due to LLM provider errors:\n" + 
           failedSections.map(f => `• ${f.section}: ${f.error}`).join("\n");
         setError(errorMsg);
       }
-
-      const allNewChanges: TailoredChange[] = [];
-
-      // 2. Process Summary
-      if (summaryRes && summaryRes.summary) {
-        const ch = diffHelper("summary", "summary", "Professional Summary", resume.summary, summaryRes.summary);
-        if (ch) allNewChanges.push(ch);
-      }
-
-      // 3. Process Experience
-      if (experienceRes && experienceRes.experience && Array.isArray(experienceRes.experience)) {
-        for (let i = 0; i < resume.experience.length; i++) {
-          const origJob = resume.experience[i];
-          const tailJob = experienceRes.experience[i];
-          if (!tailJob) continue;
-          
-          const maxBullets = Math.max(origJob.highlights?.length || 0, tailJob.highlights?.length || 0);
-          for (let j = 0; j < maxBullets; j++) {
-            const origB = origJob.highlights?.[j] || "";
-            const tailB = tailJob.highlights?.[j] || "";
-            const ch = diffHelper("experience", `experience[${i}].highlights[${j}]`, `${origJob.role} at ${origJob.company} — Bullet ${j + 1}`, origB, tailB);
-            if (ch) allNewChanges.push(ch);
-          }
-        }
-      }
-
-      // 4. Process Projects
-      if (projectsRes && projectsRes.projects && Array.isArray(projectsRes.projects)) {
-        for (let i = 0; i < resume.projects.length; i++) {
-          const origP = resume.projects[i];
-          const tailP = projectsRes.projects[i];
-          if (!tailP) continue;
-          
-          const chDesc = diffHelper("projects", `projects[${i}].description`, `${origP.name} — Description`, origP.description || "", tailP.description || "");
-          if (chDesc) allNewChanges.push(chDesc);
-          
-          const maxBullets = Math.max(origP.highlights?.length || 0, tailP.highlights?.length || 0);
-          for (let j = 0; j < maxBullets; j++) {
-            const origB = origP.highlights?.[j] || "";
-            const tailB = tailP.highlights?.[j] || "";
-            const chB = diffHelper("projects", `projects[${i}].highlights[${j}]`, `${origP.name} — Bullet ${j + 1}`, origB, tailB);
-            if (chB) allNewChanges.push(chB);
-          }
-        }
-      }
-
-      // 5. Process Skills
-      if (skillsRes && skillsRes.skills) {
-        const cats: Array<{ key: keyof SkillsData; label: string }> = [
-          { key: "languages", label: "Skills — Languages" },
-          { key: "frameworks", label: "Skills — Frameworks" },
-          { key: "tools", label: "Skills — Tools/Databases" },
-          { key: "other", label: "Skills — Other" },
-        ];
-        for (const cat of cats) {
-          const origVal = (resume.skills[cat.key] || []).join(", ");
-          const tailVal = (skillsRes.skills[cat.key] || []).join(", ");
-          const ch = diffHelper("skills", `skills.${cat.key}`, cat.label, origVal, tailVal);
-          if (ch) allNewChanges.push(ch);
-        }
-      }
-
-      appendChanges(allNewChanges);
 
     } catch (err: any) {
       setError(err.message || "Failed to tailor resume. Please check your API keys or backend connectivity.");
@@ -701,16 +711,16 @@ export default function SidePanel() {
               className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 resize-none placeholder:text-gray-400 text-gray-800"
             />
 
-            {isTailoring ? (
+            {isTailoring && !tailoredResult ? (
               <div className="w-full py-3 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 font-semibold text-xs flex items-center justify-center gap-2 animate-pulse">
                 <RefreshCw size={14} className="animate-spin" />
                 {isParsingJD ? "Structuring Job Description..." : "AI Customizing Resume..."}
               </div>
-            ) : (
+            ) : !isTailoring ? (
               <div className="w-full py-2 text-center text-[10px] text-gray-400">
                 AI will automatically tailor your resume when you paste a JD.
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* AI TAILORED STATS */}
@@ -778,12 +788,21 @@ export default function SidePanel() {
               </div>
 
               {/* CHANGE REVIEW BAR */}
-              {changeStats && changeStats.total > 0 && (
+              {((changeStats && changeStats.total > 0) || isTailoring) && (
                 <div className="p-3 rounded-xl bg-gray-50 border border-gray-200">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
-                      <Sparkles size={12} className="text-amber-500" />
-                      {changeStats.total} AI Changes to Review
+                      {isTailoring ? (
+                        <>
+                          <RefreshCw size={12} className="text-indigo-500 animate-spin" />
+                          <span className="text-indigo-600">Generating AI Suggestions...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles size={12} className="text-amber-500" />
+                          {changeStats?.total || 0} AI Changes to Review
+                        </>
+                      )}
                     </h4>
                     <div className="flex gap-1.5">
                       <button
@@ -801,31 +820,35 @@ export default function SidePanel() {
                     </div>
                   </div>
                   {/* Progress bar */}
-                  <div className="flex gap-0.5 h-1.5 rounded-full overflow-hidden bg-gray-200">
-                    {changeStats.approved > 0 && (
-                      <div
-                        className="bg-emerald-500 rounded-full transition-all duration-300"
-                        style={{ width: `${(changeStats.approved / changeStats.total) * 100}%` }}
-                      />
-                    )}
-                    {changeStats.rejected > 0 && (
-                      <div
-                        className="bg-rose-500 rounded-full transition-all duration-300"
-                        style={{ width: `${(changeStats.rejected / changeStats.total) * 100}%` }}
-                      />
-                    )}
-                    {changeStats.pending > 0 && (
-                      <div
-                        className="bg-amber-400 rounded-full transition-all duration-300"
-                        style={{ width: `${(changeStats.pending / changeStats.total) * 100}%` }}
-                      />
-                    )}
-                  </div>
-                  <div className="flex gap-3 mt-1.5 text-[10px] text-gray-500 mb-4">
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" />{changeStats.approved} approved</span>
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500" />{changeStats.rejected} rejected</span>
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" />{changeStats.pending} pending</span>
-                  </div>
+                  {changeStats && changeStats.total > 0 && (
+                    <>
+                      <div className="flex gap-0.5 h-1.5 rounded-full overflow-hidden bg-gray-200">
+                        {changeStats.approved > 0 && (
+                          <div
+                            className="bg-emerald-500 rounded-full transition-all duration-300"
+                            style={{ width: `${(changeStats.approved / changeStats.total) * 100}%` }}
+                          />
+                        )}
+                        {changeStats.rejected > 0 && (
+                          <div
+                            className="bg-rose-500 rounded-full transition-all duration-300"
+                            style={{ width: `${(changeStats.rejected / changeStats.total) * 100}%` }}
+                          />
+                        )}
+                        {changeStats.pending > 0 && (
+                          <div
+                            className="bg-amber-400 rounded-full transition-all duration-300"
+                            style={{ width: `${(changeStats.pending / changeStats.total) * 100}%` }}
+                          />
+                        )}
+                      </div>
+                      <div className="flex gap-3 mt-1.5 text-[10px] text-gray-500 mb-4">
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" />{changeStats.approved} approved</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500" />{changeStats.rejected} rejected</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" />{changeStats.pending} pending</span>
+                      </div>
+                    </>
+                  )}
 
                   {/* Individual Changes List */}
                   <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">

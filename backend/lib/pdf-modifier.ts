@@ -149,7 +149,8 @@ function normalizeText(text: string): string {
  */
 function findMatchingItems(
   items: PDFTextItem[],
-  originalText: string
+  originalText: string,
+  usedItems: Set<PDFTextItem>
 ): PDFTextItem[] {
   const normalizedTarget = normalizeText(originalText);
   if (!normalizedTarget) return [];
@@ -157,6 +158,7 @@ function findMatchingItems(
   // Group items by page and sort them top-to-bottom, left-to-right
   const pageGroups = new Map<number, PDFTextItem[]>();
   for (const item of items) {
+    if (usedItems.has(item)) continue; // Skip already used items
     const group = pageGroups.get(item.pageIndex) || [];
     group.push(item);
     pageGroups.set(item.pageIndex, group);
@@ -164,8 +166,15 @@ function findMatchingItems(
 
   for (const [pageIdx, pageItems] of pageGroups) {
     const sorted = pageItems.sort((a, b) => a.y - b.y || a.x - b.x);
+    console.log(`[DEBUG] findMatchingItems sorted items for page ${pageIdx}:`);
+    for (let k = 0; k < Math.min(sorted.length, 15); k++) {
+      console.log(`  [${k}] Text: "${sorted[k].text}", y: ${sorted[k].y.toFixed(2)}, x: ${sorted[k].x.toFixed(2)}`);
+    }
 
     for (let i = 0; i < sorted.length; i++) {
+      const firstItemText = normalizeText(sorted[i].text);
+      if (!firstItemText || !normalizedTarget.startsWith(firstItemText)) continue;
+
       let combined = "";
       const group: PDFTextItem[] = [];
 
@@ -184,11 +193,11 @@ function findMatchingItems(
         group.push(sorted[j]);
 
         // If the combined text contains the target or the target contains the combined text (and it's long enough)
-        if (combined.includes(normalizedTarget) || (normalizedTarget.includes(combined) && combined.length >= normalizedTarget.length * 0.8)) {
+        if (combined.includes(normalizedTarget) || (normalizedTarget.includes(combined) && combined.length >= normalizedTarget.length * 0.95)) {
           // Keep adding items that are on the same line as the last item to ensure we blank out the whole line
           const lastItem = sorted[j];
           for (let k = j + 1; k < sorted.length; k++) {
-            if (Math.abs(sorted[k].y - lastItem.y) < 1.0) {
+            if (Math.abs(sorted[k].y - lastItem.y) < 0.15) { // Narrowed from 1.0 to 0.15 to ensure same line
               group.push(sorted[k]);
             } else {
               break;
@@ -209,13 +218,15 @@ function findMatchingItems(
   if (normalizedTarget.length > 15) {
     const searchChunk = normalizedTarget.substring(0, 15);
     for (const item of items) {
+      if (usedItems.has(item)) continue;
       if (normalizeText(item.text).includes(searchChunk)) {
         const result = [item];
         const sameLineItems = items.filter(
           (other) =>
             other !== item &&
+            !usedItems.has(other) &&
             other.pageIndex === item.pageIndex &&
-            Math.abs(other.y - item.y) < 1.5
+            Math.abs(other.y - item.y) < 0.2
         );
         result.push(...sameLineItems);
         return result;
@@ -262,15 +273,21 @@ export async function modifyOriginalPDF(
 
   const pdfPages = pdfDoc.getPages();
   let changesApplied = 0;
+  const usedItems = new Set<PDFTextItem>();
 
   for (const change of changes) {
-    const matchedItems = findMatchingItems(items, change.originalValue);
+    const matchedItems = findMatchingItems(items, change.originalValue, usedItems);
 
     if (matchedItems.length === 0) {
       console.warn(
         `[pdf-modifier] No match found for: "${change.originalValue.substring(0, 60)}..."`
       );
       continue;
+    }
+
+    // Mark matched items as used to prevent duplicate replacements
+    for (const item of matchedItems) {
+      usedItems.add(item);
     }
 
     console.log(
@@ -295,39 +312,52 @@ export async function modifyOriginalPDF(
     const scaleX = pageWidth / gridPage.width;
     const scaleY = pageHeight / gridPage.height;
 
-    // Convert grid coordinates to PDF points
-    // pdf2json: origin is top-left, y increases downward
-    // PDF: origin is bottom-left, y increases upward
-    const pdfX = firstItem.x * scaleX;
-    const pdfY = pageHeight - firstItem.y * scaleY - firstItem.fontSize;
+    // Calculate the bounding box of matched items to cover ONLY the text block
+    let minX = firstItem.x;
+    let maxX = firstItem.x;
+    let minY = firstItem.y;
+    let maxY = firstItem.y;
+    let lastItem = firstItem;
 
-    // 1. Draw individual white rectangles to cover ONLY the matched text items characters
     for (const item of matchedItems) {
-      const itemX = item.x * scaleX - 1;
-      const itemY = pageHeight - item.y * scaleY - item.fontSize;
-      
-      let itemFont = helvetica;
-      if (item.isBold && item.isItalic) {
-        itemFont = helveticaBoldOblique;
-      } else if (item.isBold) {
-        itemFont = helveticaBold;
-      } else if (item.isItalic) {
-        itemFont = helveticaOblique;
+      minX = Math.min(minX, item.x);
+      if (item.x >= maxX) {
+        maxX = item.x;
+        lastItem = item;
       }
-
-      // Measure character length accurately to draw white box only over it
-      const cleanText = sanitizeForWinAnsi(item.text);
-      const itemWidth = itemFont.widthOfTextAtSize(cleanText, item.fontSize) + 2;
-      const itemHeight = item.fontSize * 1.25;
-
-      page.drawRectangle({
-        x: itemX,
-        y: itemY - 1,
-        width: itemWidth,
-        height: itemHeight,
-        color: rgb(1, 1, 1), // white
-      });
+      minY = Math.min(minY, item.y);
+      maxY = Math.max(maxY, item.y);
     }
+
+    // Convert coordinates to PDF points
+    const pdfX = minX * scaleX;
+    const pdfY = pageHeight - minY * scaleY - firstItem.fontSize;
+
+    // Choose font based on the original text's style for width measurement
+    let itemFont = helvetica;
+    if (firstItem.isBold && firstItem.isItalic) {
+      itemFont = helveticaBoldOblique;
+    } else if (firstItem.isBold) {
+      itemFont = helveticaBold;
+    } else if (firstItem.isItalic) {
+      itemFont = helveticaOblique;
+    }
+
+    // Estimate width of last item accurately
+    const cleanLastText = sanitizeForWinAnsi(lastItem.text);
+    const lastItemWidthPoints = itemFont.widthOfTextAtSize(cleanLastText, lastItem.fontSize) + 2;
+
+    const coverWidth = (maxX - minX) * scaleX + lastItemWidthPoints;
+    const coverHeight = (maxY - minY) * scaleY + firstItem.fontSize * 1.4;
+
+    // Draw single white rectangle covering exactly the matched text box area (prevents erasing dates)
+    page.drawRectangle({
+      x: pdfX - 2,
+      y: pageHeight - maxY * scaleY - firstItem.fontSize - 3,
+      width: coverWidth + 4,
+      height: coverHeight + 6,
+      color: rgb(1, 1, 1), // white
+    });
 
     // Choose font based on the original text's style for the replacement text
     let font = helvetica;
@@ -341,9 +371,10 @@ export async function modifyOriginalPDF(
 
     const fontSize = Math.max(firstItem.fontSize * 0.9, 7);
 
-    // Calculate maximum width: from pdfX to the right margin of the page
+    // Calculate maximum width to wrap according to original text block dimensions, but allow at least 120 points
     const rightMargin = 40; 
-    const maxWidth = pageWidth - pdfX - rightMargin;
+    const pageRightRemainingWidth = pageWidth - pdfX - rightMargin;
+    const wrappingWidth = Math.max(coverWidth, 120);
 
     // Draw the new text at the same position
     const cleanReplacement = sanitizeForWinAnsi(change.newValue);
@@ -353,7 +384,7 @@ export async function modifyOriginalPDF(
       size: fontSize,
       font,
       color: rgb(0.067, 0.094, 0.153), // #111827
-      maxWidth: Math.max(maxWidth, 120), // Prevent vertical single letters wrapping by ensuring healthy width
+      maxWidth: Math.min(wrappingWidth, pageRightRemainingWidth),
       lineHeight: fontSize * 1.35,
     });
 

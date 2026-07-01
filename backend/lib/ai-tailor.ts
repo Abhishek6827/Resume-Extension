@@ -289,6 +289,7 @@ CRITICAL SAFETY RULES:
 2. Keep all factual details (companies, degrees, years, roles) exactly the same.
 3. You may rewrite, reorder, and refine phrasing of bullet points to naturally incorporate keywords and highlight relevant aspects of the candidate's actual experience.
 4. Highlight outcomes and metrics if present.
+5. You MUST preserve the exact same number of bullet points in the "highlights" array for each work experience entry as the original. Do not merge bullet points, do not split bullet points, and do not add or delete bullet points. Rewrite each original bullet point at its exact corresponding index.
 
 Return ONLY a valid JSON object matching this exact structure (keep the same array length and structure, just rewrite the highlights):
 {
@@ -326,6 +327,7 @@ export async function tailorProjectsWithAI(
 CRITICAL SAFETY RULES:
 1. NEVER invent any projects, features, or tech stack not present in the original.
 2. You may refine phrasing of descriptions and bullet points to naturally incorporate keywords.
+3. You MUST preserve the exact same number of bullet points in the "highlights" array for each project entry as the original. Do not merge bullet points, do not split bullet points, and do not add or delete bullet points. Rewrite each original bullet point at its exact corresponding index.
 
 Return ONLY a valid JSON object matching this exact structure (keep the same array length and structure):
 {
