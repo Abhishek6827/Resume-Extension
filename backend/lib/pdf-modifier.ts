@@ -166,14 +166,16 @@ function findMatchingItems(
 
   for (const [pageIdx, pageItems] of pageGroups) {
     const sorted = pageItems.sort((a, b) => a.y - b.y || a.x - b.x);
-    console.log(`[DEBUG] findMatchingItems sorted items for page ${pageIdx}:`);
-    for (let k = 0; k < Math.min(sorted.length, 15); k++) {
-      console.log(`  [${k}] Text: "${sorted[k].text}", y: ${sorted[k].y.toFixed(2)}, x: ${sorted[k].x.toFixed(2)}`);
-    }
 
     for (let i = 0; i < sorted.length; i++) {
       const firstItemText = normalizeText(sorted[i].text);
-      if (!firstItemText || !normalizedTarget.startsWith(firstItemText)) continue;
+      if (!firstItemText) continue;
+      // The first item must overlap with the target:
+      // - Either the target starts with this fragment (ideal case), OR
+      // - This fragment appears inside the target AND is long enough (>=8 chars) to be a reliable anchor
+      const startsWithMatch = normalizedTarget.startsWith(firstItemText);
+      const containsMatch = firstItemText.length >= 8 && normalizedTarget.includes(firstItemText);
+      if (!startsWithMatch && !containsMatch) continue;
 
       let combined = "";
       const group: PDFTextItem[] = [];
@@ -276,6 +278,11 @@ export async function modifyOriginalPDF(
   const usedItems = new Set<PDFTextItem>();
 
   for (const change of changes) {
+    // Skip trivially short or empty change values (e.g. "..." artifacts from LLM)
+    if (!change.originalValue || change.originalValue.trim().length < 10) {
+      console.warn(`[pdf-modifier] Skipping trivially short change: "${change.originalValue}"`);
+      continue;
+    }
     const matchedItems = findMatchingItems(items, change.originalValue, usedItems);
 
     if (matchedItems.length === 0) {
