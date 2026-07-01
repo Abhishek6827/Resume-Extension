@@ -85,6 +85,8 @@ export interface TailoredResult {
   scoreReasoning: string;
   matchedKeywords: string[];
   missingKeywords: string[];
+  jobTitle?: string;
+  company?: string;
 }
 
 export interface LLMResponse {

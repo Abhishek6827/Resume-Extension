@@ -1,9 +1,15 @@
 // ─── Resume Tailor — Background Service Worker ─────────────
 
-// Configure side panel opening behavior
-chrome.sidePanel
-  .setPanelBehavior({ openPanelOnActionClick: true })
-  .catch((error) => console.error("[service-worker] setPanelBehavior error:", error));
+// Open customization window on extension toolbar icon click
+chrome.action.onClicked.addListener(() => {
+  chrome.windows.create({
+    url: chrome.runtime.getURL("src/sidepanel/index.html"),
+    type: "popup",
+    width: 1050,
+    height: 850,
+    focused: true
+  }).catch((err) => console.error("[service-worker] Failed to open customization window:", err));
+});
 
 // Create context menu for manual highlights
 chrome.runtime.onInstalled.addListener(() => {
@@ -38,6 +44,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
     
     sendResponse({ status: "success" });
+  } else if (message.type === "OPEN_CUSTOMIZER") {
+    chrome.windows.create({
+      url: chrome.runtime.getURL("src/sidepanel/index.html"),
+      type: "popup",
+      width: 1050,
+      height: 850,
+      focused: true
+    }).catch((err) => {
+      console.error("[service-worker] Failed to open customizer window:", err);
+    });
+    sendResponse({ status: "success" });
   } else if (message.type === "GET_CACHED_JD") {
     sendResponse({ jdText: cachedJDText });
   }
@@ -53,7 +70,13 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     cachedJDText = selection;
 
     chrome.storage.local.set({ rt_last_detected_jd: selection }).then(() => {
-      chrome.tabs.create({ url: chrome.runtime.getURL("src/sidepanel/index.html") }).catch((err: any) => {
+      chrome.windows.create({
+        url: chrome.runtime.getURL("src/sidepanel/index.html"),
+        type: "popup",
+        width: 1050,
+        height: 850,
+        focused: true
+      }).catch((err: any) => {
         console.error("[service-worker] Failed to open full page tab via context menu:", err);
       });
       chrome.action.setBadgeText({ text: "✨", tabId: tab.id });

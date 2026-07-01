@@ -217,6 +217,8 @@ export default function SidePanel() {
         scoreReasoning: score.scoreReasoning,
         matchedKeywords: score.matchedKeywords,
         missingKeywords: score.missingKeywords,
+        jobTitle: parsedJD.jobTitle,
+        company: parsedJD.company,
       };
       
       setTailoredResult({ ...currentResult });
@@ -352,7 +354,13 @@ export default function SidePanel() {
         originalPdf,
         tailoredResult?.changes
       );
-      triggerDownload(blob, `${dataToExport.name.replace(/\s+/g, "_")}_Tailored.pdf`);
+
+      const candidateName = dataToExport.name.replace(/\s+/g, "_");
+      const title = tailoredResult?.jobTitle ? tailoredResult.jobTitle.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_") : "Tailored";
+      const companyName = tailoredResult?.company ? tailoredResult.company.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_") : "";
+      const filename = `${candidateName}_${title}${companyName ? `_${companyName}` : ""}.pdf`;
+
+      triggerDownload(blob, filename);
     } catch (err: any) {
       setError("PDF generation failed. Check backend server logs.");
     }
@@ -365,7 +373,13 @@ export default function SidePanel() {
 
     try {
       const blob = await exportDOCX(dataToExport);
-      triggerDownload(blob, `${dataToExport.name.replace(/\s+/g, "_")}_Tailored.docx`);
+
+      const candidateName = dataToExport.name.replace(/\s+/g, "_");
+      const title = tailoredResult?.jobTitle ? tailoredResult.jobTitle.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_") : "Tailored";
+      const companyName = tailoredResult?.company ? tailoredResult.company.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_") : "";
+      const filename = `${candidateName}_${title}${companyName ? `_${companyName}` : ""}.docx`;
+
+      triggerDownload(blob, filename);
     } catch (err: any) {
       setError("DOCX generation failed. Check backend server logs.");
     }
