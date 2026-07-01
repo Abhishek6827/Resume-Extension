@@ -104,11 +104,8 @@ function extractTextWithPositions(
  */
 function normalizeText(text: string): string {
   return text
-    .replace(/\s+/g, " ")
-    .replace(/['']/g, "'")
-    .replace(/[""]/g, '"')
-    .trim()
-    .toLowerCase();
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, ""); // strip all whitespace, punctuation, special chars
 }
 
 /**
@@ -120,24 +117,9 @@ function findMatchingItems(
   originalText: string
 ): PDFTextItem[] {
   const normalizedTarget = normalizeText(originalText);
-  const matches: PDFTextItem[] = [];
+  if (!normalizedTarget) return [];
 
-  // Strategy 1: Exact match on a single item
-  for (const item of items) {
-    if (normalizeText(item.text) === normalizedTarget) {
-      return [item];
-    }
-  }
-
-  // Strategy 2: Item contains the target text
-  for (const item of items) {
-    if (normalizeText(item.text).includes(normalizedTarget)) {
-      return [item];
-    }
-  }
-
-  // Strategy 3: Find consecutive items whose combined text contains the target.
-  // Group items by page and sort by y (top to bottom), then x (left to right).
+  // Group items by page and sort them top-to-bottom, left-to-right
   const pageGroups = new Map<number, PDFTextItem[]>();
   for (const item of items) {
     const group = pageGroups.get(item.pageIndex) || [];
@@ -149,68 +131,50 @@ function findMatchingItems(
     const sorted = pageItems.sort((a, b) => a.y - b.y || a.x - b.x);
 
     for (let i = 0; i < sorted.length; i++) {
-      let combined = normalizeText(sorted[i].text);
-      const group = [sorted[i]];
+      let combined = "";
+      const group: PDFTextItem[] = [];
 
-      if (combined.includes(normalizedTarget)) {
-        return group;
-      }
+      for (let j = i; j < sorted.length; j++) {
+        // If items are too far apart vertically (e.g. different paragraph blocks), stop combining.
+        // A standard line height is usually around 1 to 2 grid units. Allow up to 15 grid units to cover a whole bullet block.
+        if (j > i) {
+          const yDiff = Math.abs(sorted[j].y - sorted[j - 1].y);
+          if (yDiff > 15) break; 
+        }
 
-      // Try combining with subsequent items on the same or next line
-      for (let j = i + 1; j < sorted.length && j < i + 10; j++) {
-        const yDiff = Math.abs(sorted[j].y - sorted[i].y);
-        if (yDiff > 2) break; // too far vertically (different line block)
+        const normalizedItemText = normalizeText(sorted[j].text);
+        if (!normalizedItemText) continue;
 
-        combined += " " + normalizeText(sorted[j].text);
+        combined += normalizedItemText;
         group.push(sorted[j]);
 
-        if (combined.includes(normalizedTarget)) {
+        // If the combined text contains the target or the target contains the combined text (and it's long enough)
+        if (combined.includes(normalizedTarget) || (normalizedTarget.includes(combined) && combined.length >= normalizedTarget.length * 0.8)) {
+          // Keep adding items that are on the same line as the last item to ensure we blank out the whole line
+          const lastItem = sorted[j];
+          for (let k = j + 1; k < sorted.length; k++) {
+            if (Math.abs(sorted[k].y - lastItem.y) < 1.0) {
+              group.push(sorted[k]);
+            } else {
+              break;
+            }
+          }
           return group;
         }
-      }
-    }
-  }
-
-  // Strategy 4: Match by first significant words (for long paragraphs/bullets)
-  const targetWords = normalizedTarget.split(/\s+/);
-  if (targetWords.length >= 3) {
-    const searchPhrase = targetWords.slice(0, 4).join(" ");
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      if (normalizeText(item.text).includes(searchPhrase)) {
-        const result = [item];
         
-        // Find other text items on the same page that fall within the vertical span of this paragraph
-        // A paragraph line height is typically 1.5-3 grid units. Let's look for subsequent lines (up to 12 grid units down)
-        const subsequentItems = items.filter(
-          (other) =>
-            other !== item &&
-            other.pageIndex === item.pageIndex &&
-            other.y > item.y &&
-            other.y - item.y < 12 // cover up to 4-5 lines of text
-        );
-        
-        // Filter those subsequent items to only include ones that contain words from our target text
-        const targetWordSet = new Set(targetWords);
-        for (const sub of subsequentItems) {
-          const subWords = normalizeText(sub.text).split(/\s+/);
-          const matchCount = subWords.filter(w => targetWordSet.has(w)).length;
-          // If the line shares at least one word (or is short), it's likely part of the same paragraph
-          if (matchCount > 0 || subWords.length <= 2) {
-            result.push(sub);
-          }
+        // If combined text is way larger than target and doesn't contain it, stop this sequence
+        if (combined.length > normalizedTarget.length * 2 && !combined.includes(normalizedTarget)) {
+           break;
         }
-        return result;
       }
     }
   }
 
-  // Strategy 5: Super aggressive match (just the first highly unique word > 5 chars)
-  const longWords = normalizedTarget.split(/\s+/).filter(w => w.length > 5);
-  if (longWords.length > 0) {
-    const searchPhrase = longWords[0];
+  // Fallback: If no robust sequence match, look for the first highly unique chunk (at least 15 chars)
+  if (normalizedTarget.length > 15) {
+    const searchChunk = normalizedTarget.substring(0, 15);
     for (const item of items) {
-      if (normalizeText(item.text).includes(searchPhrase)) {
+      if (normalizeText(item.text).includes(searchChunk)) {
         const result = [item];
         const sameLineItems = items.filter(
           (other) =>
