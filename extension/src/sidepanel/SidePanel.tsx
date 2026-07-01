@@ -143,20 +143,24 @@ export default function SidePanel() {
   useEffect(() => {
     if (typeof chrome !== "undefined" && chrome.storage?.local) {
       chrome.storage.local.set({ rt_sidepanel_open: true });
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]?.id) {
-          chrome.tabs.sendMessage(tabs[0].id, { type: "SIDEPANEL_OPENED" }).catch(() => {});
-        }
+      chrome.tabs.query({ active: true }, (tabs) => {
+        tabs.forEach((tab) => {
+          if (tab.id) {
+            chrome.tabs.sendMessage(tab.id, { type: "SIDEPANEL_OPENED" }).catch(() => {});
+          }
+        });
       });
     }
 
     return () => {
       if (typeof chrome !== "undefined" && chrome.storage?.local) {
         chrome.storage.local.set({ rt_sidepanel_open: false });
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          if (tabs[0]?.id) {
-            chrome.tabs.sendMessage(tabs[0].id, { type: "SIDEPANEL_CLOSED" }).catch(() => {});
-          }
+        chrome.tabs.query({ active: true }, (tabs) => {
+          tabs.forEach((tab) => {
+            if (tab.id) {
+              chrome.tabs.sendMessage(tab.id, { type: "SIDEPANEL_CLOSED" }).catch(() => {});
+            }
+          });
         });
       }
     };
