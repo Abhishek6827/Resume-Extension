@@ -5,6 +5,7 @@
   "description": "AI-powered resume customization sidepanel tool with dynamic job description detection.",
   "permissions": [
     "activeTab",
+    "tabs",
     "sidePanel",
     "storage",
     "unlimitedStorage",
@@ -45,7 +46,10 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["src/sidepanel/index.html"],
+      "resources": [
+        "src/sidepanel/index.html",
+        "assets/*"
+      ],
       "matches": ["<all_urls>"]
     }
   ]
