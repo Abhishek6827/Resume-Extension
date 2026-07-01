@@ -149,10 +149,10 @@ function findMatchingItems(
 
       for (let j = i; j < sorted.length; j++) {
         // If items are too far apart vertically (e.g. different paragraph blocks), stop combining.
-        // A standard line height is usually around 1 to 2 grid units. Allow up to 15 grid units to cover a whole bullet block.
+        // A standard line height is usually around 1 to 2 grid units. Allow up to 2.2 grid units to cover adjacent lines in a paragraph.
         if (j > i) {
           const yDiff = Math.abs(sorted[j].y - sorted[j - 1].y);
-          if (yDiff > 15) break; 
+          if (yDiff > 2.2) break; 
         }
 
         const normalizedItemText = normalizeText(sorted[j].text);
@@ -176,7 +176,7 @@ function findMatchingItems(
         }
         
         // If combined text is way larger than target and doesn't contain it, stop this sequence
-        if (combined.length > normalizedTarget.length * 2 && !combined.includes(normalizedTarget)) {
+        if (combined.length > normalizedTarget.length * 1.5 && !combined.includes(normalizedTarget)) {
            break;
         }
       }
@@ -193,7 +193,7 @@ function findMatchingItems(
           (other) =>
             other !== item &&
             other.pageIndex === item.pageIndex &&
-            Math.abs(other.y - item.y) < 3.0
+            Math.abs(other.y - item.y) < 1.5
         );
         result.push(...sameLineItems);
         return result;
@@ -279,37 +279,34 @@ export async function modifyOriginalPDF(
     const pdfX = firstItem.x * scaleX;
     const pdfY = pageHeight - firstItem.y * scaleY - firstItem.fontSize;
 
-    // Calculate the bounding box to cover all matched items
-    let minX = firstItem.x;
-    let maxX = firstItem.x;
-    let minY = firstItem.y;
-    let maxY = firstItem.y;
-
+    // 1. Draw individual white rectangles to cover ONLY the matched text items characters
     for (const item of matchedItems) {
-      minX = Math.min(minX, item.x);
-      maxX = Math.max(maxX, item.x + item.text.length * 0.3);
-      minY = Math.min(minY, item.y);
-      maxY = Math.max(maxY, item.y);
+      const itemX = item.x * scaleX - 1;
+      const itemY = pageHeight - item.y * scaleY - item.fontSize;
+      
+      let itemFont = helvetica;
+      if (item.isBold && item.isItalic) {
+        itemFont = helveticaBoldOblique;
+      } else if (item.isBold) {
+        itemFont = helveticaBold;
+      } else if (item.isItalic) {
+        itemFont = helveticaOblique;
+      }
+
+      // Measure character length accurately to draw white box only over it
+      const itemWidth = itemFont.widthOfTextAtSize(item.text, item.fontSize) + 2;
+      const itemHeight = item.fontSize * 1.25;
+
+      page.drawRectangle({
+        x: itemX,
+        y: itemY - 1,
+        width: itemWidth,
+        height: itemHeight,
+        color: rgb(1, 1, 1), // white
+      });
     }
 
-    // Cover width: from the first item's x to the right margin
-    const coverX = pdfX - 2;
-    const rightMargin = 40; // approximate right margin in PDF points
-    const coverWidth = pageWidth - coverX - rightMargin;
-    // Cover height: from first item to last item + font height
-    const coverHeight =
-      (maxY - minY) * scaleY + firstItem.fontSize * 1.5;
-
-    // Draw white rectangle to cover the original text
-    page.drawRectangle({
-      x: coverX,
-      y: pdfY - coverHeight + firstItem.fontSize * 1.2,
-      width: coverWidth + 4,
-      height: coverHeight + 4,
-      color: rgb(1, 1, 1), // white
-    });
-
-    // Choose font based on the original text's style
+    // Choose font based on the original text's style for the replacement text
     let font = helvetica;
     if (firstItem.isBold && firstItem.isItalic) {
       font = helveticaBoldOblique;
@@ -321,6 +318,10 @@ export async function modifyOriginalPDF(
 
     const fontSize = Math.max(firstItem.fontSize * 0.9, 7);
 
+    // Calculate maximum width: from pdfX to the right margin of the page
+    const rightMargin = 40; 
+    const maxWidth = pageWidth - pdfX - rightMargin;
+
     // Draw the new text at the same position
     page.drawText(change.newValue, {
       x: pdfX,
@@ -328,7 +329,7 @@ export async function modifyOriginalPDF(
       size: fontSize,
       font,
       color: rgb(0.067, 0.094, 0.153), // #111827
-      maxWidth: coverWidth - 2,
+      maxWidth: Math.max(maxWidth, 120), // Prevent vertical single letters wrapping by ensuring healthy width
       lineHeight: fontSize * 1.35,
     });
 
