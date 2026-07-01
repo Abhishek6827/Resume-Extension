@@ -40,22 +40,63 @@ async function tryGroq(options: LLMCallOptions): Promise<LLMResponse> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("GROQ_API_KEY not set");
 
+  // Compress whitespace to save precious tokens and bypass strict limits
+  const cleanedUserMessage = options.userMessage
+    .replace(/\r\n/g, "\n")
+    .replace(/\n+/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .trim();
+
   const groq = new Groq({ apiKey, maxRetries: 1, timeout: 30000 });
-  const response = await groq.chat.completions.create({
-    model: "openai/gpt-oss-120b",
-    messages: [
-      { role: "system", content: options.systemPrompt },
-      { role: "user", content: options.userMessage },
-    ],
-    temperature: options.temperature ?? 0.3,
-    max_tokens: options.maxTokens ?? 8000,
-    response_format: { type: "json_object" },
-  });
+  
+  try {
+    const response = await groq.chat.completions.create({
+      model: "openai/gpt-oss-120b",
+      messages: [
+        { role: "system", content: options.systemPrompt },
+        { role: "user", content: cleanedUserMessage },
+      ],
+      temperature: options.temperature ?? 0.3,
+      max_tokens: options.maxTokens ?? 8000,
+      response_format: { type: "json_object" },
+    });
 
-  const content = response.choices[0]?.message?.content || "";
-  if (!content) throw new Error("Empty Groq response");
+    const content = response.choices[0]?.message?.content || "";
+    if (!content) throw new Error("Empty Groq response");
 
-  return { content, provider: "groq", model: "openai/gpt-oss-120b" };
+    return { content, provider: "groq", model: "openai/gpt-oss-120b" };
+  } catch (err: any) {
+    const isRateOrSizeLimit = 
+      err.status === 413 || 
+      err.status === 429 || 
+      (err.message && (
+        err.message.includes("limit") || 
+        err.message.includes("large") || 
+        err.message.includes("TPM") ||
+        err.message.includes("rate_limit_exceeded")
+      ));
+
+    if (isRateOrSizeLimit) {
+      console.warn(`[LLM] Groq gpt-oss-120b token/rate limit hit. Falling back to llama-3.3-70b-versatile for recovery...`);
+      const retryResponse = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: options.systemPrompt },
+          { role: "user", content: cleanedUserMessage },
+        ],
+        temperature: options.temperature ?? 0.3,
+        max_tokens: options.maxTokens ?? 8000,
+        response_format: { type: "json_object" },
+      });
+
+      const content = retryResponse.choices[0]?.message?.content || "";
+      if (!content) throw new Error("Empty Groq response on fallback retry");
+
+      return { content, provider: "groq", model: "llama-3.3-70b-versatile" };
+    }
+
+    throw err;
+  }
 }
 
 /**
@@ -71,20 +112,28 @@ async function tryNvidia(options: LLMCallOptions): Promise<LLMResponse> {
     timeout: 30000,
   });
 
+  // Compress whitespace to save precious tokens
+  const cleanedUserMessage = options.userMessage
+    .replace(/\r\n/g, "\n")
+    .replace(/\n+/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .trim();
+
   const response = await nvidia.chat.completions.create({
-    model: "meta/llama-3.3-70b-instruct",
+    model: "moonshotai/kimi-k2.6",
     messages: [
       { role: "system", content: options.systemPrompt },
-      { role: "user", content: options.userMessage },
+      { role: "user", content: cleanedUserMessage },
     ],
     temperature: options.temperature ?? 0.3,
     max_tokens: options.maxTokens ?? 8000,
+    response_format: { type: "json_object" },
   });
 
   const content = response.choices[0]?.message?.content || "";
   if (!content) throw new Error("Empty NVIDIA response");
 
-  return { content, provider: "nvidia", model: "meta/llama-3.3-70b-instruct" };
+  return { content, provider: "nvidia", model: "moonshotai/kimi-k2.6" };
 }
 
 /**
@@ -129,11 +178,18 @@ async function tryCerebras(options: LLMCallOptions): Promise<LLMResponse> {
     timeout: 30000,
   });
 
+  // Compress whitespace to save precious tokens
+  const cleanedUserMessage = options.userMessage
+    .replace(/\r\n/g, "\n")
+    .replace(/\n+/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .trim();
+
   const response = await cerebras.chat.completions.create({
     model: "gpt-oss-120b", // Using Llama 3.3 70B as it's their flagship (Cerebras doesn't host gpt-oss-120b)
     messages: [
       { role: "system", content: options.systemPrompt },
-      { role: "user", content: options.userMessage },
+      { role: "user", content: cleanedUserMessage },
     ],
     temperature: options.temperature ?? 0.3,
     max_tokens: options.maxTokens ?? 8000,
@@ -152,6 +208,7 @@ async function tryCerebras(options: LLMCallOptions): Promise<LLMResponse> {
  */
 export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
   const providers = [
+    { name: "NVIDIA", fn: tryNvidia },
     { name: "Cerebras", fn: tryCerebras },
     { name: "Groq", fn: tryGroq },
   ];
