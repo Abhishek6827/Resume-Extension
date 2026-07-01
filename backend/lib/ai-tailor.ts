@@ -21,7 +21,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown wrapp
     "website": "Personal portfolio/website URL or empty string",
     "location": "City, State or City, Country or empty string"
   },
-  "summary": "Professional summary or objective",
+  "summary": "Professional summary or objective. MUST extract this verbatim from the text. Do not rephrase, summarize, or rewrite.",
   "experience": [
     {
       "role": "Job title / role",
@@ -29,8 +29,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown wrapp
       "duration": "Dates (e.g., Jun 2021 - Present)",
       "location": "Location or empty string",
       "highlights": [
-        "Bullet point 1",
-        "Bullet point 2"
+        "Bullet point 1. Extract verbatim. Do not rewrite, modify, or merge."
       ]
     }
   ],
@@ -52,16 +51,17 @@ Return ONLY a valid JSON object matching this exact structure (no markdown wrapp
   "projects": [
     {
       "name": "Project name",
-      "description": "Short description",
+      "description": "Short description. Extract verbatim.",
       "tech": ["React", "TypeScript"],
       "highlights": [
-        "Highlight bullet point 1",
-        "Highlight bullet point 2"
+        "Highlight bullet point 1. Extract verbatim."
       ]
     }
   ],
   "achievements": ["Major awards, achievements, or publications"]
 }
+
+CRITICAL: You must extract all text values (summary, experience highlights, project descriptions/highlights) EXACTLY verbatim as they appear in the original text. Do not correct spelling, do not rephrase, do not change grammar, do not merge or split sentences, and do not shuffle the order of sentences or sections. The extracted text must match the original text character-for-character so it can be mapped back to the source PDF.
 `;
 
   try {

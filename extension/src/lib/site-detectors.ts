@@ -69,15 +69,19 @@ export function detectJobDescription(): DetectionResult {
   for (const [domain, selectors] of Object.entries(KNOWN_SELECTORS)) {
     if (url.includes(domain)) {
       for (const selector of selectors) {
-        const el = document.querySelector(selector);
-        const text = (el?.textContent || "").trim();
-        if (text.length > 200) {
-          return {
-            found: true,
-            text,
-            confidence: "high",
-            source: domain.split(".")[0],
-          };
+        try {
+          const el = document.querySelector(selector);
+          const text = (el?.textContent || "").trim();
+          if (text.length > 200) {
+            return {
+              found: true,
+              text,
+              confidence: "high",
+              source: domain.split(".")[0],
+            };
+          }
+        } catch (e) {
+          // Ignore invalid selectors or cross-origin issues
         }
       }
     }
@@ -85,7 +89,13 @@ export function detectJobDescription(): DetectionResult {
 
   // 2. Universal Detection for Careers / Company sites
   // Look for headings containing recruitment keywords
-  const headings = Array.from(document.querySelectorAll("h1, h2, h3, h4, h5, h6, strong, b"));
+  let headings: Element[] = [];
+  try {
+    headings = Array.from(document.querySelectorAll("h1, h2, h3, h4, h5, h6, strong, b"));
+  } catch (e) {
+    // Ignore query issues
+  }
+  
   let bestCandidateBlock: HTMLElement | null = null;
   let maxScore = 0;
 
@@ -99,11 +109,15 @@ export function detectJobDescription(): DetectionResult {
       const parent = heading.parentElement;
       if (parent) {
         // Simple score based on paragraph count and list items
-        const paragraphs = parent.querySelectorAll("p, li");
-        const score = paragraphs.length;
-        if (score > maxScore) {
-          maxScore = score;
-          bestCandidateBlock = parent;
+        try {
+          const paragraphs = parent.querySelectorAll("p, li");
+          const score = paragraphs.length;
+          if (score > maxScore) {
+            maxScore = score;
+            bestCandidateBlock = parent as HTMLElement;
+          }
+        } catch (e) {
+          // Ignore parent query issues
         }
       }
     }
@@ -122,7 +136,13 @@ export function detectJobDescription(): DetectionResult {
   }
 
   // 3. Last Resort Fallback: Scan body for the largest text block
-  const divs = Array.from(document.querySelectorAll("main, article, #content, .content, div"));
+  let divs: Element[] = [];
+  try {
+    divs = Array.from(document.querySelectorAll("main, article, #content, .content, div"));
+  } catch (e) {
+    // Ignore query issues
+  }
+  
   let longestText = "";
   let longestEl: Element | null = null;
 
