@@ -1,0 +1,87 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getCorsHeaders, handleOptions } from "../../../lib/cors";
+import { generateLatex } from "../../../lib/latex-generator";
+import type { ResumeData } from "../../../lib/types";
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 60; // Allow up to 60 seconds for external compilation
+
+export async function OPTIONS(request: NextRequest) {
+  return handleOptions(request);
+}
+
+export async function POST(request: NextRequest) {
+  const corsHeaders = getCorsHeaders(request);
+
+  try {
+    const { tailoredResume } = await request.json();
+
+    if (!tailoredResume) {
+      return NextResponse.json(
+        { error: "Missing tailoredResume in request body" },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // 1. Convert tailored JSON to exact LaTeX string
+    const latexString = generateLatex(tailoredResume as ResumeData);
+
+    // Compress LaTeX to avoid 414 Request-URI Too Large (Nginx 8KB limit)
+    // Remove comments and compress multiple spaces/newlines
+    const compressedLatex = latexString
+      .replace(/%.*$/gm, "") // Remove comments
+      .replace(/\n\s*\n/g, "\n") // Remove empty lines
+      .replace(/([\{\}\\])\s+/g, "$1") // Remove spaces after brackets/commands where safe
+      .replace(/\s+([\{\}\\])/g, " $1") 
+      .trim();
+
+    // 2. Compile via latexonline.cc
+    console.log("[generate-latex-pdf] Sending LaTeX string to latexonline.cc for compilation...");
+    
+    // We must send it as a GET request. latexonline.cc supports:
+    // /compile?text=<tex content url encoded>
+    const encodedLatex = encodeURIComponent(compressedLatex);
+    const compileUrl = `https://latexonline.cc/compile?text=${encodedLatex}&command=pdflatex`;
+
+    const compileRes = await fetch(compileUrl, {
+      method: "GET",
+      headers: {
+        "Accept": "application/pdf, text/plain",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      }
+    });
+
+    if (!compileRes.ok) {
+      const errText = await compileRes.text();
+      console.error("[generate-latex-pdf] Compilation failed with status", compileRes.status);
+      console.error("[generate-latex-pdf] Error:", errText);
+      return NextResponse.json(
+        { error: "LaTeX compilation failed", details: errText, rawLatex: latexString },
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
+    // 3. Return the compiled PDF Buffer
+    const pdfBuffer = await compileRes.arrayBuffer();
+
+    const headers = new Headers(corsHeaders);
+    headers.set("Content-Type", "application/pdf");
+    headers.set("Content-Disposition", 'attachment; filename="tailored-resume.pdf"');
+    
+    // Optional: Also return the raw LaTeX in a custom header so the client can save it if they want
+    // But headers have size limits. Let's just return the PDF.
+    
+    return new Response(new Uint8Array(pdfBuffer), {
+      status: 200,
+      headers,
+    });
+
+  } catch (err: unknown) {
+    console.error("[generate-latex-pdf] Error:", err);
+    const message = err instanceof Error ? err.message : String(err);
+    return NextResponse.json(
+      { error: message },
+      { status: 500, headers: corsHeaders }
+    );
+  }
+}

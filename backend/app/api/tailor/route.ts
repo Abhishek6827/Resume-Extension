@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   const corsHeaders = getCorsHeaders(request);
 
   try {
-    const { resumeData, jdData } = await request.json();
+    const { resumeData, jdData, modelSelection } = await request.json();
 
     if (!resumeData || !jdData) {
       return NextResponse.json(
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call LLM tailor
-    const result = await tailorResume(resumeData, jdData);
+    const result = await tailorResume(resumeData, jdData, modelSelection);
 
     return NextResponse.json(result, { headers: corsHeaders });
   } catch (err: unknown) {

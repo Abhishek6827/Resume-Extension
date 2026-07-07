@@ -16,10 +16,17 @@ export async function POST(request: NextRequest) {
   try {
     const contentType = request.headers.get("content-type") || "";
     let rawText = "";
+    let modelSelection = undefined;
 
     if (contentType.includes("multipart/form-data")) {
       const formData = await request.formData();
       const file = formData.get("file") as File | null;
+      
+      const primaryModel = formData.get("primaryModel") as string;
+      const fallbackModel = formData.get("fallbackModel") as string;
+      if (primaryModel || fallbackModel) {
+        modelSelection = { primaryModel, fallbackModel };
+      }
 
       if (!file) {
         return NextResponse.json(
@@ -34,6 +41,7 @@ export async function POST(request: NextRequest) {
       // Expect JSON with pasted text
       const body = await request.json();
       rawText = body.text || "";
+      modelSelection = body.modelSelection;
     }
 
     if (!rawText.trim()) {
@@ -44,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call LLM parser
-    const structuredResume = await parseResumeWithAI(rawText);
+    const structuredResume = await parseResumeWithAI(rawText, modelSelection);
 
     return NextResponse.json(structuredResume, { headers: corsHeaders });
   } catch (err: unknown) {

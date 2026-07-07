@@ -89,6 +89,11 @@ export interface TailoredResult {
   company?: string;
 }
 
+export interface ModelSelection {
+  primaryModel: string;
+  fallbackModel: string;
+}
+
 export interface LLMResponse {
   content: string;
   provider: string;

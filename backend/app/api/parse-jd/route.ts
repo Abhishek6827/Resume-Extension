@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
   const corsHeaders = getCorsHeaders(request);
 
   try {
-    const { text, url } = await request.json();
+    const { text, url, modelSelection } = await request.json();
     let rawText = text || "";
 
     if (url) {
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call LLM parser
-    const structuredJD = await parseJDWithAI(rawText);
+    const structuredJD = await parseJDWithAI(rawText, modelSelection);
 
     return NextResponse.json(structuredJD, { headers: corsHeaders });
   } catch (err: unknown) {

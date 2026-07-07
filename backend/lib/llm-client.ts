@@ -11,6 +11,7 @@ interface LLMCallOptions {
   userMessage: string;
   temperature?: number;
   maxTokens?: number;
+  modelSelection?: import("./types").ModelSelection;
 }
 
 /**
@@ -100,16 +101,16 @@ async function tryGroq(options: LLMCallOptions): Promise<LLMResponse> {
 }
 
 /**
- * Try NVIDIA provider (fallback 1 — Kimi K2.6 via OpenAI-compatible API)
+ * Try NVIDIA provider using dynamic model choice
  */
-async function tryNvidia(options: LLMCallOptions): Promise<LLMResponse> {
+async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<LLMResponse> {
   const apiKey = process.env.NVIDIA_API_KEY;
   if (!apiKey) throw new Error("NVIDIA_API_KEY not set");
 
   const nvidia = new OpenAI({
     baseURL: "https://integrate.api.nvidia.com/v1",
     apiKey,
-    timeout: 18000,
+    timeout: 300000, // Increased to 5 minutes to allow for NVIDIA's massive cold starts on DeepSeek/GLM
   });
 
   // Compress whitespace to save precious tokens
@@ -119,8 +120,10 @@ async function tryNvidia(options: LLMCallOptions): Promise<LLMResponse> {
     .replace(/[ \t]+/g, " ")
     .trim();
 
+  const modelToUse = forceModel || "moonshotai/kimi-k2.6";
+
   const response = await nvidia.chat.completions.create({
-    model: "moonshotai/kimi-k2.6",
+    model: modelToUse,
     messages: [
       { role: "system", content: options.systemPrompt },
       { role: "user", content: cleanedUserMessage },
@@ -133,7 +136,7 @@ async function tryNvidia(options: LLMCallOptions): Promise<LLMResponse> {
   const content = response.choices[0]?.message?.content || "";
   if (!content) throw new Error("Empty NVIDIA response");
 
-  return { content, provider: "nvidia", model: "moonshotai/kimi-k2.6" };
+  return { content, provider: "nvidia", model: modelToUse };
 }
 
 /**
@@ -203,22 +206,36 @@ async function tryCerebras(options: LLMCallOptions): Promise<LLMResponse> {
 }
 
 /**
- * Call LLM with automatic provider fallback chain.
- * Tries: Cerebras → Groq → NVIDIA → OpenRouter
+ * Call LLM with automatic provider fallback chain based on ModelSelection.
  */
 export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
-  const providers = [
-    { name: "NVIDIA", fn: tryNvidia },
-    { name: "Cerebras", fn: tryCerebras },
-    { name: "Groq", fn: tryGroq },
-  ];
-
   const errors: string[] = [];
 
-  for (const provider of providers) {
+  // 1. Try Primary Model if specified
+  if (options.modelSelection?.primaryModel) {
+    try {
+      console.log(`[LLM] Trying Primary Model (${options.modelSelection.primaryModel})...`);
+      const result = await tryNvidia(options, options.modelSelection.primaryModel);
+      console.log(`[LLM] Success with Primary Model (${options.modelSelection.primaryModel})`);
+      return result;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[LLM] Primary Model (${options.modelSelection.primaryModel}) failed: ${message}`);
+      throw new Error(`LLM Failed (${options.modelSelection.primaryModel}): ${message}`);
+    }
+  }
+
+  // 2. Global fallbacks if no user selection
+  const globalProviders = [
+    { name: "NVIDIA (Default Kimi)", fn: () => tryNvidia(options, "moonshotai/kimi-k2.6") },
+    { name: "Cerebras", fn: () => tryCerebras(options) },
+    { name: "Groq", fn: () => tryGroq(options) },
+  ];
+
+  for (const provider of globalProviders) {
     try {
       console.log(`[LLM] Trying ${provider.name}...`);
-      const result = await provider.fn(options);
+      const result = await provider.fn();
       console.log(`[LLM] Success with ${provider.name}`);
       return result;
     } catch (err: unknown) {
@@ -233,20 +250,35 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
 
 /**
  * Call LLM prioritizing speed (Cerebras → Groq → NVIDIA) for large payload tasks (like full resume parsing) to prevent Vercel Serverless timeouts.
+ * Always tries the user's Primary Model first if provided.
  */
 export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse> {
-  const providers = [
-    { name: "Cerebras", fn: tryCerebras },
-    { name: "Groq", fn: tryGroq },
-    { name: "NVIDIA", fn: tryNvidia },
-  ];
-
   const errors: string[] = [];
 
-  for (const provider of providers) {
+  // Try Primary Model if specified (user preference overrides speed priority)
+  if (options.modelSelection?.primaryModel) {
+    try {
+      console.log(`[LLM Fast] Trying Primary Model (${options.modelSelection.primaryModel})...`);
+      const result = await tryNvidia(options, options.modelSelection.primaryModel);
+      console.log(`[LLM Fast] Success with Primary Model (${options.modelSelection.primaryModel})`);
+      return result;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[LLM Fast] Primary Model (${options.modelSelection.primaryModel}) failed: ${message}`);
+      throw new Error(`LLM Failed (${options.modelSelection.primaryModel}): ${message}`);
+    }
+  }
+
+  const globalProviders = [
+    { name: "Cerebras", fn: () => tryCerebras(options) },
+    { name: "Groq", fn: () => tryGroq(options) },
+    { name: "NVIDIA (Fallback Kimi)", fn: () => tryNvidia(options, "moonshotai/kimi-k2.6") },
+  ];
+
+  for (const provider of globalProviders) {
     try {
       console.log(`[LLM Fast] Trying ${provider.name}...`);
-      const result = await provider.fn(options);
+      const result = await provider.fn();
       console.log(`[LLM Fast] Success with ${provider.name}`);
       return result;
     } catch (err: unknown) {

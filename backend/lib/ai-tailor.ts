@@ -1,10 +1,10 @@
 import { callLLM, callFastLLM, extractJSON } from "./llm-client";
-import type { ResumeData, JDData, TailoredResult, TailoredChange, ScoreResult, ExperienceEntry, ProjectEntry, SkillsData } from "./types";
+import type { ResumeData, JDData, TailoredResult, TailoredChange, ScoreResult, ExperienceEntry, ProjectEntry, SkillsData, ModelSelection } from "./types";
 
 /**
  * AI-assisted parse of raw resume text into structured ResumeData JSON.
  */
-export async function parseResumeWithAI(rawText: string): Promise<ResumeData> {
+export async function parseResumeWithAI(rawText: string, modelSelection?: ModelSelection): Promise<ResumeData> {
   const systemPrompt = `You are an expert resume parsing assistant.
 Your task is to take raw text from a resume and convert it into a structured JSON object according to the specified schema.
 Extract all details accurately. Do not invent details.
@@ -68,6 +68,7 @@ CRITICAL: You must extract all text values (summary, experience highlights, proj
     const response = await callFastLLM({
       systemPrompt,
       userMessage: `Resume text:\n${rawText}`,
+      modelSelection,
     });
 
     const jsonStr = extractJSON(response.content);
@@ -81,7 +82,7 @@ CRITICAL: You must extract all text values (summary, experience highlights, proj
 /**
  * AI-assisted parse of Job Description text into structured JDData JSON.
  */
-export async function parseJDWithAI(rawText: string): Promise<JDData> {
+export async function parseJDWithAI(rawText: string, modelSelection?: ModelSelection): Promise<JDData> {
   const systemPrompt = `You are an expert job description parsing assistant.
 Your task is to take raw text from a Job Description (JD) and extract key requirements into a structured JSON object.
 
@@ -100,6 +101,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown wrapp
     const response = await callLLM({
       systemPrompt,
       userMessage: `Job Description:\n${rawText}`,
+      modelSelection,
     });
 
     const jsonStr = extractJSON(response.content);
@@ -390,7 +392,8 @@ Return ONLY a valid JSON object matching this exact structure:
  */
 export async function tailorResume(
   resume: ResumeData,
-  jd: JDData
+  jd: JDData,
+  modelSelection?: ModelSelection
 ): Promise<TailoredResult> {
   const systemPrompt = `You are an expert resume optimizer and ATS (Applicant Tracking System) specialist.
 Your goal is to optimize a candidate's resume to match a specific Job Description (JD) to improve ATS compatibility.
@@ -401,10 +404,11 @@ CRITICAL SAFETY RULES:
 3. Keep all factual details (companies, degrees, years, roles) exactly the same.
 4. You may rewrite, reorder, and refine phrasing of bullet points, projects, and summaries to naturally incorporate keywords and highlight the most relevant aspects of the candidate's actual experience.
 5. Highlight outcomes, metrics (if present in original), and technical stack alignment.
+6. LENGTH REQUIREMENT: Maintain a healthy amount of detail for recent roles and projects. Do NOT aggressively delete or omit entire jobs, projects, or education entries just to save space. Optimize the bullet points to be punchy and relevant, but ensure the resume still looks full and detailed.
 
 Optimization Guidelines:
-- Professional Summary: Rewrite it to align with the target role and key JD requirements using the candidate's existing background.
-- Work Experience: Highlight and rephrase highlights (bullet points) to align with the JD's responsibilities and keywords. Ensure the wording matches closely without modifying the actual tasks performed.
+- Professional Summary: Rewrite it to align with the target role and key JD requirements using the candidate's existing background (MAX 3-4 lines).
+- Work Experience: Highlight and rephrase highlights (bullet points) to align with the JD's responsibilities and keywords. Be detailed for recent roles, limit to 2-3 bullets for older roles.
 - Skills: Filter and categorize skills, prioritizing those from the original list that are also present in the JD. Do NOT add new skills.
 - ATS Score: Estimate a realistic ATS score (0-100) comparing the tailored resume to the JD. Provide constructive reasoning and list matched and missing keywords (missing keywords represent skills/requirements in the JD that are not present in the candidate's resume, which the user could address honestly if they have it).
 
@@ -480,6 +484,7 @@ ${JSON.stringify(jd, null, 2)}
       systemPrompt,
       userMessage,
       temperature: 0.2,
+      modelSelection,
     });
 
     const jsonStr = extractJSON(response.content);
