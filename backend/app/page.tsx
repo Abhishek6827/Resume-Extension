@@ -60,7 +60,6 @@ export default function Home() {
 
   const handleReset = () => {
     setFile(null);
-    setJdText("");
     setStatus("idle");
     setErrorMessage("");
     setPdfUrl(null);
