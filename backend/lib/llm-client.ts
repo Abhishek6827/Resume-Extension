@@ -37,7 +37,7 @@ export function extractJSON(text: string): string {
 /**
  * Try Groq provider (primary — fast inference)
  */
-async function tryGroq(options: LLMCallOptions): Promise<LLMResponse> {
+async function tryGroq(options: LLMCallOptions, forceModel?: string): Promise<LLMResponse> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("GROQ_API_KEY not set");
 
@@ -49,10 +49,11 @@ async function tryGroq(options: LLMCallOptions): Promise<LLMResponse> {
     .trim();
 
   const groq = new Groq({ apiKey, maxRetries: 1, timeout: 12000 });
+  const modelToUse = forceModel || "llama-3.3-70b-versatile";
   
   try {
     const response = await groq.chat.completions.create({
-      model: "openai/gpt-oss-120b",
+      model: modelToUse,
       messages: [
         { role: "system", content: options.systemPrompt },
         { role: "user", content: cleanedUserMessage },
@@ -65,7 +66,7 @@ async function tryGroq(options: LLMCallOptions): Promise<LLMResponse> {
     const content = response.choices[0]?.message?.content || "";
     if (!content) throw new Error("Empty Groq response");
 
-    return { content, provider: "groq", model: "openai/gpt-oss-120b" };
+    return { content, provider: "groq", model: modelToUse };
   } catch (err: any) {
     const isRateOrSizeLimit = 
       err.status === 413 || 
@@ -110,7 +111,8 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
   const nvidia = new OpenAI({
     baseURL: "https://integrate.api.nvidia.com/v1",
     apiKey,
-    timeout: 300000, // Increased to 5 minutes to allow for NVIDIA's massive cold starts on DeepSeek/GLM
+    timeout: 60000, // 60 seconds max per request to prevent 15 minute hangs
+    maxRetries: 0, // Fail fast if the model is down or invalid
   });
 
   // Compress whitespace to save precious tokens
@@ -122,7 +124,7 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
 
   const modelToUse = forceModel || "moonshotai/kimi-k2.6";
 
-  const response = await nvidia.chat.completions.create({
+  const stream = await nvidia.chat.completions.create({
     model: modelToUse,
     messages: [
       { role: "system", content: options.systemPrompt },
@@ -130,10 +132,14 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
     ],
     temperature: options.temperature ?? 0.3,
     max_tokens: options.maxTokens ?? 8000,
-    response_format: { type: "json_object" },
+    stream: true,
   });
 
-  const content = response.choices[0]?.message?.content || "";
+  let content = "";
+  for await (const chunk of stream) {
+    content += chunk.choices[0]?.delta?.content || "";
+  }
+
   if (!content) throw new Error("Empty NVIDIA response");
 
   return { content, provider: "nvidia", model: modelToUse };
@@ -171,7 +177,7 @@ async function tryOpenRouter(options: LLMCallOptions): Promise<LLMResponse> {
 /**
  * Try Cerebras provider (primary — incredibly fast inference)
  */
-async function tryCerebras(options: LLMCallOptions): Promise<LLMResponse> {
+async function tryCerebras(options: LLMCallOptions, forceModel?: string): Promise<LLMResponse> {
   const apiKey = process.env.CEREBRAS_API_KEY;
   if (!apiKey) throw new Error("CEREBRAS_API_KEY not set");
 
@@ -188,8 +194,10 @@ async function tryCerebras(options: LLMCallOptions): Promise<LLMResponse> {
     .replace(/[ \t]+/g, " ")
     .trim();
 
+  const modelToUse = forceModel || "gpt-oss-120b";
+
   const response = await cerebras.chat.completions.create({
-    model: "gpt-oss-120b", // Using Llama 3.3 70B as it's their flagship (Cerebras doesn't host gpt-oss-120b)
+    model: modelToUse,
     messages: [
       { role: "system", content: options.systemPrompt },
       { role: "user", content: cleanedUserMessage },
@@ -202,7 +210,7 @@ async function tryCerebras(options: LLMCallOptions): Promise<LLMResponse> {
   const content = response.choices[0]?.message?.content || "";
   if (!content) throw new Error("Empty Cerebras response");
 
-  return { content, provider: "cerebras", model: "gpt-oss-120b" };
+  return { content, provider: "cerebras", model: modelToUse };
 }
 
 /**
@@ -213,15 +221,26 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
 
   // 1. Try Primary Model if specified
   if (options.modelSelection?.primaryModel) {
+    const primary = options.modelSelection.primaryModel;
     try {
-      console.log(`[LLM] Trying Primary Model (${options.modelSelection.primaryModel})...`);
-      const result = await tryNvidia(options, options.modelSelection.primaryModel);
-      console.log(`[LLM] Success with Primary Model (${options.modelSelection.primaryModel})`);
+      console.log(`[LLM] Trying Primary Model (${primary})...`);
+      let result;
+      if (primary.startsWith("cerebras:")) {
+        const modelId = primary.split(":")[1];
+        result = await tryCerebras(options, modelId);
+      } else if (primary.startsWith("groq:")) {
+        const modelId = primary.split(":")[1];
+        result = await tryGroq(options, modelId);
+      } else {
+        const modelId = primary.startsWith("nvidia:") ? primary.split(":")[1] : primary;
+        result = await tryNvidia(options, modelId);
+      }
+      console.log(`[LLM] Success with Primary Model (${primary})`);
       return result;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error(`[LLM] Primary Model (${options.modelSelection.primaryModel}) failed: ${message}`);
-      throw new Error(`LLM Failed (${options.modelSelection.primaryModel}): ${message}`);
+      console.warn(`[LLM] Primary Model (${primary}) failed: ${message}. Falling back to default providers...`);
+      errors.push(`Primary (${primary}): ${message}`);
     }
   }
 
@@ -255,19 +274,32 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
 export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse> {
   const errors: string[] = [];
 
-  // Try Primary Model if specified (user preference overrides speed priority)
+  // 1. Try Primary Model if specified
   if (options.modelSelection?.primaryModel) {
+    const primary = options.modelSelection.primaryModel;
     try {
-      console.log(`[LLM Fast] Trying Primary Model (${options.modelSelection.primaryModel})...`);
-      const result = await tryNvidia(options, options.modelSelection.primaryModel);
-      console.log(`[LLM Fast] Success with Primary Model (${options.modelSelection.primaryModel})`);
+      console.log(`[LLM Fast] Trying Primary Model (${primary})...`);
+      let result;
+      if (primary.startsWith("cerebras:")) {
+        const modelId = primary.split(":")[1];
+        result = await tryCerebras(options, modelId);
+      } else if (primary.startsWith("groq:")) {
+        const modelId = primary.split(":")[1];
+        result = await tryGroq(options, modelId);
+      } else {
+        const modelId = primary.startsWith("nvidia:") ? primary.split(":")[1] : primary;
+        result = await tryNvidia(options, modelId);
+      }
+      console.log(`[LLM Fast] Success with Primary Model (${primary})`);
       return result;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error(`[LLM Fast] Primary Model (${options.modelSelection.primaryModel}) failed: ${message}`);
-      throw new Error(`LLM Failed (${options.modelSelection.primaryModel}): ${message}`);
+      console.warn(`[LLM Fast] Primary Model (${primary}) failed: ${message}. Falling back to default providers...`);
+      errors.push(`Primary (${primary}): ${message}`);
     }
   }
+
+  // 2. Global fallbacks (Speed priority)
 
   const globalProviders = [
     { name: "Cerebras", fn: () => tryCerebras(options) },

@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 const AI_MODELS = [
-  { id: "deepseek-ai/deepseek-v4-pro", name: "DeepSeek V4 Pro", icon: "https://www.google.com/s2/favicons?domain=deepseek.com&sz=128" },
-  { id: "moonshotai/kimi-k2.6", name: "Kimi K2.6", icon: "https://www.google.com/s2/favicons?domain=moonshot.cn&sz=128" },
-  { id: "z-ai/glm-5.2", name: "GLM-5.2", icon: "https://www.google.com/s2/favicons?domain=zhipuai.cn&sz=128" }
+  { id: "nvidia:deepseek-ai/deepseek-v4-pro", name: "DeepSeek V4 Pro (Quality)", icon: "https://www.google.com/s2/favicons?domain=deepseek.com&sz=128" },
+  { id: "nvidia:moonshotai/kimi-k2.6", name: "Kimi K2.6 (Balanced)", icon: "https://www.google.com/s2/favicons?domain=kimi.moonshot.cn&sz=128" },
+  { id: "nvidia:z-ai/glm-5.2", name: "GLM-5.2 (Balanced)", icon: "https://www.google.com/s2/favicons?domain=zhipuai.cn&sz=128" },
+  { id: "cerebras:gpt-oss-120b", name: "Cerebras GPT-OSS 120B (Fast)", icon: "https://www.google.com/s2/favicons?domain=cerebras.net&sz=128" },
+  { id: "groq:llama-3.3-70b-versatile", name: "Groq Llama-70B (Fast)", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" }
 ];
 
 const CustomDropdown = ({ value, onChange, options, label, focusColor }: { value: string, onChange: (val: string) => void, options: any[], label: string, focusColor: string }) => {
@@ -47,6 +49,475 @@ const CustomDropdown = ({ value, onChange, options, label, focusColor }: { value
   );
 };
 
+const PipelineVisualizer = ({ status }: { status: string }) => {
+  const [ticks, setTicks] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const sourceRef = useRef<HTMLDivElement>(null);
+  const compileRef = useRef<HTMLDivElement>(null);
+  const summaryRef = useRef<HTMLDivElement>(null);
+  const experienceRef = useRef<HTMLDivElement>(null);
+  const projectsRef = useRef<HTMLDivElement>(null);
+  const skillsRef = useRef<HTMLDivElement>(null);
+  const matchScoreRef = useRef<HTMLDivElement>(null);
+
+  const [coords, setCoords] = useState<{
+    source: { x: number; y: number };
+    compile: { x: number; y: number };
+    summaryLeft: { x: number; y: number };
+    summaryRight: { x: number; y: number };
+    experienceLeft: { x: number; y: number };
+    experienceRight: { x: number; y: number };
+    projectsLeft: { x: number; y: number };
+    projectsRight: { x: number; y: number };
+    skillsLeft: { x: number; y: number };
+    skillsRight: { x: number; y: number };
+    matchScoreLeft: { x: number; y: number };
+    matchScoreRight: { x: number; y: number };
+  } | null>(null);
+
+  useEffect(() => {
+    if (status !== "tailoring") {
+      setTicks(0);
+      return;
+    }
+    const timer = setInterval(() => {
+      setTicks((prev) => prev + 1);
+    }, 2800); // Realistic tick progression tracking
+    return () => clearInterval(timer);
+  }, [status]);
+
+  useEffect(() => {
+    const updateCoords = () => {
+      if (
+        !containerRef.current ||
+        !sourceRef.current ||
+        !compileRef.current ||
+        !summaryRef.current ||
+        !experienceRef.current ||
+        !projectsRef.current ||
+        !skillsRef.current ||
+        !matchScoreRef.current
+      ) return;
+
+      const containerRect = containerRef.current.getBoundingClientRect();
+
+      const getPoints = (el: HTMLElement) => {
+        const rect = el.getBoundingClientRect();
+        return {
+          left: {
+            x: rect.left - containerRect.left,
+            y: rect.top - containerRect.top + rect.height / 2
+          },
+          right: {
+            x: rect.right - containerRect.left,
+            y: rect.top - containerRect.top + rect.height / 2
+          }
+        };
+      };
+
+      setCoords({
+        source: getPoints(sourceRef.current).right,
+        compile: getPoints(compileRef.current).left,
+        summaryLeft: getPoints(summaryRef.current).left,
+        summaryRight: getPoints(summaryRef.current).right,
+        experienceLeft: getPoints(experienceRef.current).left,
+        experienceRight: getPoints(experienceRef.current).right,
+        projectsLeft: getPoints(projectsRef.current).left,
+        projectsRight: getPoints(projectsRef.current).right,
+        skillsLeft: getPoints(skillsRef.current).left,
+        skillsRight: getPoints(skillsRef.current).right,
+        matchScoreLeft: getPoints(matchScoreRef.current).left,
+        matchScoreRight: getPoints(matchScoreRef.current).right
+      });
+    };
+
+    updateCoords();
+
+    const t1 = setTimeout(updateCoords, 100);
+    const t2 = setTimeout(updateCoords, 400);
+
+    const observer = new ResizeObserver(updateCoords);
+    if (containerRef.current) observer.observe(containerRef.current);
+    if (sourceRef.current) observer.observe(sourceRef.current);
+    if (compileRef.current) observer.observe(compileRef.current);
+    if (summaryRef.current) observer.observe(summaryRef.current);
+    if (experienceRef.current) observer.observe(experienceRef.current);
+    if (projectsRef.current) observer.observe(projectsRef.current);
+    if (skillsRef.current) observer.observe(skillsRef.current);
+    if (matchScoreRef.current) observer.observe(matchScoreRef.current);
+
+    window.addEventListener("resize", updateCoords);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      observer.disconnect();
+      window.removeEventListener("resize", updateCoords);
+    };
+  }, [status, ticks]);
+
+  const isFinished = ["compiling", "success"].includes(status);
+
+  const getBranchState = (branch: "summary" | "experience" | "projects" | "skills" | "matchScore") => {
+    if (isFinished) return { active: false, done: true, ready: false, log: "Completed.", progress: 100 };
+    if (status === "parsing") return { active: false, done: false, ready: false, log: "Pending...", progress: 0 };
+    if (status === "compiling") return { active: false, done: true, ready: false, log: "Completed.", progress: 100 };
+
+    // Each branch: progress = clamp((ticks - startTick) / (endTick - startTick) * 100, 0, 100)
+    switch (branch) {
+      case "summary": { // starts 0, done at 3
+        const p = Math.min(100, Math.round((ticks / 3) * 100));
+        if (ticks < 1) return { active: true, done: false, ready: false, log: "Analyzing profile summary...", progress: p };
+        if (ticks < 3) return { active: true, done: false, ready: false, log: "Optimizing summary keywords...", progress: p };
+        return { active: false, done: false, ready: true, log: "Ready to merge.", progress: 100 };
+      }
+      case "experience": { // starts 2, done at 6
+        const p = ticks < 2 ? 0 : Math.min(100, Math.round(((ticks - 2) / 4) * 100));
+        if (ticks < 2) return { active: false, done: false, ready: false, log: "Queued...", progress: 0 };
+        if (ticks < 4) return { active: true, done: false, ready: false, log: "Aligning job metrics...", progress: p };
+        if (ticks < 6) return { active: true, done: false, ready: false, log: "Normalizing highlights...", progress: p };
+        return { active: false, done: false, ready: true, log: "Ready to merge.", progress: 100 };
+      }
+      case "projects": { // starts 3, done at 7
+        const p = ticks < 3 ? 0 : Math.min(100, Math.round(((ticks - 3) / 4) * 100));
+        if (ticks < 3) return { active: false, done: false, ready: false, log: "Queued...", progress: 0 };
+        if (ticks < 5) return { active: true, done: false, ready: false, log: "Matching projects to JD...", progress: p };
+        if (ticks < 7) return { active: true, done: false, ready: false, log: "Refining tech bullet points...", progress: p };
+        return { active: false, done: false, ready: true, log: "Ready to merge.", progress: 100 };
+      }
+      case "skills": { // starts 4, done at 8
+        const p = ticks < 4 ? 0 : Math.min(100, Math.round(((ticks - 4) / 4) * 100));
+        if (ticks < 4) return { active: false, done: false, ready: false, log: "Queued...", progress: 0 };
+        if (ticks < 6) return { active: true, done: false, ready: false, log: "Sorting skill categories...", progress: p };
+        if (ticks < 8) return { active: true, done: false, ready: false, log: "Normalizing dynamic fields...", progress: p };
+        return { active: false, done: false, ready: true, log: "Ready to merge.", progress: 100 };
+      }
+      case "matchScore": { // starts 8, runs indefinitely until API finishes
+        const p = ticks < 8 ? 0 : Math.min(90, Math.round(((ticks - 8) / 6) * 90));
+        if (ticks < 8) return { active: false, done: false, ready: false, log: "Queued...", progress: 0 };
+        if (ticks < 10) return { active: true, done: false, ready: false, log: "Aggregating tailored segments...", progress: p };
+        return { active: true, done: false, ready: false, log: "Calculating ATS score & keywords...", progress: Math.min(90, p) };
+      }
+    }
+  };
+
+  const summary = getBranchState("summary");
+  const experience = getBranchState("experience");
+  const projects = getBranchState("projects");
+  const skills = getBranchState("skills");
+  const matchScore = getBranchState("matchScore");
+
+  const getPathD = (start: { x: number; y: number }, end: { x: number; y: number }) => {
+    const dx = Math.abs(end.x - start.x) * 0.5;
+    return `M ${start.x},${start.y} C ${start.x + dx},${start.y} ${end.x - dx},${end.y} ${end.x},${end.y}`;
+  };
+
+  return (
+    <div ref={containerRef} className="w-full mt-4 flex flex-col gap-6 p-6 bg-slate-900/60 border border-white/10 rounded-2xl relative overflow-hidden backdrop-blur-xl">
+      <style>{`
+        .active-glow-summary { border-color: rgba(129, 140, 248, 0.5) !important; box-shadow: 0 0 15px rgba(129, 140, 248, 0.15); }
+        .active-glow-experience { border-color: rgba(167, 139, 250, 0.5) !important; box-shadow: 0 0 15px rgba(167, 139, 250, 0.15); }
+        .active-glow-projects { border-color: rgba(244, 114, 182, 0.5) !important; box-shadow: 0 0 15px rgba(244, 114, 182, 0.15); }
+        .active-glow-skills { border-color: rgba(45, 212, 191, 0.5) !important; box-shadow: 0 0 15px rgba(45, 212, 191, 0.15); }
+        .active-glow-matchScore { border-color: rgba(168, 85, 247, 0.5) !important; box-shadow: 0 0 15px rgba(168, 85, 247, 0.15); }
+      `}</style>
+
+      {/* SVG Circuit Lines - Desktop Only */}
+      {coords && (
+        <div className="hidden md:block absolute inset-0 w-full h-full pointer-events-none z-0">
+          <svg className="w-full h-full">
+            <defs>
+              {/* Glow Filter for Sparkle Dots */}
+              <filter id="sparkle-glow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="2.5" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+
+            {/* 1. Summary Traces and Sparkles */}
+            <path d={getPathD(coords.source, coords.summaryLeft)} fill="none" stroke={summary.ready || summary.done ? "rgba(129, 140, 248, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            <path d={getPathD(coords.summaryRight, coords.compile)} fill="none" stroke={summary.ready || summary.done ? "rgba(129, 140, 248, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            {(status === "tailoring" || isFinished) && (
+              <circle r="4.5" fill="#818cf8" filter="url(#sparkle-glow)">
+                <animateMotion
+                  key={`sum-left-${summary.active ? "fast" : "slow"}`}
+                  dur={summary.active ? "1.4s" : "2.8s"}
+                  repeatCount="indefinite"
+                  path={getPathD(coords.source, coords.summaryLeft)}
+                />
+              </circle>
+            )}
+            {((status === "tailoring" && summary.ready) || isFinished) && (
+              <circle r="4.5" fill="#818cf8" filter="url(#sparkle-glow)">
+                <animateMotion
+                  key={`sum-right-${isFinished ? "fast" : "slow"}`}
+                  dur={isFinished ? "1.4s" : "2.8s"}
+                  repeatCount="indefinite"
+                  path={getPathD(coords.summaryRight, coords.compile)}
+                />
+              </circle>
+            )}
+
+            {/* 2. Experience Traces and Sparkles */}
+            <path d={getPathD(coords.source, coords.experienceLeft)} fill="none" stroke={experience.ready || experience.done ? "rgba(167, 139, 250, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            <path d={getPathD(coords.experienceRight, coords.compile)} fill="none" stroke={experience.ready || experience.done ? "rgba(167, 139, 250, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            {((status === "tailoring" && ticks >= 2) || isFinished) && (
+              <circle r="4.5" fill="#c084fc" filter="url(#sparkle-glow)">
+                <animateMotion
+                  key={`exp-left-${experience.active ? "fast" : "slow"}`}
+                  dur={experience.active ? "1.4s" : "2.8s"}
+                  repeatCount="indefinite"
+                  path={getPathD(coords.source, coords.experienceLeft)}
+                />
+              </circle>
+            )}
+            {((status === "tailoring" && experience.ready) || isFinished) && (
+              <circle r="4.5" fill="#c084fc" filter="url(#sparkle-glow)">
+                <animateMotion
+                  key={`exp-right-${isFinished ? "fast" : "slow"}`}
+                  dur={isFinished ? "1.4s" : "2.8s"}
+                  repeatCount="indefinite"
+                  path={getPathD(coords.experienceRight, coords.compile)}
+                />
+              </circle>
+            )}
+
+            {/* 3. Projects Traces and Sparkles */}
+            <path d={getPathD(coords.source, coords.projectsLeft)} fill="none" stroke={projects.ready || projects.done ? "rgba(244, 114, 182, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            <path d={getPathD(coords.projectsRight, coords.compile)} fill="none" stroke={projects.ready || projects.done ? "rgba(244, 114, 182, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            {((status === "tailoring" && ticks >= 3) || isFinished) && (
+              <circle r="4.5" fill="#f472b6" filter="url(#sparkle-glow)">
+                <animateMotion
+                  key={`proj-left-${projects.active ? "fast" : "slow"}`}
+                  dur={projects.active ? "1.4s" : "2.8s"}
+                  repeatCount="indefinite"
+                  path={getPathD(coords.source, coords.projectsLeft)}
+                />
+              </circle>
+            )}
+            {((status === "tailoring" && projects.ready) || isFinished) && (
+              <circle r="4.5" fill="#f472b6" filter="url(#sparkle-glow)">
+                <animateMotion
+                  key={`proj-right-${isFinished ? "fast" : "slow"}`}
+                  dur={isFinished ? "1.4s" : "2.8s"}
+                  repeatCount="indefinite"
+                  path={getPathD(coords.projectsRight, coords.compile)}
+                />
+              </circle>
+            )}
+
+            {/* 4. Skills Traces and Sparkles */}
+            <path d={getPathD(coords.source, coords.skillsLeft)} fill="none" stroke={skills.ready || skills.done ? "rgba(45, 212, 191, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            <path d={getPathD(coords.skillsRight, coords.compile)} fill="none" stroke={skills.ready || skills.done ? "rgba(45, 212, 191, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            {((status === "tailoring" && ticks >= 4) || isFinished) && (
+              <circle r="4.5" fill="#2dd4bf" filter="url(#sparkle-glow)">
+                <animateMotion
+                  key={`sk-left-${skills.active ? "fast" : "slow"}`}
+                  dur={skills.active ? "1.4s" : "2.8s"}
+                  repeatCount="indefinite"
+                  path={getPathD(coords.source, coords.skillsLeft)}
+                />
+              </circle>
+            )}
+            {((status === "tailoring" && skills.ready) || isFinished) && (
+              <circle r="4.5" fill="#2dd4bf" filter="url(#sparkle-glow)">
+                <animateMotion
+                  key={`sk-right-${isFinished ? "fast" : "slow"}`}
+                  dur={isFinished ? "1.4s" : "2.8s"}
+                  repeatCount="indefinite"
+                  path={getPathD(coords.skillsRight, coords.compile)}
+                />
+              </circle>
+            )}
+
+            {/* 5. Match & Score Traces and Sparkles */}
+            <path d={getPathD(coords.source, coords.matchScoreLeft)} fill="none" stroke={matchScore.done ? "rgba(168, 85, 247, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            <path d={getPathD(coords.matchScoreRight, coords.compile)} fill="none" stroke={matchScore.done ? "rgba(168, 85, 247, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            {((status === "tailoring" && ticks >= 8) || isFinished) && (
+              <circle r="4.5" fill="#a855f7" filter="url(#sparkle-glow)">
+                <animateMotion
+                  key={`ms-left-${matchScore.active ? "fast" : "slow"}`}
+                  dur={matchScore.active ? "1.4s" : "2.8s"}
+                  repeatCount="indefinite"
+                  path={getPathD(coords.source, coords.matchScoreLeft)}
+                />
+              </circle>
+            )}
+            {isFinished && (
+              <circle r="4.5" fill="#a855f7" filter="url(#sparkle-glow)">
+                <animateMotion
+                  key="ms-right-fast"
+                  dur="1.4s"
+                  repeatCount="indefinite"
+                  path={getPathD(coords.matchScoreRight, coords.compile)}
+                />
+              </circle>
+            )}
+          </svg>
+        </div>
+      )}
+
+      <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 min-h-[500px] md:px-8 w-full">
+        
+        {/* 1. Source Node */}
+        <div className="w-full md:w-[15%] flex flex-col items-center justify-center">
+          <div ref={sourceRef} className={`p-5 rounded-2xl bg-slate-950/80 border border-white/10 flex flex-col items-center gap-2 text-center w-full max-w-[160px] transition-all duration-500 ${status === "parsing" ? "border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.2)]" : "border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.05)]"}`}>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${status === "parsing" ? "bg-indigo-500/20 text-indigo-400 animate-pulse" : "bg-emerald-500/20 text-emerald-400"}`}>
+              {status === "parsing" ? (
+                <svg className="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              )}
+            </div>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Data Source</span>
+            <span className="text-[10px] text-slate-500 leading-tight">Resume & JD Loaded</span>
+          </div>
+        </div>
+
+        {/* 2. Middle Parallel Branches */}
+        <div className="w-full md:w-[45%] flex flex-col gap-3 px-2">
+          
+          {/* Branch A: Summary */}
+          <div ref={summaryRef} className={`rounded-xl bg-slate-950/70 border overflow-hidden transition-all duration-300 ${summary.done ? "border-emerald-500/20" : summary.ready ? "border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.05)]" : summary.active ? "active-glow-summary" : "border-white/5"}`}>
+            <div className="p-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${summary.done ? "bg-emerald-500/25 text-emerald-400" : summary.ready ? "bg-indigo-500/25 text-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.2)]" : summary.active ? "bg-indigo-500/20 text-indigo-400" : "bg-white/5 text-slate-600"}`}>
+                  {summary.done || summary.ready ? "✓" : "A"}
+                </div>
+                <div className="flex flex-col">
+                  <span className={`text-xs font-bold ${summary.done ? "text-slate-200" : summary.ready ? "text-indigo-300" : summary.active ? "text-indigo-300" : "text-slate-200"}`}>Summary Tailoring</span>
+                  <span className={`text-[10px] ${summary.ready ? "text-indigo-400/80" : "text-slate-500"}`}>{summary.log}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mr-2">
+                {summary.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{summary.progress}%</span>}
+                {summary.active && <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-ping"></span>}
+                {summary.ready && !summary.done && <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 shadow-[0_0_4px_#818cf8]"></span>}
+              </div>
+            </div>
+            <div className="h-[2px] w-full bg-white/5">
+              <div className={`h-full transition-all duration-700 ease-out ${summary.done ? "bg-emerald-500" : summary.ready ? "bg-indigo-400" : "bg-gradient-to-r from-indigo-500 to-purple-500"}`} style={{ width: `${summary.progress}%` }} />
+            </div>
+          </div>
+
+          {/* Branch B: Experience */}
+          <div ref={experienceRef} className={`rounded-xl bg-slate-950/70 border overflow-hidden transition-all duration-300 ${experience.done ? "border-emerald-500/20" : experience.ready ? "border-purple-500/30 shadow-[0_0_10px_rgba(167,139,250,0.05)]" : experience.active ? "active-glow-experience" : "border-white/5"}`}>
+            <div className="p-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${experience.done ? "bg-emerald-500/25 text-emerald-400" : experience.ready ? "bg-purple-500/25 text-purple-400 shadow-[0_0_8px_rgba(167,139,250,0.2)]" : experience.active ? "bg-purple-500/20 text-purple-400" : "bg-white/5 text-slate-600"}`}>
+                  {experience.done || experience.ready ? "✓" : "B"}
+                </div>
+                <div className="flex flex-col">
+                  <span className={`text-xs font-bold ${experience.done ? "text-slate-200" : experience.ready ? "text-purple-300" : experience.active ? "text-purple-300" : "text-slate-200"}`}>Experience Alignment</span>
+                  <span className={`text-[10px] ${experience.ready ? "text-purple-400/80" : "text-slate-500"}`}>{experience.log}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mr-2">
+                {experience.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{experience.progress}%</span>}
+                {experience.active && <span className="h-1.5 w-1.5 rounded-full bg-purple-400 animate-ping"></span>}
+                {experience.ready && !experience.done && <span className="h-1.5 w-1.5 rounded-full bg-purple-400 shadow-[0_0_4px_#a78bfa]"></span>}
+              </div>
+            </div>
+            <div className="h-[2px] w-full bg-white/5">
+              <div className={`h-full transition-all duration-700 ease-out ${experience.done ? "bg-emerald-500" : experience.ready ? "bg-purple-400" : "bg-gradient-to-r from-purple-500 to-pink-500"}`} style={{ width: `${experience.progress}%` }} />
+            </div>
+          </div>
+
+          {/* Branch C: Projects */}
+          <div ref={projectsRef} className={`rounded-xl bg-slate-950/70 border overflow-hidden transition-all duration-300 ${projects.done ? "border-emerald-500/20" : projects.ready ? "border-pink-500/30 shadow-[0_0_10px_rgba(244,114,182,0.05)]" : projects.active ? "active-glow-projects" : "border-white/5"}`}>
+            <div className="p-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${projects.done ? "bg-emerald-500/25 text-emerald-400" : projects.ready ? "bg-pink-500/25 text-pink-400 shadow-[0_0_8px_rgba(244,114,182,0.2)]" : projects.active ? "bg-pink-500/20 text-pink-400" : "bg-white/5 text-slate-600"}`}>
+                  {projects.done || projects.ready ? "✓" : "C"}
+                </div>
+                <div className="flex flex-col">
+                  <span className={`text-xs font-bold ${projects.done ? "text-slate-200" : projects.ready ? "text-pink-300" : projects.active ? "text-pink-300" : "text-slate-200"}`}>Project Optimization</span>
+                  <span className={`text-[10px] ${projects.ready ? "text-pink-400/80" : "text-slate-500"}`}>{projects.log}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mr-2">
+                {projects.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{projects.progress}%</span>}
+                {projects.active && <span className="h-1.5 w-1.5 rounded-full bg-pink-400 animate-ping"></span>}
+                {projects.ready && !projects.done && <span className="h-1.5 w-1.5 rounded-full bg-pink-400 shadow-[0_0_4px_#f472b6]"></span>}
+              </div>
+            </div>
+            <div className="h-[2px] w-full bg-white/5">
+              <div className={`h-full transition-all duration-700 ease-out ${projects.done ? "bg-emerald-500" : projects.ready ? "bg-pink-400" : "bg-gradient-to-r from-pink-500 to-rose-500"}`} style={{ width: `${projects.progress}%` }} />
+            </div>
+          </div>
+
+          {/* Branch D: Skills */}
+          <div ref={skillsRef} className={`rounded-xl bg-slate-950/70 border overflow-hidden transition-all duration-300 ${skills.done ? "border-emerald-500/20" : skills.ready ? "border-teal-500/30 shadow-[0_0_10px_rgba(45,212,191,0.05)]" : skills.active ? "active-glow-skills" : "border-white/5"}`}>
+            <div className="p-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${skills.done ? "bg-emerald-500/25 text-emerald-400" : skills.ready ? "bg-teal-500/25 text-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.2)]" : skills.active ? "bg-teal-500/20 text-teal-400" : "bg-white/5 text-slate-600"}`}>
+                  {skills.done || skills.ready ? "✓" : "D"}
+                </div>
+                <div className="flex flex-col">
+                  <span className={`text-xs font-bold ${skills.done ? "text-slate-200" : skills.ready ? "text-teal-300" : skills.active ? "text-teal-300" : "text-slate-200"}`}>Skills Prioritization</span>
+                  <span className={`text-[10px] ${skills.ready ? "text-teal-400/80" : "text-slate-500"}`}>{skills.log}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mr-2">
+                {skills.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{skills.progress}%</span>}
+                {skills.active && <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-ping"></span>}
+                {skills.ready && !skills.done && <span className="h-1.5 w-1.5 rounded-full bg-teal-400 shadow-[0_0_4px_#2dd4bf]"></span>}
+              </div>
+            </div>
+            <div className="h-[2px] w-full bg-white/5">
+              <div className={`h-full transition-all duration-700 ease-out ${skills.done ? "bg-emerald-500" : skills.ready ? "bg-teal-400" : "bg-gradient-to-r from-teal-500 to-cyan-500"}`} style={{ width: `${skills.progress}%` }} />
+            </div>
+          </div>
+
+          {/* Branch E: Match & Score */}
+          <div ref={matchScoreRef} className={`rounded-xl bg-slate-950/70 border overflow-hidden transition-all duration-300 ${matchScore.done ? "border-emerald-500/20" : matchScore.active ? "active-glow-matchScore" : "border-white/5"}`}>
+            <div className="p-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${matchScore.done ? "bg-emerald-500/25 text-emerald-400" : matchScore.active ? "bg-purple-500/25 text-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.2)]" : "bg-white/5 text-slate-600"}`}>
+                  {matchScore.done ? "✓" : "E"}
+                </div>
+                <div className="flex flex-col">
+                  <span className={`text-xs font-bold ${matchScore.done ? "text-slate-200" : matchScore.active ? "text-purple-300" : "text-slate-200"}`}>Match & Score Analysis</span>
+                  <span className={`text-[10px] ${matchScore.active ? "text-purple-400/80" : "text-slate-500"}`}>{matchScore.log}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mr-2">
+                {matchScore.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{matchScore.progress}%</span>}
+                {matchScore.active && !matchScore.done && <span className="h-1.5 w-1.5 rounded-full bg-purple-400 animate-ping"></span>}
+              </div>
+            </div>
+            <div className="h-[2px] w-full bg-white/5">
+              <div className={`h-full transition-all duration-700 ease-out ${matchScore.done ? "bg-emerald-500" : "bg-gradient-to-r from-purple-500 to-pink-500"}`} style={{ width: `${matchScore.progress}%` }} />
+            </div>
+          </div>
+
+        </div>
+
+        {/* 3. Output Node */}
+        <div className="w-full md:w-[15%] flex flex-col items-center justify-center">
+          <div ref={compileRef} className={`p-5 rounded-2xl bg-slate-950/80 border border-white/10 flex flex-col items-center gap-2 text-center w-full max-w-[160px] transition-all duration-500 ${status === "compiling" ? "border-pink-500/50 shadow-[0_0_20px_rgba(244,114,182,0.2)]" : status === "success" ? "border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "opacity-40"}`}>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${status === "compiling" ? "bg-pink-500/20 text-pink-400" : status === "success" ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-slate-500"}`}>
+              {status === "compiling" ? (
+                <svg className="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H20" /></svg>
+              )}
+            </div>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">PDF Compile</span>
+            <span className="text-[10px] text-slate-500 leading-tight">
+              {status === "compiling" ? "Compiling LaTeX..." : status === "success" ? "Ready to Download" : "Awaiting Merges"}
+            </span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [jdText, setJdText] = useState("");
@@ -59,12 +530,12 @@ export default function Home() {
   const [primaryModel, setPrimaryModel] = useState(AI_MODELS[0].id);
 
   const handleReset = () => {
-    setFile(null);
     setStatus("idle");
     setErrorMessage("");
     setPdfUrl(null);
     setDownloadName("");
-    setFileKey(prev => prev + 1);
+    // Note: Deliberately NOT clearing 'file' and 'jdText' 
+    // so the user can tweak the JD and regenerate instantly without re-uploading.
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,25 +556,30 @@ export default function Home() {
       setErrorMessage("");
       setPdfUrl(null);
 
-      // 1. Parse Resume
+      // 1 & 2. Parse Resume and JD in parallel
       const formData = new FormData();
       formData.append("file", file);
       formData.append("primaryModel", primaryModel);
-      const resumeRes = await fetch("/api/parse-resume", {
-        method: "POST",
-        body: formData,
-      });
-      if (!resumeRes.ok) throw new Error("Failed to parse resume");
-      const resumeData = await resumeRes.json();
+      
+      const [resumeRes, jdRes] = await Promise.all([
+        fetch("/api/parse-resume", {
+          method: "POST",
+          body: formData,
+        }),
+        fetch("/api/parse-jd", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: jdText, modelSelection: { primaryModel } }),
+        })
+      ]);
 
-      // 2. Parse JD
-      const jdRes = await fetch("/api/parse-jd", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: jdText, modelSelection: { primaryModel } }),
-      });
+      if (!resumeRes.ok) throw new Error("Failed to parse resume");
       if (!jdRes.ok) throw new Error("Failed to parse job description");
-      const jdData = await jdRes.json();
+
+      const [resumeData, jdData] = await Promise.all([
+        resumeRes.json(),
+        jdRes.json()
+      ]);
 
       // 3. Tailor Resume using AI backend
       setStatus("tailoring");
@@ -180,7 +656,7 @@ export default function Home() {
         </div>
 
         {/* Generator Tool */}
-        <div className="w-full max-w-3xl bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl shadow-2xl">
+        <div className="w-full max-w-4xl bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl shadow-2xl">
           <div className="flex flex-col gap-6">
             
             {/* Upload Section */}
@@ -239,73 +715,7 @@ export default function Home() {
               )}
 
               {["parsing", "tailoring", "compiling"].includes(status) && (
-                <div className="w-full mt-4 flex flex-col gap-4 p-6 bg-white/5 border border-white/10 rounded-2xl">
-                  <h4 className="text-center text-sm font-bold tracking-widest uppercase text-indigo-300 mb-2 animate-pulse">
-                    Crafting your ATS Resume
-                  </h4>
-                  <div className="flex flex-col gap-3">
-                    {/* Step 1: Parsing */}
-                    <div className={`flex items-center gap-3 transition-opacity duration-500 ${status === "parsing" ? "opacity-100" : "opacity-40"}`}>
-                      <div className="relative flex items-center justify-center w-8 h-8">
-                        {status === "parsing" ? (
-                          <>
-                            <div className="absolute inset-0 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin"></div>
-                            <div className="h-2 w-2 bg-indigo-400 rounded-full animate-ping"></div>
-                          </>
-                        ) : (
-                          <div className="h-6 w-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(16,185,129,0.5)]">
-                            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                          </div>
-                        )}
-                      </div>
-                      <span className={`text-sm font-medium ${status === "parsing" ? "text-indigo-300" : "text-emerald-400"}`}>
-                        Extracting Resume & Job Description
-                      </span>
-                    </div>
-
-                    {/* Step 2: Tailoring */}
-                    <div className={`flex items-center gap-3 transition-opacity duration-500 ${["parsing"].includes(status) ? "opacity-30" : status === "tailoring" ? "opacity-100" : "opacity-40"}`}>
-                      <div className="relative flex items-center justify-center w-8 h-8">
-                        {status === "tailoring" ? (
-                          <>
-                            <div className="absolute inset-0 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
-                            <div className="h-2 w-2 bg-purple-400 rounded-full animate-ping"></div>
-                          </>
-                        ) : ["compiling", "success"].includes(status) ? (
-                          <div className="h-6 w-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(16,185,129,0.5)]">
-                            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                          </div>
-                        ) : (
-                          <div className="h-2 w-2 bg-slate-600 rounded-full"></div>
-                        )}
-                      </div>
-                      <span className={`text-sm font-medium ${status === "tailoring" ? "text-purple-300" : ["compiling", "success"].includes(status) ? "text-emerald-400" : "text-slate-500"}`}>
-                        AI Tailoring (Matching JD keywords...)
-                      </span>
-                    </div>
-
-                    {/* Step 3: Compiling */}
-                    <div className={`flex items-center gap-3 transition-opacity duration-500 ${["parsing", "tailoring"].includes(status) ? "opacity-30" : "opacity-100"}`}>
-                      <div className="relative flex items-center justify-center w-8 h-8">
-                        {status === "compiling" ? (
-                          <>
-                            <div className="absolute inset-0 border-2 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
-                            <div className="h-2 w-2 bg-pink-400 rounded-full animate-ping"></div>
-                          </>
-                        ) : status === "success" ? (
-                          <div className="h-6 w-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(16,185,129,0.5)]">
-                            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                          </div>
-                        ) : (
-                          <div className="h-2 w-2 bg-slate-600 rounded-full"></div>
-                        )}
-                      </div>
-                      <span className={`text-sm font-medium ${status === "compiling" ? "text-pink-300" : status === "success" ? "text-emerald-400" : "text-slate-500"}`}>
-                        Compiling LaTeX PDF
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                <PipelineVisualizer status={status} />
               )}
 
               {status === "success" && pdfUrl ? (
@@ -322,10 +732,16 @@ export default function Home() {
                       Download PDF
                     </a>
                     <button 
+                      onClick={handleGenerate}
+                      className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center"
+                    >
+                      Regenerate
+                    </button>
+                    <button 
                       onClick={handleReset}
                       className="w-full sm:w-auto px-8 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-all text-center"
                     >
-                      Start Over
+                      Clear All
                     </button>
                   </div>
                 </div>
@@ -359,7 +775,7 @@ export default function Home() {
       <footer className="w-full max-w-7xl mx-auto px-6 py-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
         <p>&copy; {new Date().getFullYear()} Resume Tailor. All rights reserved.</p>
         <div className="flex gap-6">
-          <span>Powered by Groq & LaTeX.</span>
+          <span>Powered by Multi-Provider AI & LaTeX.</span>
         </div>
       </footer>
     </div>

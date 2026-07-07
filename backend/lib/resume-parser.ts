@@ -8,7 +8,7 @@ export async function parsePDF(buffer: Buffer): Promise<string> {
   return new Promise((resolve, reject) => {
     try {
       const PDFParser = require("pdf2json");
-      const pdfParser = new PDFParser(null, 1); // 1 indicates raw text extraction
+      const pdfParser = new PDFParser(null, 1);
       
       pdfParser.on("pdfParser_dataError", (errData: any) => reject(new Error(errData.parserError)));
       pdfParser.on("pdfParser_dataReady", () => {

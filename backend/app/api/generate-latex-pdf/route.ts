@@ -35,28 +35,36 @@ export async function POST(request: NextRequest) {
       .replace(/\s+([\{\}\\])/g, " $1") 
       .trim();
 
-    // 2. Compile via latexonline.cc
-    console.log("[generate-latex-pdf] Sending LaTeX string to latexonline.cc for compilation...");
+    // 2. Compile via texlive.net using POST (multipart/form-data)
+    console.log("[generate-latex-pdf] Sending LaTeX string to texlive.net for compilation...");
     
-    // We must send it as a GET request. latexonline.cc supports:
-    // /compile?text=<tex content url encoded>
-    const encodedLatex = encodeURIComponent(compressedLatex);
-    const compileUrl = `https://latexonline.cc/compile?text=${encodedLatex}&command=pdflatex`;
+    const compileUrl = `https://texlive.net/cgi-bin/latexcgi`;
+    const formData = new FormData();
+    formData.append("filecontents[]", latexString);
+    formData.append("filename[]", "document.tex");
+    formData.append("engine", "pdflatex");
+    formData.append("return", "pdf");
 
     const compileRes = await fetch(compileUrl, {
-      method: "GET",
+      method: "POST",
+      body: formData,
       headers: {
         "Accept": "application/pdf, text/plain",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
       }
     });
 
-    if (!compileRes.ok) {
+    if (!compileRes.ok || !compileRes.headers.get("content-type")?.includes("application/pdf")) {
       const errText = await compileRes.text();
       console.error("[generate-latex-pdf] Compilation failed with status", compileRes.status);
-      console.error("[generate-latex-pdf] Error:", errText);
+      console.error("[generate-latex-pdf] Error tail:", errText.slice(-2000)); // Log the END of the log where the error is
+      
+      // Dump to a file for debugging
+      const fs = require('fs');
+      fs.writeFileSync('./failed-latex.tex', latexString);
+      
       return NextResponse.json(
-        { error: "LaTeX compilation failed", details: errText, rawLatex: latexString },
+        { error: "LaTeX compilation failed. Check backend logs.", details: errText.slice(-1000) },
         { status: 500, headers: corsHeaders }
       );
     }

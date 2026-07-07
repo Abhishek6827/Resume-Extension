@@ -33,10 +33,11 @@ export interface ProjectEntry {
 }
 
 export interface SkillsData {
-  languages: string[];
-  frameworks: string[];
-  tools: string[];
-  other: string[];
+  languages?: string[];
+  frameworks?: string[];
+  tools?: string[];
+  other?: string[];
+  [key: string]: string[] | undefined;
 }
 
 export interface ResumeData {

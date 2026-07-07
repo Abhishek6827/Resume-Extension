@@ -1,6 +1,10 @@
 export function escapeLatex(str: string): string {
   if (!str) return "";
   return str
+    // Normalize Unicode mathematical symbols to ASCII equivalents
+    .replace(/\u223C/g, "~")   // Tilde operator
+    .replace(/\u2212/g, "-")   // Minus sign
+    // Standard LaTeX special characters
     .replace(/\\/g, "\\textbackslash{}")
     .replace(/\{/g, "\\{")
     .replace(/\}/g, "\\}")
@@ -10,7 +14,19 @@ export function escapeLatex(str: string): string {
     .replace(/#/g, "\\#")
     .replace(/_/g, "\\_")
     .replace(/\^/g, "\\textasciicircum{}")
-    .replace(/~/g, "\\textasciitilde{}");
+    .replace(/~/g, "\\textasciitilde{}")
+    // Typographic Unicode characters that break pdfTeX
+    .replace(/\u2011/g, "-") // Non-breaking hyphen
+    .replace(/\u2013/g, "--") // En dash
+    .replace(/\u2014/g, "---") // Em dash
+    .replace(/\u2018/g, "'") // Left single quote
+    .replace(/\u2019/g, "'") // Right single quote
+    .replace(/\u201C/g, '"') // Left double quote
+    .replace(/\u201D/g, '"') // Right double quote
+    .replace(/\u2026/g, "...") // Ellipsis
+    .replace(/\u00A0/g, " ") // Non-breaking space
+    .replace(/\u202F/g, " ") // Narrow no-break space
+    .replace(/\u2248/g, "approx. "); // Approximately equal to
 }
 
 import type { ResumeData } from "./types";
@@ -106,24 +122,32 @@ export function generateLatex(resume: ResumeData): string {
   // Generate Skills section
   let skillsLatex = "";
   if (resume.skills) {
-    skillsLatex = "\\section*{Technical Skills}\n\\begin{itemize}[leftmargin=0pt, label={}]\n  \\small{\\item{\n";
+    const skillLines: string[] = [];
+    const formatKey = (key: string) => {
+      if (key === "languages") return "Languages";
+      if (key === "frameworks") return "Frameworks \\& Libraries";
+      if (key === "tools") return "Tools \\& Databases";
+      if (key === "other") return "Other";
+      // Dynamic category names: escape LaTeX special chars, then title-case
+      return escapeLatex(key)
+        .replace(/_/g, " ")
+        .replace(/-/g, " ")
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+    };
+
+    Object.entries(resume.skills).forEach(([key, list]) => {
+      if (list && Array.isArray(list) && list.length > 0) {
+        skillLines.push(`    \\textbf{${formatKey(key)}:} ${escapeLatex(list.join(", "))}`);
+      }
+    });
     
-    const skillLines = [];
-    if (resume.skills.languages && resume.skills.languages.length > 0) {
-      skillLines.push(`    \\textbf{Languages:} ${escapeLatex(resume.skills.languages.join(", "))}`);
+    if (skillLines.length > 0) {
+      skillsLatex = "\\section*{Technical Skills}\n\\begin{itemize}[leftmargin=0pt, label={}]\n  \\small{\\item{\n";
+      skillsLatex += skillLines.join(" \\\\\n");
+      skillsLatex += "\n  }}\n\\end{itemize}\n\n";
     }
-    if (resume.skills.frameworks && resume.skills.frameworks.length > 0) {
-      skillLines.push(`    \\textbf{Frameworks \\& Libraries:} ${escapeLatex(resume.skills.frameworks.join(", "))}`);
-    }
-    if (resume.skills.tools && resume.skills.tools.length > 0) {
-      skillLines.push(`    \\textbf{Tools \\& Databases:} ${escapeLatex(resume.skills.tools.join(", "))}`);
-    }
-    if (resume.skills.other && resume.skills.other.length > 0) {
-      skillLines.push(`    \\textbf{Other:} ${escapeLatex(resume.skills.other.join(", "))}`);
-    }
-    
-    skillsLatex += skillLines.join(" \\\\\n");
-    skillsLatex += "\n  }}\n\\end{itemize}\n\n";
   }
 
   // Generate Education section
