@@ -70,12 +70,14 @@ CRITICAL REMINDER: You will be penalized if you drop any experience bullet point
 `;
 
   try {
-    // We use the exact model selected by the user for the initial data extraction phase.
-    // The aggressively strict prompt prevents lazy models from dropping sections.
+    // We MUST use a highly capable model (Groq LLaMA 3.3 70B) for the initial
+    // PDF text extraction. If we use Cerebras here, it catastrophically hallucinates
+    // (e.g. putting Summary sentences into the Founder experience bullets).
+    // The actual 5 tailoring steps STILL use the user's selected model.
     const response = await callLLM({
       systemPrompt,
       userMessage: `Resume text:\n${rawText}`,
-      modelSelection,
+      modelSelection: { primaryModel: "groq:llama-3.3-70b-versatile" },
     });
 
     const jsonStr = extractJSON(response.content);
