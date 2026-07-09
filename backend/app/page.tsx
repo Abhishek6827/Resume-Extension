@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 
 const AI_MODELS = [
-  { id: "nvidia:deepseek-ai/deepseek-v4-pro", name: "DeepSeek V4 Pro (Quality)", icon: "https://www.google.com/s2/favicons?domain=deepseek.com&sz=128" },
+  { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
   { id: "nvidia:moonshotai/kimi-k2.6", name: "Kimi K2.6 (Balanced)", icon: "https://www.google.com/s2/favicons?domain=kimi.moonshot.cn&sz=128" },
   { id: "nvidia:z-ai/glm-5.2", name: "GLM-5.2 (Balanced)", icon: "https://www.google.com/s2/favicons?domain=zhipuai.cn&sz=128" },
   { id: "cerebras:gpt-oss-120b", name: "Cerebras GPT-OSS 120B (Fast)", icon: "https://www.google.com/s2/favicons?domain=cerebras.net&sz=128" },

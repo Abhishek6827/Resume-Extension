@@ -88,7 +88,8 @@ export function generateLatex(resume: ResumeData): string {
       if (exp.highlights && exp.highlights.length > 0) {
         experienceLatex += "\\begin{itemize}\n";
         exp.highlights.forEach((hl) => {
-          experienceLatex += `  \\item ${escapeLatex(hl)}\n`;
+          const cleanHl = hl.replace(/^[\s•\-\*]+/, "");
+          experienceLatex += `  \\item ${escapeLatex(cleanHl)}\n`;
         });
         experienceLatex += "\\end{itemize}\n\n";
       } else {
@@ -110,7 +111,8 @@ export function generateLatex(resume: ResumeData): string {
       if (proj.highlights && proj.highlights.length > 0) {
         projectsLatex += "\\begin{itemize}\n";
         proj.highlights.forEach((hl) => {
-          projectsLatex += `  \\item ${escapeLatex(hl)}\n`;
+          const cleanHl = hl.replace(/^[\s•\-\*]+/, "");
+          projectsLatex += `  \\item ${escapeLatex(cleanHl)}\n`;
         });
         projectsLatex += "\\end{itemize}\n\n";
       } else {

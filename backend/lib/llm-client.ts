@@ -122,7 +122,7 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
     .replace(/[ \t]+/g, " ")
     .trim();
 
-  const modelToUse = forceModel || "moonshotai/kimi-k2.6";
+  const modelToUse = forceModel || "nvidia/nemotron-3-ultra-550b-a55b";
 
   const stream = await nvidia.chat.completions.create({
     model: modelToUse,
@@ -239,16 +239,41 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
       return result;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      console.warn(`[LLM] Primary Model (${primary}) failed: ${message}. Falling back to default providers...`);
-      errors.push(`Primary (${primary}): ${message}`);
+      console.error(`[LLM] Selected Model (${primary}) failed: ${message}`);
+      throw new Error(`[LLM] Selected Model (${primary}) failed: ${message}`);
+    }
+  }
+
+  // 1.5 Try Fallback Model if specified
+  if (options.modelSelection?.fallbackModel) {
+    const fallback = options.modelSelection.fallbackModel;
+    try {
+      console.log(`[LLM] Trying Fallback Model (${fallback})...`);
+      let result;
+      if (fallback.startsWith("cerebras:")) {
+        const modelId = fallback.split(":")[1];
+        result = await tryCerebras(options, modelId);
+      } else if (fallback.startsWith("groq:")) {
+        const modelId = fallback.split(":")[1];
+        result = await tryGroq(options, modelId);
+      } else {
+        const modelId = fallback.startsWith("nvidia:") ? fallback.split(":")[1] : fallback;
+        result = await tryNvidia(options, modelId);
+      }
+      console.log(`[LLM] Success with Fallback Model (${fallback})`);
+      return result;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[LLM] Fallback Model (${fallback}) failed: ${message}`);
+      throw new Error(`[LLM] Fallback Model (${fallback}) failed: ${message}`);
     }
   }
 
   // 2. Global fallbacks if no user selection
   const globalProviders = [
-    { name: "NVIDIA (Default Kimi)", fn: () => tryNvidia(options, "moonshotai/kimi-k2.6") },
-    { name: "Cerebras", fn: () => tryCerebras(options) },
+    { name: "NVIDIA (Default Nemotron)", fn: () => tryNvidia(options, "nvidia/nemotron-3-ultra-550b-a55b") },
     { name: "Groq", fn: () => tryGroq(options) },
+    { name: "Cerebras", fn: () => tryCerebras(options) },
   ];
 
   for (const provider of globalProviders) {
@@ -294,8 +319,33 @@ export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse>
       return result;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
-      console.warn(`[LLM Fast] Primary Model (${primary}) failed: ${message}. Falling back to default providers...`);
-      errors.push(`Primary (${primary}): ${message}`);
+      console.error(`[LLM Fast] Selected Model (${primary}) failed: ${message}`);
+      throw new Error(`[LLM Fast] Selected Model (${primary}) failed: ${message}`);
+    }
+  }
+
+  // 1.5 Try Fallback Model if specified
+  if (options.modelSelection?.fallbackModel) {
+    const fallback = options.modelSelection.fallbackModel;
+    try {
+      console.log(`[LLM Fast] Trying Fallback Model (${fallback})...`);
+      let result;
+      if (fallback.startsWith("cerebras:")) {
+        const modelId = fallback.split(":")[1];
+        result = await tryCerebras(options, modelId);
+      } else if (fallback.startsWith("groq:")) {
+        const modelId = fallback.split(":")[1];
+        result = await tryGroq(options, modelId);
+      } else {
+        const modelId = fallback.startsWith("nvidia:") ? fallback.split(":")[1] : fallback;
+        result = await tryNvidia(options, modelId);
+      }
+      console.log(`[LLM Fast] Success with Fallback Model (${fallback})`);
+      return result;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[LLM Fast] Fallback Model (${fallback}) failed: ${message}`);
+      throw new Error(`[LLM Fast] Fallback Model (${fallback}) failed: ${message}`);
     }
   }
 
@@ -304,7 +354,7 @@ export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse>
   const globalProviders = [
     { name: "Cerebras", fn: () => tryCerebras(options) },
     { name: "Groq", fn: () => tryGroq(options) },
-    { name: "NVIDIA (Fallback Kimi)", fn: () => tryNvidia(options, "moonshotai/kimi-k2.6") },
+    { name: "NVIDIA (Fallback Nemotron)", fn: () => tryNvidia(options, "nvidia/nemotron-3-ultra-550b-a55b") },
   ];
 
   for (const provider of globalProviders) {

@@ -9,6 +9,14 @@ export async function parseResumeWithAI(rawText: string, modelSelection?: ModelS
 Your task is to take raw text from a resume and convert it into a structured JSON object according to the specified schema.
 Extract all details accurately. Do not invent details.
 
+CRITICAL, MANDATORY INSTRUCTIONS:
+1. You MUST extract EVERY SINGLE job, project, skill, and bullet point from the original text.
+2. DO NOT reorganize or sort the experience or projects. Keep them in the EXACT SAME ORDER as they appear in the original text.
+3. DO NOT extract bullet points as standalone projects.
+4. DO NOT SUMMARIZE. DO NOT SHORTEN. DO NOT OMIT ANYTHING. 
+5. Missing even a single bullet point or project will cause a critical system failure.
+6. For all textual fields (summary, highlights, descriptions), copy the exact verbatim text character-for-character.
+
 Return ONLY a valid JSON object matching this exact structure (no markdown wrapper, no prose):
 {
   "name": "Extract candidate full name",
@@ -58,11 +66,13 @@ Return ONLY a valid JSON object matching this exact structure (no markdown wrapp
   "achievements": ["Major awards, achievements, or publications"]
 }
 
-CRITICAL: You must extract all text values (summary, experience highlights, project descriptions/highlights) EXACTLY verbatim as they appear in the original text. Do not correct spelling, do not rephrase, do not change grammar, do not merge or split sentences, and do not shuffle the order of sentences or sections. The extracted text must match the original text character-for-character so it can be mapped back to the source PDF.
+CRITICAL REMINDER: You will be penalized if you drop any experience bullet points, leave out any projects, or summarize any text. The output array lengths must match the number of items in the raw text exactly.
 `;
 
   try {
-    const response = await callFastLLM({
+    // We use the exact model selected by the user for the initial data extraction phase.
+    // The aggressively strict prompt prevents lazy models from dropping sections.
+    const response = await callLLM({
       systemPrompt,
       userMessage: `Resume text:\n${rawText}`,
       modelSelection,
@@ -293,7 +303,8 @@ CRITICAL SAFETY RULES:
 2. Keep all factual details (companies, degrees, years, roles) exactly the same.
 3. You may rewrite, reorder, and refine phrasing of bullet points to naturally incorporate keywords and highlight relevant aspects of the candidate's actual experience.
 4. Highlight outcomes and metrics if present.
-5. You MUST preserve the exact same number of bullet points in the "highlights" array for each work experience entry as the original. Do not merge bullet points, do not split bullet points, and do not add or delete bullet points. Rewrite each original bullet point at its exact corresponding index.
+5. DO NOT reorder the jobs themselves. Keep the exact same array length and order.
+6. You MUST preserve the exact same number of bullet points in the "highlights" array for each work experience entry as the original. Do not merge bullet points, do not split bullet points, and do not add or delete bullet points. Rewrite each original bullet point at its exact corresponding index.
 
 Return ONLY a valid JSON object matching this exact structure (keep the same array length and structure, just rewrite the highlights):
 {
@@ -333,7 +344,8 @@ export async function tailorProjectsWithAI(
 CRITICAL SAFETY RULES:
 1. NEVER invent any projects, features, or tech stack not present in the original.
 2. You may refine phrasing of descriptions and bullet points to naturally incorporate keywords.
-3. You MUST preserve the exact same number of bullet points in the "highlights" array for each project entry as the original. Do not merge bullet points, do not split bullet points, and do not add or delete bullet points. Rewrite each original bullet point at its exact corresponding index.
+3. DO NOT reorder the projects. Keep the exact same array length and order.
+4. You MUST preserve the exact same number of bullet points in the "highlights" array for each project entry as the original. Do not merge bullet points, do not split bullet points, and do not add or delete bullet points. Rewrite each original bullet point at its exact corresponding index.
 
 Return ONLY a valid JSON object matching this exact structure (keep the same array length and structure):
 {
@@ -401,27 +413,30 @@ export async function tailorResume(
   modelSelection?: ModelSelection
 ): Promise<TailoredResult> {
   try {
-    console.log(`[tailor] Starting modular/batched tailoring pipeline in parallel...`);
+    console.log(`[tailor] Starting modular/batched tailoring pipeline sequentially...`);
 
-    // Run summary, experience, projects, and skills tailoring in parallel
-    const [tailoredSummaryObj, tailoredExperienceObj, tailoredProjectsObj, tailoredSkillsObj] = await Promise.all([
-      tailorSummaryWithAI(resume.summary || "", jd, modelSelection),
-      tailorExperienceWithAI(resume.experience || [], jd, modelSelection),
-      tailorProjectsWithAI(resume.projects || [], jd, modelSelection),
-      tailorSkillsWithAI(resume.skills || {}, jd, modelSelection)
-    ]);
+    // Run tailoring steps sequentially (one-by-one) to prevent API rate limits, 
+    // context exhaustion, and ensure maximum precision/stability per request.
+    const tailoredSummaryObj = await tailorSummaryWithAI(resume.summary || "", jd, modelSelection);
+    const tailoredExperienceObj = await tailorExperienceWithAI(resume.experience || [], jd, modelSelection);
+    const tailoredProjectsObj = await tailorProjectsWithAI(resume.projects || [], jd, modelSelection);
+    const tailoredSkillsObj = await tailorSkillsWithAI(resume.skills || {}, jd, modelSelection);
 
     // Programmatically align and reconstruct the tailored resume using original skeleton to prevent structural deletions/shuffling
     const tailoredResume: ResumeData = {
       ...resume,
       title: resume.title, // Keep original title
       summary: tailoredSummaryObj.summary,
-      experience: (resume.experience || []).map((origExp, expIndex) => {
-        // Find matching experience entry by exact index since the array structure is preserved by the LLM
-        const matchedExp = tailoredExperienceObj.experience?.[expIndex];
+      experience: (resume.experience || []).map((origExp) => {
+        // Robust matching: find by company or role to survive LLM reordering during tailoring
+        const matchedExp = tailoredExperienceObj.experience?.find(
+          e => (e.company && origExp.company && e.company.toLowerCase() === origExp.company.toLowerCase()) || 
+               (e.role && origExp.role && e.role.toLowerCase() === origExp.role.toLowerCase())
+        );
 
         const highlights = (origExp.highlights || []).map((origHl, hlIndex) => {
-          return matchedExp?.highlights?.[hlIndex] || origHl;
+          const tailoredHl = matchedExp?.highlights?.[hlIndex];
+          return (tailoredHl && tailoredHl.trim().length > 0) ? tailoredHl : origHl;
         });
 
         return {
@@ -429,12 +444,15 @@ export async function tailorResume(
           highlights,
         };
       }),
-      projects: (resume.projects || []).map((origProj, projIndex) => {
-        // Find matching project entry by exact index
-        const matchedProj = tailoredProjectsObj.projects?.[projIndex];
+      projects: (resume.projects || []).map((origProj) => {
+        // Robust matching: find by name to survive LLM reordering during tailoring
+        const matchedProj = tailoredProjectsObj.projects?.find(
+          p => p.name && origProj.name && p.name.toLowerCase() === origProj.name.toLowerCase()
+        );
 
         const highlights = (origProj.highlights || []).map((origHl, hlIndex) => {
-          return matchedProj?.highlights?.[hlIndex] || origHl;
+          const tailoredHl = matchedProj?.highlights?.[hlIndex];
+          return (tailoredHl && tailoredHl.trim().length > 0) ? tailoredHl : origHl;
         });
 
         return {

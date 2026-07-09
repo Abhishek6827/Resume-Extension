@@ -92,7 +92,7 @@ export interface TailoredResult {
 
 export interface ModelSelection {
   primaryModel: string;
-  fallbackModel: string;
+  fallbackModel?: string;
 }
 
 export interface LLMResponse {
