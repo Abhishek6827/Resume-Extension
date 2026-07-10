@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: resume-backend
+
+llm:
+  groq:
+    api-key: ${GROQ_API_KEY:}
+    url: https://api.groq.com/openai/v1/chat/completions
+  nvidia:
+    api-key: ${NVIDIA_API_KEY:}
+    url: https://integrate.api.nvidia.com/v1/chat/completions
+  cerebras:
+    api-key: ${CEREBRAS_API_KEY:}
+    url: https://api.cerebras.ai/v1/chat/completions
+  openrouter:
+    api-key: ${OPENROUTER_API_KEY:}
+    url: https://openrouter.ai/api/v1/chat/completions
+
+cors:
+  allowed-origins: "*"

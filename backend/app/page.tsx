@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
 const AI_MODELS = [
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
   { id: "nvidia:moonshotai/kimi-k2.6", name: "Kimi K2.6 (Balanced)", icon: "https://www.google.com/s2/favicons?domain=kimi.moonshot.cn&sz=128" },
@@ -562,11 +564,11 @@ export default function Home() {
       formData.append("primaryModel", primaryModel);
       
       const [resumeRes, jdRes] = await Promise.all([
-        fetch("/api/parse-resume", {
+        fetch(`${API_BASE_URL}/api/parse-resume`, {
           method: "POST",
           body: formData,
         }),
-        fetch("/api/parse-jd", {
+        fetch(`${API_BASE_URL}/api/parse-jd`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text: jdText, modelSelection: { primaryModel } }),
@@ -583,7 +585,7 @@ export default function Home() {
 
       // 3. Tailor Resume using AI backend
       setStatus("tailoring");
-      const tailorRes = await fetch("/api/tailor", {
+      const tailorRes = await fetch(`${API_BASE_URL}/api/tailor`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ resumeData, jdData, modelSelection: { primaryModel } }),
@@ -598,7 +600,7 @@ export default function Home() {
 
       // 4. Compile LaTeX to PDF
       setStatus("compiling");
-      const compileRes = await fetch("/api/generate-latex-pdf", {
+      const compileRes = await fetch(`${API_BASE_URL}/api/generate-latex-pdf`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tailoredResume: tailoredResult.tailoredResume }),

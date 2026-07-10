@@ -1,111 +1,90 @@
-# Resume Builder Chrome Extension
+# Resume Tailor Extension
 
-A powerful Chrome extension that leverages AI to help users create and enhance their resumes instantly. Users can upload a PDF resume, select a template, and watch as the AI analyzes their experience, suggests improvements, and generates a polished, professional document.
+A powerful, AI-driven resume tailoring platform that helps you customize your resume for specific job descriptions with just a few clicks. It intelligently analyzes your existing resume and a target job description, rewriting your bullet points to match the target role while maintaining truthfulness and generating a beautifully formatted PDF via LaTeX.
 
-## ✨ Features
+## 🚀 Features
 
-- **AI-Powered Enhancement**:
-  - Analyzes resume content and identifies areas for improvement.
-  - Provides intelligent suggestions to make the resume stand out.
-
-- **Document Processing**:
-  - Supports both PDF and TXT file uploads.
-  - Extracts text and skills with high accuracy.
-
-- **Multiple Layout Options**:
-  - Choose from various professional resume templates.
-  - Instant preview of the final layout.
-
-- **Seamless UI Experience**:
-  - Clean, intuitive interface integrated into a Chrome extension.
-  - Real-time updates as the AI processes your resume.
+- **Multi-Format Parsing:** Upload resumes in PDF or DOCX formats.
+- **Smart AI Tailoring:** Uses state-of-the-art LLMs to rewrite and optimize your resume content to align perfectly with the required job description.
+- **Multi-Provider LLM Fallback Routing:** Highly resilient AI backend that dynamically routes requests between multiple providers (Groq, Cerebras, NVIDIA, OpenRouter) to bypass rate limits and ensure lightning-fast responses.
+- **LaTeX PDF Generation:** Compiles the tailored resume into a highly professional, ATS-friendly LaTeX template and returns a downloadable PDF.
+- **Chrome Extension UI:** Sleek, glassmorphism-based UI built with Next.js and Tailwind CSS that acts as a side-panel extension.
 
 ## 🛠️ Tech Stack
 
-### Backend
-- **Runtime**: Node.js 18+
-- **Framework**: Next.js
-- **API**: RESTful API with TypeScript
-- **Deployment**: Serverless (Vercel)
+### Frontend (Next.js)
+- **Framework:** Next.js (React, TypeScript)
+- **Styling:** Tailwind CSS (Modern Glassmorphism UI)
+- **Deployment:** Vercel (Ready)
 
-### Frontend (Extension)
-- **Framework**: React + TypeScript
-- **Styling**: Tailwind CSS
-- **Architecture**: MV3 Chrome Extension (Service Worker)
-- **Build Tool**: Vite
+### Backend (Java Spring Boot)
+- **Framework:** Spring Boot (Java 21)
+- **Document Processing:** Apache PDFBox (PDF), Apache POI (DOCX)
+- **AI Integration:** Spring WebClient for direct API calls to LLMs
+- **PDF Compilation:** TexLive API integration for LaTeX to PDF compilation
 
-### AI & Processing
-- **LLMs**: Groq (Llama 3.1)
-- **PDF Processing**: `pdf-parse`
-- **Text Processing**: Custom AI prompts and rules
+## 🏗️ Project Structure
 
-## 🚀 Getting Started
+- `/backend` - The Next.js frontend application (serves as the UI/Extension).
+- `/java-backend` - The Spring Boot Java API that handles document parsing, AI communication, and LaTeX PDF generation.
 
-### Prerequisites
-- Node.js (18 or higher)
-- npm or yarn
-- Google Chrome browser
+## ⚙️ Setup & Installation
 
-### 1. Backend Setup
+### 1. Prerequisites
+- Node.js (v18+)
+- Java 21+ & Maven
+- API Keys for the LLM providers you wish to use (Groq, Cerebras, NVIDIA, OpenRouter).
 
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
+### 2. Environment Variables
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+Create a `.env` file or set the following system environment variables for the **Java Backend**:
 
-3. Create a `.env.local` file in the `backend` directory (copy from `.env.example`):
-   ```bash
-   cp .env.example .env.local
-   ```
+```properties
+# Groq (Primary Fast Inference)
+GROQ_API_KEY=your_groq_api_key
 
-4. Add your API keys to `.env.local`:
-   ```env
-   GROQ_API_KEY=your_groq_key_here
-   NVIDIA_API_KEY=your_nvidia_key_here
-   OPENROUTER_API_KEY=your_openrouter_key_here
-   ```
+# NVIDIA (High Quality)
+NVIDIA_API_KEY=your_nvidia_api_key
 
-5. Start the development server:
-   ```bash
-   npm run dev
-   ```
+# Cerebras (Ultra-Fast)
+CEREBRAS_API_KEY=your_cerebras_api_key
 
-### 2. Frontend Setup
+# OpenRouter (Fallback)
+OPENROUTER_API_KEY=your_openrouter_api_key
+```
 
-1. Navigate to the extension directory:
-   ```bash
-   cd extension
-   ```
+For the **Frontend**, create a `.env.local` inside the `/backend` folder:
+```properties
+NEXT_PUBLIC_API_URL=http://localhost:8080
+```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+### 3. Running the Backend (Spring Boot)
 
-3. Build the extension (optional, can run in dev mode too):
-   ```bash
-   npm run build
-   ```
+Navigate to the `java-backend` folder and run:
+```bash
+cd java-backend
+mvn spring-boot:run
+```
+The backend will start on `http://localhost:8080`.
 
-### 3. Loading the Extension in Chrome
+### 4. Running the Frontend (Next.js)
 
-1. Open Chrome and navigate to `chrome://extensions`.
-2. Enable "Developer mode" in the top-right corner.
-3. Click "Load unpacked".
-4. Select the `extension` directory (the one containing `manifest.json`).
-5. The extension should now appear in your browser. Click its icon to open the UI.
+Navigate to the `backend` folder and start the development server:
+```bash
+cd backend
+npm install
+npm run dev
+```
+The frontend will be available at `http://localhost:3000`.
 
-## ⚙️ Configuration
+## 🧠 Multi-Provider AI Architecture
 
-### Environment Variables
-Ensure the following variables are set in `.env.local`:
+This project is built to handle heavy traffic and LLM rate limits gracefully. The Java backend dynamically resolves the requested model:
+- `groq:llama-3.3-70b-versatile`
+- `cerebras:gpt-oss-120b`
+- `nvidia:nvidia/nemotron-3-ultra-550b-a55b`
 
-- `GROQ_API_KEY`: Required for AI processing.
-- `NVIDIA_API_KEY`: Optional, for additional AI models.
-- `OPENROUTER_API_KEY`: Optional, for alternative AI models.
-- `NEXT_PUBLIC_API_URL`: Set to `http://localhost:3000/api` for local development.
+If a provider fails or rate-limits the request, the backend automatically fails over to a secondary provider to ensure the user always gets their tailored resume without interruption.
+
+## 📝 License
+MIT License
