@@ -7,5 +7,6 @@ public record ExperienceEntry(
     String company,
     String duration,
     String location,
+    String scope,
     List<String> highlights
 ) {}

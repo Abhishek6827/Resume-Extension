@@ -117,12 +117,16 @@ public class BackendController {
     @SuppressWarnings("unchecked")
     public ResponseEntity<byte[]> generateLatexPdf(@RequestBody Map<String, Object> request) {
         try {
-            Map<String, Object> tailoredResume = (Map<String, Object>) request.get("tailoredResume");
-            if (tailoredResume == null) {
-                return ResponseEntity.badRequest().body(null);
+            String latexString = "";
+            if (request.containsKey("latex")) {
+                latexString = (String) request.get("latex");
+            } else {
+                Map<String, Object> tailoredResume = (Map<String, Object>) request.get("tailoredResume");
+                if (tailoredResume == null) {
+                    return ResponseEntity.badRequest().body(null);
+                }
+                latexString = latexGeneratorService.generateLatex(tailoredResume);
             }
-
-            String latexString = latexGeneratorService.generateLatex(tailoredResume);
             byte[] pdfBytes = texLiveClient.compileLatexToPdf(latexString);
 
             HttpHeaders headers = new HttpHeaders();

@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, useRef } from "react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 const AI_MODELS = [
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
-  { id: "nvidia:moonshotai/kimi-k2.6", name: "Kimi K2.6 (Balanced)", icon: "https://www.google.com/s2/favicons?domain=kimi.moonshot.cn&sz=128" },
+  { id: "openrouter:openrouter/free", name: "Auto Free Model (OpenRouter)", icon: "https://www.google.com/s2/favicons?domain=openrouter.ai&sz=128" },
   { id: "nvidia:z-ai/glm-5.2", name: "GLM-5.2 (Balanced)", icon: "https://www.google.com/s2/favicons?domain=zhipuai.cn&sz=128" },
   { id: "cerebras:gpt-oss-120b", name: "Cerebras GPT-OSS 120B (Fast)", icon: "https://www.google.com/s2/favicons?domain=cerebras.net&sz=128" },
   { id: "groq:llama-3.3-70b-versatile", name: "Groq Llama-70B (Fast)", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" }
@@ -521,23 +521,43 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
 };
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState<"file" | "latex">("file");
   const [file, setFile] = useState<File | null>(null);
   const [jdText, setJdText] = useState("");
+  const [latexText, setLatexText] = useState("");
   const [status, setStatus] = useState<"idle" | "parsing" | "tailoring" | "compiling" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [downloadName, setDownloadName] = useState("");
   const [fileKey, setFileKey] = useState(0);
+  const [generatedLatexLength, setGeneratedLatexLength] = useState<number | null>(null);
   
   const [primaryModel, setPrimaryModel] = useState(AI_MODELS[0].id);
+
+  useEffect(() => {
+    const savedLatex = localStorage.getItem("savedLatex");
+    if (savedLatex) {
+      setLatexText(savedLatex);
+    }
+  }, []);
+
+  const handleLatexChange = (val: string) => {
+    setLatexText(val);
+    if (val) {
+      localStorage.setItem("savedLatex", val);
+    } else {
+      localStorage.removeItem("savedLatex");
+    }
+  };
 
   const handleReset = () => {
     setStatus("idle");
     setErrorMessage("");
     setPdfUrl(null);
     setDownloadName("");
-    // Note: Deliberately NOT clearing 'file' and 'jdText' 
-    // so the user can tweak the JD and regenerate instantly without re-uploading.
+    setGeneratedLatexLength(null);
+    // Note: Deliberately NOT clearing 'file', 'jdText', and 'latexText' 
+    // so the user can tweak inputs and regenerate instantly.
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -547,43 +567,90 @@ export default function Home() {
   };
 
   const handleGenerate = async () => {
-    if (!file || !jdText.trim()) {
-      setErrorMessage("Please provide both a resume file and a job description.");
-      setStatus("error");
-      return;
+    if (activeTab === "latex") {
+      if (!latexText.trim() || !jdText.trim()) {
+        setErrorMessage("Please provide both your LaTeX code and a job description.");
+        setStatus("error");
+        return;
+      }
+    } else {
+      if (!file || !jdText.trim()) {
+        setErrorMessage("Please provide both a resume file and a job description.");
+        setStatus("error");
+        return;
+      }
     }
 
     try {
-      setStatus("parsing");
       setErrorMessage("");
       setPdfUrl(null);
+      setGeneratedLatexLength(null);
 
-      // 1 & 2. Parse Resume and JD in parallel
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("primaryModel", primaryModel);
-      
-      const [resumeRes, jdRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/parse-resume`, {
-          method: "POST",
-          body: formData,
-        }),
-        fetch(`${API_BASE_URL}/api/parse-jd`, {
+      if (activeTab === "latex") {
+        setStatus("parsing");
+        // Parse the JD first
+        const jdRes = await fetch(`${API_BASE_URL}/api/parse-jd`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text: jdText, modelSelection: { primaryModel } }),
-        })
-      ]);
+        });
+        if (!jdRes.ok) throw new Error("Failed to parse job description");
+        const jdData = await jdRes.json();
 
-      if (!resumeRes.ok) throw new Error("Failed to parse resume");
+        setStatus("tailoring");
+        // Use direct LaTeX tailor endpoint
+        const tailorRes = await fetch(`${API_BASE_URL}/api/tailor-latex-direct`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ latex: latexText, jdData, modelSelection: { primaryModel } }),
+        });
+        if (!tailorRes.ok) throw new Error("Failed to tailor LaTeX directly");
+        const tailorResult = await tailorRes.json();
+
+        setGeneratedLatexLength(tailorResult.generatedLength);
+        const jobTitle = jdData?.jobTitle?.trim().replace(/[^a-zA-Z0-9]/g, "_") || "Professional";
+        setDownloadName(`Tailored_${jobTitle}_Resume.pdf`);
+
+        setStatus("compiling");
+        const compileRes = await fetch(`${API_BASE_URL}/api/generate-latex-pdf`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ latex: tailorResult.latex }),
+        });
+        
+        if (!compileRes.ok) {
+          const errDetails = await compileRes.json();
+          throw new Error(errDetails.error || "LaTeX compilation failed");
+        }
+
+        const blob = await compileRes.blob();
+        const url = URL.createObjectURL(blob);
+        setPdfUrl(url);
+        setStatus("success");
+        return;
+      }
+
+      // Original file-based flow
+      setStatus("parsing");
+      const formData = new FormData();
+      formData.append("file", file!);
+      formData.append("primaryModel", primaryModel);
+      
+      const parseRes = await fetch(`${API_BASE_URL}/api/parse-resume`, {
+        method: "POST",
+        body: formData,
+      });
+      if (!parseRes.ok) throw new Error("Failed to parse resume file");
+      const resumeData = await parseRes.json();
+
+      const jdRes = await fetch(`${API_BASE_URL}/api/parse-jd`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: jdText, modelSelection: { primaryModel } }),
+      });
       if (!jdRes.ok) throw new Error("Failed to parse job description");
+      const jdData = await jdRes.json();
 
-      const [resumeData, jdData] = await Promise.all([
-        resumeRes.json(),
-        jdRes.json()
-      ]);
-
-      // 3. Tailor Resume using AI backend
       setStatus("tailoring");
       const tailorRes = await fetch(`${API_BASE_URL}/api/tailor`, {
         method: "POST",
@@ -593,12 +660,10 @@ export default function Home() {
       if (!tailorRes.ok) throw new Error("Failed to tailor resume");
       const tailoredResult = await tailorRes.json();
       
-      // Extract dynamic download name
       const candidateName = tailoredResult.tailoredResume?.name?.trim().replace(/[^a-zA-Z0-9]/g, "_") || "Candidate";
       const jobTitle = jdData?.jobTitle?.trim().replace(/[^a-zA-Z0-9]/g, "_") || "Professional";
       setDownloadName(`${candidateName}_${jobTitle}_Resume.pdf`);
 
-      // 4. Compile LaTeX to PDF
       setStatus("compiling");
       const compileRes = await fetch(`${API_BASE_URL}/api/generate-latex-pdf`, {
         method: "POST",
@@ -661,39 +726,93 @@ export default function Home() {
         <div className="w-full max-w-4xl bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl shadow-2xl">
           <div className="flex flex-col gap-6">
             
-            {/* Upload Section */}
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-2">1. Upload Base Resume (PDF/DOCX)</label>
-              <div className="relative">
-                <input 
-                  key={fileKey}
-                  type="file" 
-                  accept=".pdf,.docx"
-                  onChange={handleFileChange}
-                  className="block w-full text-sm text-slate-400
-                    file:mr-4 file:py-3 file:px-6
-                    file:rounded-xl file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-indigo-500/10 file:text-indigo-400
-                    hover:file:bg-indigo-500/20 file:transition-colors
-                    cursor-pointer bg-white/5 rounded-xl border border-white/10 focus:outline-none focus:border-indigo-500/50"
-                />
+            {/* Tabs */}
+            <div className="flex gap-4 border-b border-white/10 pb-2">
+              <button
+                type="button"
+                onClick={() => { setActiveTab("file"); handleReset(); }}
+                className={`py-2 px-4 font-semibold text-sm border-b-2 transition-all ${activeTab === "file" ? "border-indigo-500 text-indigo-400" : "border-transparent text-slate-400 hover:text-slate-300"}`}
+              >
+                Tailor Resume (File + JD)
+              </button>
+              <button
+                type="button"
+                onClick={() => { setActiveTab("latex"); handleReset(); }}
+                className={`py-2 px-4 font-semibold text-sm border-b-2 transition-all ${activeTab === "latex" ? "border-indigo-500 text-indigo-400" : "border-transparent text-slate-400 hover:text-slate-300"}`}
+              >
+                Compile LaTeX Directly
+              </button>
+            </div>
+
+            {activeTab === "file" ? (
+              <div className="flex flex-col gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">1. Upload Base Resume (PDF/DOCX)</label>
+                  <div className="relative">
+                    <input 
+                      key={fileKey}
+                      type="file" 
+                      accept=".pdf,.docx"
+                      onChange={handleFileChange}
+                      className="block w-full text-sm text-slate-400
+                        file:mr-4 file:py-3 file:px-6
+                        file:rounded-xl file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-indigo-500/10 file:text-indigo-400
+                        hover:file:bg-indigo-500/20 file:transition-colors
+                        cursor-pointer bg-white/5 rounded-xl border border-white/10 focus:outline-none focus:border-indigo-500/50"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-300 mb-2">2. Paste Job Description</label>
+                  <textarea 
+                    value={jdText}
+                    onChange={(e) => setJdText(e.target.value)}
+                    placeholder="Paste the target job description here..."
+                    rows={6}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"
+                  ></textarea>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex flex-col">
+                  <div className="flex justify-between items-end mb-2 min-h-[24px]">
+                    <label className="block text-sm font-semibold text-slate-300">1. Paste Base LaTeX Code</label>
+                    <span className="text-xs text-slate-400 font-mono">
+                      {latexText.length} chars
+                      {generatedLatexLength !== null && (
+                        <span className={`ml-2 font-bold ${generatedLatexLength > latexText.length ? "text-red-400" : "text-emerald-400"}`}>
+                          → {generatedLatexLength} generated
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <textarea 
+                    value={latexText}
+                    onChange={(e) => handleLatexChange(e.target.value)}
+                    placeholder="Paste your raw LaTeX resume code here..."
+                    rows={16}
+                    className="w-full flex-1 bg-white/5 border border-white/10 rounded-xl p-4 text-slate-200 placeholder-slate-500 font-mono text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"
+                  ></textarea>
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex justify-between items-end mb-2 min-h-[24px]">
+                    <label className="block text-sm font-semibold text-slate-300">2. Paste Job Description</label>
+                  </div>
+                  <textarea 
+                    value={jdText}
+                    onChange={(e) => setJdText(e.target.value)}
+                    placeholder="Paste the target job description here..."
+                    rows={16}
+                    className="w-full flex-1 bg-white/5 border border-white/10 rounded-xl p-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"
+                  ></textarea>
+                </div>
+              </div>
+            )}
 
-            {/* JD Input */}
-            <div>
-              <label className="block text-sm font-semibold text-slate-300 mb-2">2. Paste Job Description</label>
-              <textarea 
-                value={jdText}
-                onChange={(e) => setJdText(e.target.value)}
-                placeholder="Paste the target job description here..."
-                rows={6}
-                className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"
-              ></textarea>
-            </div>
-
-            {/* AI Model Selection */}
+            {/* Always Visible: AI Model Selection */}
             <div>
               <label className="block text-sm font-semibold text-slate-300 mb-2">3. AI Model Preferences</label>
               <div className="grid grid-cols-1 gap-4">
@@ -756,7 +875,7 @@ export default function Home() {
                   >
                     Generate Tailored PDF
                   </button>
-                  {(file || jdText) && (
+                  {(file || jdText || latexText) && (
                     <button 
                       onClick={handleReset}
                       disabled={["parsing", "tailoring", "compiling"].includes(status)}

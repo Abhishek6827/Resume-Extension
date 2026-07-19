@@ -15,8 +15,10 @@ export interface ExperienceEntry {
   company: string;
   duration: string;
   location: string;
+  scope?: string;
   highlights: string[];
 }
+
 
 export interface EducationEntry {
   degree: string;

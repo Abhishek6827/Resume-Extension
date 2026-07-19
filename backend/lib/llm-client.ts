@@ -12,6 +12,7 @@ interface LLMCallOptions {
   temperature?: number;
   maxTokens?: number;
   modelSelection?: import("./types").ModelSelection;
+  jsonMode?: boolean;
 }
 
 /**
@@ -60,7 +61,7 @@ async function tryGroq(options: LLMCallOptions, forceModel?: string): Promise<LL
       ],
       temperature: options.temperature ?? 0.3,
       max_tokens: options.maxTokens ?? 8000,
-      response_format: { type: "json_object" },
+      ...(options.jsonMode !== false && { response_format: { type: "json_object" } }),
     });
 
     const content = response.choices[0]?.message?.content || "";
@@ -79,22 +80,8 @@ async function tryGroq(options: LLMCallOptions, forceModel?: string): Promise<LL
       ));
 
     if (isRateOrSizeLimit) {
-      console.warn(`[LLM] Groq gpt-oss-120b token/rate limit hit. Falling back to llama-3.3-70b-versatile for recovery...`);
-      const retryResponse = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
-        messages: [
-          { role: "system", content: options.systemPrompt },
-          { role: "user", content: cleanedUserMessage },
-        ],
-        temperature: options.temperature ?? 0.3,
-        max_tokens: options.maxTokens ?? 8000,
-        response_format: { type: "json_object" },
-      });
-
-      const content = retryResponse.choices[0]?.message?.content || "";
-      if (!content) throw new Error("Empty Groq response on fallback retry");
-
-      return { content, provider: "groq", model: "llama-3.3-70b-versatile" };
+      console.warn(`[LLM] Groq Llama token/rate limit hit. Falling back to Cerebras gpt-oss-120b for recovery...`);
+      return await tryCerebras(options, "gpt-oss-120b");
     }
 
     throw err;
@@ -148,7 +135,7 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
 /**
  * Try OpenRouter provider (fallback 2 — wide model access)
  */
-async function tryOpenRouter(options: LLMCallOptions): Promise<LLMResponse> {
+async function tryOpenRouter(options: LLMCallOptions, forceModel?: string): Promise<LLMResponse> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY not set");
 
@@ -158,20 +145,45 @@ async function tryOpenRouter(options: LLMCallOptions): Promise<LLMResponse> {
     timeout: 30000,
   });
 
-  const response = await openrouter.chat.completions.create({
-    model: "openrouter/free",
-    messages: [
-      { role: "system", content: options.systemPrompt },
-      { role: "user", content: options.userMessage },
-    ],
-    temperature: options.temperature ?? 0.3,
-    max_tokens: options.maxTokens ?? 8000,
-  });
+  const modelToUse = forceModel || "openrouter/free";
 
-  const content = response.choices[0]?.message?.content || "";
-  if (!content) throw new Error("Empty OpenRouter response");
+  try {
+    // Stream the response to get reasoning tokens in usage
+    const stream = await openrouter.chat.completions.create({
+      model: modelToUse,
+      messages: [
+        { role: "system", content: options.systemPrompt },
+        { role: "user", content: options.userMessage },
+      ],
+      temperature: options.temperature ?? 0.3,
+      max_tokens: options.maxTokens ?? 8000,
+      stream: true,
+      stream_options: { include_usage: true },
+      ...(options.jsonMode !== false && { response_format: { type: "json_object" } }),
+    });
 
-  return { content, provider: "openrouter", model: "openrouter/free" };
+    let response = "";
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content;
+      if (content) {
+        response += content;
+      }
+
+      // Usage information comes in the final chunk (OpenAI style)
+      if (chunk.usage) {
+        const reasoning = (chunk.usage as any).completion_tokens_details?.reasoning_tokens;
+        if (reasoning !== undefined) {
+          console.log(`\n[LLM] OpenRouter ${modelToUse} Reasoning tokens:`, reasoning);
+        }
+      }
+    }
+
+    if (!response) throw new Error("Empty OpenRouter response");
+
+    return { content: response, provider: "openrouter", model: modelToUse };
+  } catch (err: any) {
+    throw err;
+  }
 }
 
 /**
@@ -204,7 +216,7 @@ async function tryCerebras(options: LLMCallOptions, forceModel?: string): Promis
     ],
     temperature: options.temperature ?? 0.3,
     max_tokens: options.maxTokens ?? 8000,
-    response_format: { type: "json_object" },
+    ...(options.jsonMode !== false && { response_format: { type: "json_object" } }),
   });
 
   const content = response.choices[0]?.message?.content || "";
@@ -226,13 +238,16 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
       console.log(`[LLM] Trying Primary Model (${primary})...`);
       let result;
       if (primary.startsWith("cerebras:")) {
-        const modelId = primary.split(":")[1];
+        const modelId = primary.substring(primary.indexOf(":") + 1);
         result = await tryCerebras(options, modelId);
       } else if (primary.startsWith("groq:")) {
-        const modelId = primary.split(":")[1];
+        const modelId = primary.substring(primary.indexOf(":") + 1);
         result = await tryGroq(options, modelId);
+      } else if (primary.startsWith("openrouter:")) {
+        const modelId = primary.substring(primary.indexOf(":") + 1);
+        result = await tryOpenRouter(options, modelId);
       } else {
-        const modelId = primary.startsWith("nvidia:") ? primary.split(":")[1] : primary;
+        const modelId = primary.startsWith("nvidia:") ? primary.substring(primary.indexOf(":") + 1) : primary;
         result = await tryNvidia(options, modelId);
       }
       console.log(`[LLM] Success with Primary Model (${primary})`);
@@ -251,13 +266,16 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
       console.log(`[LLM] Trying Fallback Model (${fallback})...`);
       let result;
       if (fallback.startsWith("cerebras:")) {
-        const modelId = fallback.split(":")[1];
+        const modelId = fallback.substring(fallback.indexOf(":") + 1);
         result = await tryCerebras(options, modelId);
       } else if (fallback.startsWith("groq:")) {
-        const modelId = fallback.split(":")[1];
+        const modelId = fallback.substring(fallback.indexOf(":") + 1);
         result = await tryGroq(options, modelId);
+      } else if (fallback.startsWith("openrouter:")) {
+        const modelId = fallback.substring(fallback.indexOf(":") + 1);
+        result = await tryOpenRouter(options, modelId);
       } else {
-        const modelId = fallback.startsWith("nvidia:") ? fallback.split(":")[1] : fallback;
+        const modelId = fallback.startsWith("nvidia:") ? fallback.substring(fallback.indexOf(":") + 1) : fallback;
         result = await tryNvidia(options, modelId);
       }
       console.log(`[LLM] Success with Fallback Model (${fallback})`);
@@ -306,13 +324,16 @@ export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse>
       console.log(`[LLM Fast] Trying Primary Model (${primary})...`);
       let result;
       if (primary.startsWith("cerebras:")) {
-        const modelId = primary.split(":")[1];
+        const modelId = primary.substring(primary.indexOf(":") + 1);
         result = await tryCerebras(options, modelId);
       } else if (primary.startsWith("groq:")) {
-        const modelId = primary.split(":")[1];
+        const modelId = primary.substring(primary.indexOf(":") + 1);
         result = await tryGroq(options, modelId);
+      } else if (primary.startsWith("openrouter:")) {
+        const modelId = primary.substring(primary.indexOf(":") + 1);
+        result = await tryOpenRouter(options, modelId);
       } else {
-        const modelId = primary.startsWith("nvidia:") ? primary.split(":")[1] : primary;
+        const modelId = primary.startsWith("nvidia:") ? primary.substring(primary.indexOf(":") + 1) : primary;
         result = await tryNvidia(options, modelId);
       }
       console.log(`[LLM Fast] Success with Primary Model (${primary})`);
@@ -331,13 +352,16 @@ export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse>
       console.log(`[LLM Fast] Trying Fallback Model (${fallback})...`);
       let result;
       if (fallback.startsWith("cerebras:")) {
-        const modelId = fallback.split(":")[1];
+        const modelId = fallback.substring(fallback.indexOf(":") + 1);
         result = await tryCerebras(options, modelId);
       } else if (fallback.startsWith("groq:")) {
-        const modelId = fallback.split(":")[1];
+        const modelId = fallback.substring(fallback.indexOf(":") + 1);
         result = await tryGroq(options, modelId);
+      } else if (fallback.startsWith("openrouter:")) {
+        const modelId = fallback.substring(fallback.indexOf(":") + 1);
+        result = await tryOpenRouter(options, modelId);
       } else {
-        const modelId = fallback.startsWith("nvidia:") ? fallback.split(":")[1] : fallback;
+        const modelId = fallback.startsWith("nvidia:") ? fallback.substring(fallback.indexOf(":") + 1) : fallback;
         result = await tryNvidia(options, modelId);
       }
       console.log(`[LLM Fast] Success with Fallback Model (${fallback})`);

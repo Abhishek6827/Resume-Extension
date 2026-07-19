@@ -1,6 +1,25 @@
 import { callLLM, callFastLLM, extractJSON } from "./llm-client";
 import type { ResumeData, JDData, TailoredResult, TailoredChange, ScoreResult, ExperienceEntry, ProjectEntry, SkillsData, ModelSelection } from "./types";
 
+function ensureNewestFirst(resume: ResumeData) {
+  if (!resume.experience || resume.experience.length < 2) return;
+  
+  const getYear = (duration: string): number => {
+    const match = duration.match(/\b(20\d{2}|19\d{2})\b/);
+    return match ? parseInt(match[1], 10) : 0;
+  };
+
+  const firstYear = getYear(resume.experience[0].duration || "");
+  const lastYear = getYear(resume.experience[resume.experience.length - 1].duration || "");
+
+  if (firstYear > 0 && lastYear > 0 && firstYear < lastYear) {
+    resume.experience.reverse();
+    if (resume.projects) {
+      resume.projects.reverse();
+    }
+  }
+}
+
 /**
  * AI-assisted parse of raw resume text into structured ResumeData JSON.
  */
@@ -36,6 +55,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown wrapp
       "company": "Company/organization name",
       "duration": "Dates (e.g., Jun 2021 - Present)",
       "location": "Location or empty string",
+      "scope": "Short summary of scope/impact (e.g. 'Solo-built and operating...'). Extract verbatim if present, else empty string.",
       "highlights": [
         "Bullet point 1. Extract verbatim. Do not rewrite, modify, or merge."
       ]
@@ -79,7 +99,9 @@ CRITICAL REMINDER: You will be penalized if you drop any experience bullet point
     });
 
     const jsonStr = extractJSON(response.content);
-    return JSON.parse(jsonStr) as ResumeData;
+    const resume = JSON.parse(jsonStr) as ResumeData;
+    ensureNewestFirst(resume);
+    return resume;
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(`Failed to parse resume with AI: ${msg}`);
@@ -273,6 +295,7 @@ export async function tailorSummaryWithAI(
 CRITICAL SAFETY RULES:
 1. NEVER invent experience, skills, or degrees.
 2. Keep it concise, punchy, and professional.
+3. **CRITICAL LENGTH CONSTRAINT**: Ensure the tailored professional summary is of a similar length (number of lines, approximately 4 lines, 70-85 words) as the original summary to avoid creating layout gaps or page overflow. Keep word/character count within +/- 15% of the original.
 
 Return ONLY a valid JSON object matching this exact structure:
 {
@@ -305,8 +328,9 @@ CRITICAL SAFETY RULES:
 4. Highlight outcomes and metrics if present.
 5. DO NOT reorder the jobs themselves. Keep the exact same array length and order.
 6. You MUST preserve the exact same number of bullet points in the "highlights" array for each work experience entry as the original. Do not merge bullet points, do not split bullet points, and do not add or delete bullet points. Rewrite each original bullet point at its exact corresponding index.
+7. **CRITICAL LENGTH CONSTRAINT**: For each tailored bullet point, keep its character length/word count within +/- 15% of the original bullet point. Do NOT turn a 1-line bullet into a 2-line bullet, and do NOT turn a 2-line bullet into a 1-line bullet.
 
-Return ONLY a valid JSON object matching this exact structure (keep the same array length and structure, just rewrite the highlights):
+Return ONLY a valid JSON object matching this exact structure (keep the same array length and structure, just rewrite the highlights and preserve scope):
 {
   "experience": [
     {
@@ -314,6 +338,7 @@ Return ONLY a valid JSON object matching this exact structure (keep the same arr
       "company": "Same company as original",
       "duration": "Same duration",
       "location": "Same location",
+      "scope": "Same scope as original",
       "highlights": [
         "Tailored bullet point 1",
         "Tailored bullet point 2"
@@ -346,6 +371,7 @@ CRITICAL SAFETY RULES:
 2. You may refine phrasing of descriptions and bullet points to naturally incorporate keywords.
 3. DO NOT reorder the projects. Keep the exact same array length and order.
 4. You MUST preserve the exact same number of bullet points in the "highlights" array for each project entry as the original. Do not merge bullet points, do not split bullet points, and do not add or delete bullet points. Rewrite each original bullet point at its exact corresponding index.
+5. **CRITICAL LENGTH CONSTRAINT**: Keep the character length/word count of each tailored bullet point and project description within +/- 15% of the original to maintain the single-page layout budget.
 
 Return ONLY a valid JSON object matching this exact structure (keep the same array length and structure):
 {
@@ -385,6 +411,7 @@ CRITICAL SAFETY RULES:
 1. NEVER add skills to the candidate's skills list that are not present in the original resume.
 2. Only reorganize, filter, or reorder the existing skills within each category.
 3. Keep the exact same category keys as in the input skills.
+4. **CRITICAL LENGTH CONSTRAINT**: Keep the number of skills in each category approximately the same as the original. DO NOT drop any categories or return empty lists. If a category has no matching skills for the JD, retain its original skills verbatim so the layout height does not shrink.
 
 Return ONLY a valid JSON object matching this exact structure:
 {
@@ -427,12 +454,14 @@ export async function tailorResume(
       ...resume,
       title: resume.title, // Keep original title
       summary: tailoredSummaryObj.summary,
-      experience: (resume.experience || []).map((origExp) => {
-        // Robust matching: find by company or role to survive LLM reordering during tailoring
-        const matchedExp = tailoredExperienceObj.experience?.find(
-          e => (e.company && origExp.company && e.company.toLowerCase() === origExp.company.toLowerCase()) || 
-               (e.role && origExp.role && e.role.toLowerCase() === origExp.role.toLowerCase())
-        );
+      experience: (resume.experience || []).map((origExp, i) => {
+        // Robust matching: check index-to-index first if lengths match, fallback to fuzzy search
+        const matchedExp = (tailoredExperienceObj.experience?.length === resume.experience?.length)
+          ? tailoredExperienceObj.experience?.[i]
+          : tailoredExperienceObj.experience?.find(
+              e => (e.company && origExp.company && (e.company.toLowerCase().includes(origExp.company.toLowerCase()) || origExp.company.toLowerCase().includes(e.company.toLowerCase()))) || 
+                   (e.role && origExp.role && (e.role.toLowerCase().includes(origExp.role.toLowerCase()) || origExp.role.toLowerCase().includes(e.role.toLowerCase())))
+            );
 
         const highlights = (origExp.highlights || []).map((origHl, hlIndex) => {
           const tailoredHl = matchedExp?.highlights?.[hlIndex];
@@ -441,14 +470,17 @@ export async function tailorResume(
 
         return {
           ...origExp,
+          scope: matchedExp?.scope || origExp.scope,
           highlights,
         };
       }),
-      projects: (resume.projects || []).map((origProj) => {
-        // Robust matching: find by name to survive LLM reordering during tailoring
-        const matchedProj = tailoredProjectsObj.projects?.find(
-          p => p.name && origProj.name && p.name.toLowerCase() === origProj.name.toLowerCase()
-        );
+      projects: (resume.projects || []).map((origProj, i) => {
+        // Robust matching: check index-to-index first if lengths match, fallback to fuzzy search
+        const matchedProj = (tailoredProjectsObj.projects?.length === resume.projects?.length)
+          ? tailoredProjectsObj.projects?.[i]
+          : tailoredProjectsObj.projects?.find(
+              p => p.name && origProj.name && (p.name.toLowerCase().includes(origProj.name.toLowerCase()) || origProj.name.toLowerCase().includes(p.name.toLowerCase()))
+            );
 
         const highlights = (origProj.highlights || []).map((origHl, hlIndex) => {
           const tailoredHl = matchedProj?.highlights?.[hlIndex];

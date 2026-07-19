@@ -1,10 +1,35 @@
 export function escapeLatex(str: string): string {
   if (!str) return "";
-  return str
-    // Normalize Unicode mathematical symbols to ASCII equivalents
-    .replace(/\u223C/g, "~")   // Tilde operator
-    .replace(/\u2212/g, "-")   // Minus sign
-    // Standard LaTeX special characters
+  
+  // Normalize unicode mathematical symbols to ASCII equivalents
+  let clean = str
+    .replace(/\u223C/g, "~")
+    .replace(/\u2212/g, "-")
+    .replace(/\u2011/g, "-")
+    .replace(/\u2013/g, "--")
+    .replace(/\u2014/g, "---")
+    .replace(/\u2018/g, "'")
+    .replace(/\u2019/g, "'")
+    .replace(/\u201C/g, '"')
+    .replace(/\u201D/g, '"')
+    .replace(/\u2026/g, "...")
+    .replace(/\u00A0/g, " ")
+    .replace(/\u202F/g, " ")
+    .replace(/\u2248/g, "approx. ")
+    .replace(/~/g, "$\\sim$");
+
+  // Alternation regex for LaTeX elements to protect
+  const latexRegex = /\\texttt\{[^\\}]+\}|\\href\{[^\\}]+\}\{[^\\}]+\}|\\textnormal\{[^\\}]+\}|\{\\small\s+[^\\}]+\}|\$\s*\\sim\s*\$|\\,|\\&|\\%|\\_|---|--/g;
+  
+  const placeholders: string[] = [];
+  clean = clean.replace(latexRegex, (match) => {
+    const placeholder = `LATEXPLACEHOLDER${placeholders.length}`;
+    placeholders.push(match);
+    return placeholder;
+  });
+
+  // Escape standard characters
+  clean = clean
     .replace(/\\/g, "\\textbackslash{}")
     .replace(/\{/g, "\\{")
     .replace(/\}/g, "\\}")
@@ -14,24 +39,90 @@ export function escapeLatex(str: string): string {
     .replace(/#/g, "\\#")
     .replace(/_/g, "\\_")
     .replace(/\^/g, "\\textasciicircum{}")
-    .replace(/~/g, "\\textasciitilde{}")
-    // Typographic Unicode characters that break pdfTeX
-    .replace(/\u2011/g, "-") // Non-breaking hyphen
-    .replace(/\u2013/g, "--") // En dash
-    .replace(/\u2014/g, "---") // Em dash
-    .replace(/\u2018/g, "'") // Left single quote
-    .replace(/\u2019/g, "'") // Right single quote
-    .replace(/\u201C/g, '"') // Left double quote
-    .replace(/\u201D/g, '"') // Right double quote
-    .replace(/\u2026/g, "...") // Ellipsis
-    .replace(/\u00A0/g, " ") // Non-breaking space
-    .replace(/\u202F/g, " ") // Narrow no-break space
-    .replace(/\u2248/g, "approx. "); // Approximately equal to
+    .replace(/~/g, "\\textasciitilde{}");
+
+  // Restore placeholders
+  placeholders.forEach((val, idx) => {
+    clean = clean.replace(`LATEXPLACEHOLDER${idx}`, val);
+  });
+
+  return clean;
 }
 
 import type { ResumeData } from "./types";
 
+function formatCompany(company: string): string {
+  if (!company) return "";
+  
+  let mainCompany = company;
+  let description = "";
+  if (company.includes("---")) {
+    const index = company.indexOf("---");
+    mainCompany = company.substring(0, index).trim();
+    description = company.substring(index + 3).trim();
+  } else if (company.includes(" - ")) {
+    const index = company.indexOf(" - ");
+    mainCompany = company.substring(0, index).trim();
+    description = company.substring(index + 3).trim();
+  }
+  
+  let url = "";
+  const urlPattern = /\((https?:\/\/)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\)/;
+  const match = mainCompany.match(urlPattern);
+  if (match) {
+    url = match[2];
+    mainCompany = mainCompany.replace(match[0], "").trim();
+  }
+  
+  let result = escapeLatex(mainCompany);
+  if (url) {
+    result += ` \\textnormal{(\\href{https://${url}}{${escapeLatex(url)}})}`;
+  }
+  if (description) {
+    result += ` \\textnormal{{\\small --- ${escapeLatex(description)}}}`;
+  }
+  
+  return result;
+}
+
+function formatProjectName(name: string): string {
+  if (!name) return "";
+  if (name.includes("---")) {
+    const index = name.indexOf("---");
+    const mainName = name.substring(0, index).trim();
+    const desc = name.substring(index + 3).trim();
+    return `${escapeLatex(mainName)} \\textnormal{--- ${escapeLatex(desc)}}`;
+  } else if (name.includes(" - ")) {
+    const index = name.indexOf(" - ");
+    const mainName = name.substring(0, index).trim();
+    const desc = name.substring(index + 3).trim();
+    return `${escapeLatex(mainName)} \\textnormal{--- ${escapeLatex(desc)}}`;
+  }
+  return escapeLatex(name);
+}
+
+function ensureNewestFirst(resume: ResumeData) {
+  if (!resume.experience || resume.experience.length < 2) return;
+  
+  const getYear = (duration: string): number => {
+    const match = duration.match(/\b(20\d{2}|19\d{2})\b/);
+    return match ? parseInt(match[1], 10) : 0;
+  };
+
+  const firstYear = getYear(resume.experience[0].duration || "");
+  const lastYear = getYear(resume.experience[resume.experience.length - 1].duration || "");
+
+  // If first entry is older than last entry, the list was reversed (oldest first)
+  if (firstYear > 0 && lastYear > 0 && firstYear < lastYear) {
+    resume.experience.reverse();
+    if (resume.projects) {
+      resume.projects.reverse();
+    }
+  }
+}
+
 export function generateLatex(resume: ResumeData): string {
+  ensureNewestFirst(resume);
   const name = escapeLatex(resume.name || "");
 
   // Build the contact string dynamically to avoid dangling separators
@@ -80,10 +171,13 @@ export function generateLatex(resume: ResumeData): string {
     resume.experience.forEach((exp) => {
       const role = escapeLatex(exp.role || "");
       const duration = escapeLatex(exp.duration || "");
-      const company = escapeLatex(exp.company || "");
+      const formattedCompany = formatCompany(exp.company || "");
       const location = escapeLatex(exp.location || "");
       
-      experienceLatex += `\\role{${role}}{${duration}}%\n     {${company} \\hfill ${location}}\n`;
+      experienceLatex += `\\role{${role}}{${duration}}%\n     {${formattedCompany} \\hfill ${location}}\n`;
+      if (exp.scope) {
+        experienceLatex += `\\scope{${escapeLatex(exp.scope)}}\n`;
+      }
       
       if (exp.highlights && exp.highlights.length > 0) {
         experienceLatex += "\\begin{itemize}\n";
@@ -103,7 +197,7 @@ export function generateLatex(resume: ResumeData): string {
   if (resume.projects && resume.projects.length > 0) {
     projectsLatex = "\\section*{Projects}\n\n";
     resume.projects.forEach((proj) => {
-      const projName = escapeLatex(proj.name || "");
+      const projName = formatProjectName(proj.name || "");
       const tech = escapeLatex((proj.tech || []).join(", "));
       
       projectsLatex += `\\project{${projName}}%\n        {${tech}}\n`;

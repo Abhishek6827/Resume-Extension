@@ -14,17 +14,19 @@ export async function POST(request: NextRequest) {
   const corsHeaders = getCorsHeaders(request);
 
   try {
-    const { tailoredResume } = await request.json();
+    const body = await request.json();
+    let latexString = "";
 
-    if (!tailoredResume) {
+    if (body.latex) {
+      latexString = body.latex;
+    } else if (body.tailoredResume) {
+      latexString = generateLatex(body.tailoredResume as ResumeData);
+    } else {
       return NextResponse.json(
-        { error: "Missing tailoredResume in request body" },
+        { error: "Missing tailoredResume or latex in request body" },
         { status: 400, headers: corsHeaders }
       );
     }
-
-    // 1. Convert tailored JSON to exact LaTeX string
-    const latexString = generateLatex(tailoredResume as ResumeData);
 
     // Compress LaTeX to avoid 414 Request-URI Too Large (Nginx 8KB limit)
     // Remove comments and compress multiple spaces/newlines
