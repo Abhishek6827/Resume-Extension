@@ -255,7 +255,7 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       console.error(`[LLM] Selected Model (${primary}) failed: ${message}`);
-      throw new Error(`[LLM] Selected Model (${primary}) failed: ${message}`);
+      errors.push(`Primary Model (${primary}): ${message}`);
     }
   }
 
@@ -283,11 +283,11 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       console.error(`[LLM] Fallback Model (${fallback}) failed: ${message}`);
-      throw new Error(`[LLM] Fallback Model (${fallback}) failed: ${message}`);
+      errors.push(`Fallback Model (${fallback}): ${message}`);
     }
   }
 
-  // 2. Global fallbacks if no user selection
+  // 2. Global fallbacks if no user selection or user-selected models failed
   const globalProviders = [
     { name: "NVIDIA (Default Nemotron)", fn: () => tryNvidia(options, "nvidia/nemotron-3-ultra-550b-a55b") },
     { name: "Groq", fn: () => tryGroq(options) },
@@ -341,7 +341,7 @@ export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse>
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       console.error(`[LLM Fast] Selected Model (${primary}) failed: ${message}`);
-      throw new Error(`[LLM Fast] Selected Model (${primary}) failed: ${message}`);
+      errors.push(`Primary Model (${primary}): ${message}`);
     }
   }
 
@@ -369,7 +369,7 @@ export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse>
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       console.error(`[LLM Fast] Fallback Model (${fallback}) failed: ${message}`);
-      throw new Error(`[LLM Fast] Fallback Model (${fallback}) failed: ${message}`);
+      errors.push(`Fallback Model (${fallback}): ${message}`);
     }
   }
 
