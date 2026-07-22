@@ -32,7 +32,30 @@ export function extractJSON(text: string): string {
     // Repair common trailing commas issue before returning
     return jsonMatch[0].replace(/,\s*([\}\]])/g, "$1");
   }
+  
+  // Auto-repair truncated JSON (e.g. unterminated string or missing closing braces)
+  const firstBrace = cleaned.indexOf("{");
+  if (firstBrace !== -1) {
+    let str = cleaned.substring(firstBrace);
+    const quoteMatches = str.match(/(?<!\\)"/g) || [];
+    if (quoteMatches.length % 2 !== 0) {
+      str += '"';
+    }
+    const openBraces = (str.match(/\{/g) || []).length;
+    const closeBraces = (str.match(/\}/g) || []).length;
+    for (let i = 0; i < openBraces - closeBraces; i++) {
+      str += "}";
+    }
+    return str.replace(/,\s*([\}\]])/g, "$1");
+  }
+
   throw new Error("No JSON object found in LLM response");
+}
+
+function isVersatileModel(modelId?: string): boolean {
+  if (!modelId) return false;
+  const lower = modelId.toLowerCase();
+  return lower.includes("versatile") || lower.includes("ersatile");
 }
 
 /**
@@ -49,7 +72,7 @@ async function tryGroq(options: LLMCallOptions, forceModel?: string): Promise<LL
     .replace(/[ \t]+/g, " ")
     .trim();
 
-  const groq = new Groq({ apiKey, maxRetries: 1, timeout: 12000 });
+  const groq = new Groq({ apiKey, maxRetries: 3, timeout: 60000 });
   const modelToUse = forceModel || "llama-3.3-70b-versatile";
   
   try {
@@ -60,11 +83,20 @@ async function tryGroq(options: LLMCallOptions, forceModel?: string): Promise<LL
         { role: "user", content: cleanedUserMessage },
       ],
       temperature: options.temperature ?? 0.3,
-      max_tokens: options.maxTokens ?? 8000,
+      max_tokens: options.maxTokens ?? 3500,
       ...(options.jsonMode !== false && { response_format: { type: "json_object" } }),
     });
 
-    const content = response.choices[0]?.message?.content || "";
+    const msg = response.choices[0]?.message as any;
+    let content = msg?.content || msg?.reasoning || msg?.reasoning_content || "";
+
+    if (content.includes("\\documentclass")) {
+      const docIdx = content.indexOf("\\documentclass");
+      content = content.substring(docIdx);
+    } else if (content.includes("<think>")) {
+      content = content.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+    }
+
     if (!content) throw new Error("Empty Groq response");
 
     return { content, provider: "groq", model: modelToUse };
@@ -79,8 +111,9 @@ async function tryGroq(options: LLMCallOptions, forceModel?: string): Promise<LL
         err.message.includes("rate_limit_exceeded")
       ));
 
+    // Fallback to Cerebras if Groq token/rate limit is hit
     if (isRateOrSizeLimit) {
-      console.warn(`[LLM] Groq Llama token/rate limit hit. Falling back to Cerebras gpt-oss-120b for recovery...`);
+      console.warn(`[LLM] Groq (${modelToUse}) token/rate limit hit (${err.message}). Falling back to Cerebras gpt-oss-120b for recovery...`);
       return await tryCerebras(options, "gpt-oss-120b");
     }
 
@@ -89,47 +122,53 @@ async function tryGroq(options: LLMCallOptions, forceModel?: string): Promise<LL
 }
 
 /**
- * Try NVIDIA provider using dynamic model choice
+ * Try NVIDIA provider (primary — high quality inference)
  */
 async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<LLMResponse> {
   const apiKey = process.env.NVIDIA_API_KEY;
   if (!apiKey) throw new Error("NVIDIA_API_KEY not set");
 
+  const modelToUse = forceModel || "nvidia/nemotron-3-ultra-550b-a55b";
+  const isGlm = modelToUse.includes("glm");
+
   const nvidia = new OpenAI({
     baseURL: "https://integrate.api.nvidia.com/v1",
     apiKey,
-    timeout: 60000, // 60 seconds max per request to prevent 15 minute hangs
-    maxRetries: 0, // Fail fast if the model is down or invalid
+    timeout: 280000, // 280s to fail gracefully before Next.js 300s hard limit
+    maxRetries: 0, // No retries because we only have 300s total execution time
   });
 
-  // Compress whitespace to save precious tokens
+  // Compress whitespace to save tokens
   const cleanedUserMessage = options.userMessage
     .replace(/\r\n/g, "\n")
     .replace(/\n+/g, "\n")
     .replace(/[ \t]+/g, " ")
     .trim();
 
-  const modelToUse = forceModel || "nvidia/nemotron-3-ultra-550b-a55b";
+  try {
+    // stream: false avoids SSE chunk stalls on NIM endpoints
+    const completion = await nvidia.chat.completions.create({
+      model: modelToUse,
+      messages: [
+        { role: "system", content: options.systemPrompt },
+        { role: "user", content: cleanedUserMessage },
+      ],
+      temperature: options.temperature ?? 0.3,
+      max_tokens: options.maxTokens ?? 8000,
+      stream: false,
+    });
 
-  const stream = await nvidia.chat.completions.create({
-    model: modelToUse,
-    messages: [
-      { role: "system", content: options.systemPrompt },
-      { role: "user", content: cleanedUserMessage },
-    ],
-    temperature: options.temperature ?? 0.3,
-    max_tokens: options.maxTokens ?? 8000,
-    stream: true,
-  });
+    const content = completion.choices[0]?.message?.content || "";
+    if (!content) throw new Error("Empty NVIDIA response");
 
-  let content = "";
-  for await (const chunk of stream) {
-    content += chunk.choices[0]?.delta?.content || "";
+    return { content, provider: "nvidia", model: modelToUse };
+  } catch (err: any) {
+    if (isVersatileModel(modelToUse)) {
+      console.warn(`[LLM] NVIDIA model (${modelToUse}) failed or timed out (${err.message}). Falling back to Cerebras gpt-oss-120b...`);
+      return await tryCerebras(options, "gpt-oss-120b");
+    }
+    throw err;
   }
-
-  if (!content) throw new Error("Empty NVIDIA response");
-
-  return { content, provider: "nvidia", model: modelToUse };
 }
 
 /**
@@ -142,14 +181,14 @@ async function tryOpenRouter(options: LLMCallOptions, forceModel?: string): Prom
   const openrouter = new OpenAI({
     baseURL: "https://openrouter.ai/api/v1",
     apiKey,
-    timeout: 30000,
+    timeout: 90000, // 90s timeout for OpenRouter queues
+    maxRetries: 3,
   });
 
   const modelToUse = forceModel || "openrouter/free";
 
   try {
-    // Stream the response to get reasoning tokens in usage
-    const stream = await openrouter.chat.completions.create({
+    const completion = await openrouter.chat.completions.create({
       model: modelToUse,
       messages: [
         { role: "system", content: options.systemPrompt },
@@ -157,32 +196,22 @@ async function tryOpenRouter(options: LLMCallOptions, forceModel?: string): Prom
       ],
       temperature: options.temperature ?? 0.3,
       max_tokens: options.maxTokens ?? 8000,
-      stream: true,
-      stream_options: { include_usage: true },
-      ...(options.jsonMode !== false && { response_format: { type: "json_object" } }),
+      stream: false,
     });
 
-    let response = "";
-    for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content;
-      if (content) {
-        response += content;
-      }
-
-      // Usage information comes in the final chunk (OpenAI style)
-      if (chunk.usage) {
-        const reasoning = (chunk.usage as any).completion_tokens_details?.reasoning_tokens;
-        if (reasoning !== undefined) {
-          console.log(`\n[LLM] OpenRouter ${modelToUse} Reasoning tokens:`, reasoning);
-        }
-      }
-    }
+    const msg = completion.choices[0]?.message;
+    const response = msg?.content || (msg as any)?.reasoning || (msg as any)?.reasoning_content || "";
 
     if (!response) throw new Error("Empty OpenRouter response");
 
     return { content: response, provider: "openrouter", model: modelToUse };
   } catch (err: any) {
-    throw err;
+    console.warn(`[LLM] OpenRouter model (${modelToUse}) failed or rate limited (${err.message}). Falling back to Cerebras gpt-oss-120b...`);
+    try {
+      return await tryCerebras(options, "gpt-oss-120b");
+    } catch {
+      return await tryGroq(options, "llama-3.3-70b-versatile");
+    }
   }
 }
 
@@ -196,7 +225,8 @@ async function tryCerebras(options: LLMCallOptions, forceModel?: string): Promis
   const cerebras = new OpenAI({
     baseURL: "https://api.cerebras.ai/v1",
     apiKey,
-    timeout: 12000,
+    timeout: 45000,
+    maxRetries: 3,
   });
 
   // Compress whitespace to save precious tokens
@@ -230,10 +260,10 @@ async function tryCerebras(options: LLMCallOptions, forceModel?: string): Promis
  */
 export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
   const errors: string[] = [];
+  const primary = options.modelSelection?.primaryModel;
 
   // 1. Try Primary Model if specified
-  if (options.modelSelection?.primaryModel) {
-    const primary = options.modelSelection.primaryModel;
+  if (primary) {
     try {
       console.log(`[LLM] Trying Primary Model (${primary})...`);
       let result;
@@ -255,6 +285,9 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       console.error(`[LLM] Selected Model (${primary}) failed: ${message}`);
+      if (!isVersatileModel(primary)) {
+        throw err;
+      }
       errors.push(`Primary Model (${primary}): ${message}`);
     }
   }
@@ -316,10 +349,10 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
  */
 export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse> {
   const errors: string[] = [];
+  const primary = options.modelSelection?.primaryModel;
 
   // 1. Try Primary Model if specified
-  if (options.modelSelection?.primaryModel) {
-    const primary = options.modelSelection.primaryModel;
+  if (primary) {
     try {
       console.log(`[LLM Fast] Trying Primary Model (${primary})...`);
       let result;
@@ -341,6 +374,7 @@ export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse>
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       console.error(`[LLM Fast] Selected Model (${primary}) failed: ${message}`);
+      // Internal utilities like Parse JD should always fallback to ensure reliability
       errors.push(`Primary Model (${primary}): ${message}`);
     }
   }

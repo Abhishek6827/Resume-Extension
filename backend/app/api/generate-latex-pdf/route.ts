@@ -28,6 +28,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Sanitize common LLM LaTeX syntax mistakes before sending to pdflatex
+    latexString = latexString
+      .replace(/\\newcommand\{\\section\}/g, '\\renewcommand{\\section}')
+      .replace(/\\newcommand\{\\subsection\}/g, '\\renewcommand{\\subsection}')
+      .replace(/\\newcommand\{\\subsubsection\}/g, '\\renewcommand{\\subsubsection}')
+      .replace(/\\newcommand\{\\item\}/g, '\\renewcommand{\\item}')
+      .replace(/\\to\b/g, 'to')
+      .replace(/\\rightarrow\b/g, 'to');
+
     // Compress LaTeX to avoid 414 Request-URI Too Large (Nginx 8KB limit)
     // Remove comments and compress multiple spaces/newlines
     const compressedLatex = latexString

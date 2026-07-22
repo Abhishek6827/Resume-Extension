@@ -1,5 +1,6 @@
 import { callLLM, callFastLLM, extractJSON } from "./llm-client";
 import type { ResumeData, JDData, TailoredResult, TailoredChange, ScoreResult, ExperienceEntry, ProjectEntry, SkillsData, ModelSelection } from "./types";
+import { sanitizeMissingKeywords } from "./skill-bank";
 
 function ensureNewestFirst(resume: ResumeData) {
   if (!resume.experience || resume.experience.length < 2) return;
@@ -133,8 +134,18 @@ Return ONLY a valid JSON object matching this exact structure (no markdown wrapp
       modelSelection,
     });
 
-    const jsonStr = extractJSON(response.content);
-    return JSON.parse(jsonStr) as JDData;
+    try {
+      const jsonStr = extractJSON(response.content);
+      return JSON.parse(jsonStr) as JDData;
+    } catch (parseErr) {
+      console.warn(`[parseJDWithAI] Primary model (${modelSelection?.primaryModel}) produced invalid JSON. Retrying with default Fast LLM...`, parseErr);
+      const fallbackResponse = await callFastLLM({
+        systemPrompt,
+        userMessage: `Job Description:\n${rawText}`,
+      });
+      const jsonStr = extractJSON(fallbackResponse.content);
+      return JSON.parse(jsonStr) as JDData;
+    }
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(`Failed to parse job description with AI: ${msg}`);
@@ -259,6 +270,9 @@ export async function scoreResumeWithAI(
   const systemPrompt = `You are an expert ATS (Applicant Tracking System) specialist.
 Your goal is to evaluate a candidate's resume against a Job Description (JD).
 
+CRITICAL KEYWORD RULE:
+- Do NOT list version-specific variants (e.g., "Java 8", "Java 17", "Java 21", "Python 3") in "missingKeywords" if the core base skill/technology (e.g. "Java", "Python") is already present/matched in the candidate's resume.
+
 Return ONLY a valid JSON object matching this exact structure:
 {
   "atsScore": "Estimate a realistic ATS score (0-100)",
@@ -276,7 +290,16 @@ Return ONLY a valid JSON object matching this exact structure:
     });
 
     const jsonStr = extractJSON(response.content);
-    return JSON.parse(jsonStr) as ScoreResult;
+    const parsed = JSON.parse(jsonStr) as ScoreResult;
+    const matched = Array.isArray(parsed.matchedKeywords) ? parsed.matchedKeywords : [];
+    const missing = Array.isArray(parsed.missingKeywords) ? parsed.missingKeywords : [];
+    const sanitizedMissing = sanitizeMissingKeywords(missing, matched);
+
+    return {
+      ...parsed,
+      matchedKeywords: matched,
+      missingKeywords: sanitizedMissing,
+    };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(`Failed to score resume: ${msg}`);
