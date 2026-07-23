@@ -423,6 +423,33 @@ export default function SidePanel() {
     return applyApprovedChanges(resume, tailoredResult.changes);
   };
 
+  // Helper to construct a clean, professional resume filename for recruiters/ATS
+  const generateProfessionalFilename = (
+    rawName: string | undefined,
+    rawTitle: string | undefined,
+    ext: "pdf" | "docx"
+  ): string => {
+    const sanitize = (str?: string) =>
+      (str || "")
+        .replace(/[^a-zA-Z0-9\s]/g, " ")
+        .trim()
+        .replace(/\s+/g, "_");
+
+    const name = sanitize(rawName);
+    const title = sanitize(rawTitle);
+
+    if (name && title) {
+      return `${name}_${title}_Resume.${ext}`;
+    }
+    if (name) {
+      return `${name}_Resume.${ext}`;
+    }
+    if (title) {
+      return `${title}_Resume.${ext}`;
+    }
+    return `Resume.${ext}`;
+  };
+
   // Handler: Export PDF — sends original PDF to backend for modification
   const handleDownloadPDF = async () => {
     const dataToExport = buildFinalResume();
@@ -436,10 +463,11 @@ export default function SidePanel() {
         tailoredResult?.changes
       );
 
-      const candidateName = dataToExport.name.replace(/\s+/g, "_");
-      const title = tailoredResult?.jobTitle ? tailoredResult.jobTitle.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_") : "Tailored";
-      const companyName = tailoredResult?.company ? tailoredResult.company.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_") : "";
-      const filename = `${candidateName}_${title}${companyName ? `_${companyName}` : ""}.pdf`;
+      const filename = generateProfessionalFilename(
+        dataToExport.name,
+        tailoredResult?.jobTitle,
+        "pdf"
+      );
 
       triggerDownload(blob, filename);
     } catch (err: any) {
@@ -455,10 +483,11 @@ export default function SidePanel() {
     try {
       const blob = await exportDOCX(dataToExport);
 
-      const candidateName = dataToExport.name.replace(/\s+/g, "_");
-      const title = tailoredResult?.jobTitle ? tailoredResult.jobTitle.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_") : "Tailored";
-      const companyName = tailoredResult?.company ? tailoredResult.company.replace(/[^a-zA-Z0-9\s]/g, "").replace(/\s+/g, "_") : "";
-      const filename = `${candidateName}_${title}${companyName ? `_${companyName}` : ""}.docx`;
+      const filename = generateProfessionalFilename(
+        dataToExport.name,
+        tailoredResult?.jobTitle,
+        "docx"
+      );
 
       triggerDownload(blob, filename);
     } catch (err: any) {
