@@ -32,7 +32,7 @@ function extractCandidateNameFromLatex(latex: string): string {
     return hugeMatch[2].trim().replace(/[^a-zA-Z0-9]/g, "_");
   }
 
-  return "Tailored";
+  return "";
 }
 
 const CustomDropdown = ({ value, onChange, options, label, focusColor }: { value: string, onChange: (val: string) => void, options: any[], label: string, focusColor: string }) => {
@@ -596,7 +596,7 @@ const ParallelPipelineVisualizer = ({
   onSelectModel,
   isCompilingSelected = false,
   pdfUrl = null,
-  downloadName = "Tailored_Resume.pdf",
+  downloadName = "Resume.pdf",
   compilePdfForIndex,
   targetModels
 }: { 
@@ -1551,7 +1551,8 @@ export default function Home() {
 
         const jobTitle = jdData?.jobTitle?.trim().replace(/[^a-zA-Z0-9]/g, "_") || "Professional";
         const candidateName = extractCandidateNameFromLatex(latexText);
-        setDownloadName(`${candidateName}_${jobTitle}_Resume.pdf`);
+        const namePrefix = candidateName ? `${candidateName}_` : "";
+        setDownloadName(`${namePrefix}${jobTitle}_Resume.pdf`);
 
         setStatus("tailoring");
 
@@ -1691,9 +1692,10 @@ export default function Home() {
       if (!tailorRes.ok) throw new Error("Failed to tailor resume");
       const tailoredResult = await tailorRes.json();
       
-      const candidateName = tailoredResult.tailoredResume?.name?.trim().replace(/[^a-zA-Z0-9]/g, "_") || "Candidate";
+      const candidateName = tailoredResult.tailoredResume?.name?.trim().replace(/[^a-zA-Z0-9]/g, "_");
       const jobTitle = jdData?.jobTitle?.trim().replace(/[^a-zA-Z0-9]/g, "_") || "Professional";
-      setDownloadName(`${candidateName}_${jobTitle}_Resume.pdf`);
+      const namePrefix = candidateName ? `${candidateName}_` : "";
+      setDownloadName(`${namePrefix}${jobTitle}_Resume.pdf`);
 
       setStatus("compiling");
       const compileRes = await fetch(`${API_BASE_URL}/api/generate-latex-pdf`, {
