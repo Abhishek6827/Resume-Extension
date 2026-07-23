@@ -1242,6 +1242,13 @@ export default function Home() {
   const [skillBank, setSkillBank] = useState<SkillBank | null>(null);
   const [useSkillBankInTailoring, setUseSkillBankInTailoring] = useState<boolean>(true);
 
+  // Cover Letter states
+  const [clJdText, setClJdText] = useState<string>("");
+  const [coverLetter, setCoverLetter] = useState<string>("");
+  const [isGeneratingCL, setIsGeneratingCL] = useState<boolean>(false);
+  const [coverLetterModel, setCoverLetterModel] = useState<string>("groq:qwen/qwen3.6-27b");
+  const [clError, setClError] = useState<string>("");
+
   // Load all persisted states on mount
   useEffect(() => {
     const savedActiveTab = localStorage.getItem("activeTab");
@@ -1371,6 +1378,101 @@ export default function Home() {
     localStorage.removeItem("selectedResultIndex");
     localStorage.removeItem("downloadName");
     localStorage.removeItem("generatedLatexLength");
+  };
+
+  const handleGenerateCoverLetter = async () => {
+    if (!clJdText || (!latexText && !file)) {
+      setClError("Please provide both Resume and Cover Letter Job Description.");
+      return;
+    }
+    
+    setIsGeneratingCL(true);
+    setClError("");
+    
+    try {
+      // Parse JD
+      const jdRes = await fetch(`${API_BASE_URL}/api/parse-jd`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: clJdText }),
+      });
+      if (!jdRes.ok) throw new Error("Failed to parse Job Description.");
+      const jdData = await jdRes.json();
+
+      // Parse resume
+      const resumeRes = await fetch(`${API_BASE_URL}/api/parse-resume`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: latexText || "" }),
+      });
+      if (!resumeRes.ok) throw new Error("Failed to parse Resume.");
+      const resumeData = await resumeRes.json();
+
+      const clRes = await fetch(`${API_BASE_URL}/api/generate-cover-letter`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          resumeData,
+          jdData,
+          modelSelection: { primaryModel: coverLetterModel }
+        }),
+      });
+
+      if (!clRes.ok) {
+        const errorData = await clRes.json();
+        throw new Error(errorData.error || "Failed to generate Cover Letter.");
+      }
+
+      const { content } = await clRes.json();
+      setCoverLetter(content);
+    } catch (err: any) {
+      console.error(err);
+      setClError(err.message);
+    } finally {
+      setIsGeneratingCL(false);
+    }
+  };
+
+  const handleDownloadCoverLetterPDF = async () => {
+    if (!coverLetter) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/export-cover-letter-pdf`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          content: coverLetter,
+          candidateName: extractCandidateNameFromLatex(latexText) || "Candidate"
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to export PDF.");
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Cover_Letter.pdf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.error(err);
+      setClError(err.message);
+    }
+  };
+
+  const handleDownloadCoverLetterTXT = () => {
+    if (!coverLetter) return;
+    const blob = new Blob([coverLetter], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Cover_Letter.txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const compilePdfForIndex = async (index: number, resultsList: any[]) => {
@@ -2310,6 +2412,84 @@ export default function Home() {
               )}
             </div>
             
+          </div>
+
+          {/* Cover Letter Generator Section */}
+          <div className="w-full mt-8 p-6 bg-slate-900/40 border border-white/5 rounded-3xl relative overflow-hidden flex flex-col gap-6">
+            <h2 className="text-xl font-black tracking-tight text-white flex items-center gap-2">
+              <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" /></svg>
+              Cover Letter Generator
+            </h2>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Cover Letter Job Description</label>
+              <textarea
+                value={clJdText}
+                onChange={(e) => setClJdText(e.target.value)}
+                placeholder="Paste the Job Description specifically for your Cover Letter here..."
+                className="w-full h-[120px] bg-slate-950/50 border border-white/10 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 resize-y"
+              ></textarea>
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-4 items-end">
+              <div className="flex-1 w-full">
+                <CustomDropdown
+                  label="Cover Letter Model"
+                  value={coverLetterModel}
+                  onChange={setCoverLetterModel}
+                  options={AI_MODELS}
+                  focusColor="hover:bg-indigo-500/10"
+                />
+              </div>
+              <button 
+                onClick={handleGenerateCoverLetter}
+                disabled={isGeneratingCL || !clJdText || (!latexText && !file)}
+                className="w-full md:w-auto px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed h-[42px] flex items-center justify-center gap-2"
+              >
+                {isGeneratingCL ? (
+                  <><svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg> Generating...</>
+                ) : "Generate Cover Letter"}
+              </button>
+            </div>
+
+            {clError && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3 text-red-400">
+                <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold">Generation Error</span>
+                  <span className="text-xs opacity-80 mt-0.5">{clError}</span>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Cover Letter Content</label>
+              <textarea
+                value={coverLetter}
+                onChange={(e) => setCoverLetter(e.target.value)}
+                placeholder="Your generated cover letter will appear here. You can manually edit it before downloading."
+                className="w-full h-[300px] bg-slate-950/50 border border-white/10 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 font-mono leading-relaxed resize-y"
+              ></textarea>
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
+              <button 
+                onClick={handleDownloadCoverLetterTXT}
+                disabled={!coverLetter}
+                className="w-full sm:w-auto px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                Download TXT
+              </button>
+              <button 
+                onClick={handleDownloadCoverLetterPDF}
+                disabled={!coverLetter}
+                className="w-full sm:w-auto px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                Download PDF
+              </button>
+            </div>
           </div>
         </div>
       </main>

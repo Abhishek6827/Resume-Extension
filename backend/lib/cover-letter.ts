@@ -1,0 +1,44 @@
+import { callLLM } from "./llm-client";
+import type { ResumeData, JDData, ModelSelection } from "./types";
+
+export async function generateCoverLetter(
+  resume: ResumeData,
+  jd: JDData,
+  modelSelection?: ModelSelection
+): Promise<string> {
+  const systemPrompt = `You are an expert executive recruiter and resume writer. 
+Your task is to write a highly professional, ATS-friendly cover letter for a candidate applying to a job.
+The cover letter MUST NOT use any placeholders like [Date], [Hiring Manager], or [Company Name] except if absolutely necessary and impossible to infer from the provided JD. 
+Try to infer the Company Name and Job Title from the Job Description.
+Format the cover letter in plain text with clear paragraphs. Do NOT wrap it in markdown code blocks.
+The cover letter should be concise (around 3-4 paragraphs) and highlight the candidate's most relevant experience based on the JD.`;
+
+  const userMessage = `
+--- JOB DESCRIPTION ---
+${jd.jobTitle ? `Job Title: ${jd.jobTitle}\n` : ""}
+${jd.company ? `Company: ${jd.company}\n` : ""}
+Must Have Skills: ${jd.mustHaveSkills ? jd.mustHaveSkills.join(", ") : ""}
+Responsibilities: ${jd.responsibilities ? jd.responsibilities.join(", ") : ""}
+
+--- CANDIDATE RESUME ---
+Name: ${resume.name || "Candidate"}
+Contact: ${JSON.stringify(resume.contact || {}, null, 2)}
+Summary: ${resume.summary || ""}
+Experience: ${JSON.stringify(resume.experience || [], null, 2)}
+Projects: ${JSON.stringify(resume.projects || [], null, 2)}
+Skills: ${JSON.stringify(resume.skills || {}, null, 2)}
+
+Please write the cover letter now. Only output the cover letter text, no other conversation.
+`;
+
+  const response = await callLLM({
+    systemPrompt,
+    userMessage,
+    modelSelection,
+    jsonMode: false,
+    maxTokens: 2500,
+  });
+
+  const finalContent = response.content.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+  return finalContent;
+}
