@@ -495,6 +495,25 @@ export default function SidePanel() {
     }
   };
 
+  // Handler: View PDF in new tab
+  const handleViewPDF = async () => {
+    const dataToExport = buildFinalResume();
+    if (!dataToExport) return;
+
+    try {
+      const blob = await exportPDF(
+        dataToExport,
+        originalPdf,
+        tailoredResult?.changes
+      );
+
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    } catch (err: any) {
+      setError("PDF generation failed. Check backend server logs.");
+    }
+  };
+
   const triggerDownload = (blob: Blob, filename: string) => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -923,20 +942,30 @@ export default function SidePanel() {
               )}
 
               {/* DOWNLOAD BUTTONS */}
-              <div className="grid grid-cols-2 gap-3 mt-2">
+              <div className="grid grid-cols-3 gap-3 mt-2">
                 <button
                   onClick={handleDownloadPDF}
                   className="py-3 px-4 rounded-xl bg-gray-50 border border-gray-200 font-semibold text-xs text-gray-800 hover:bg-gray-100 hover:border-gray-300 transition-all flex items-center justify-center gap-2"
+                  title="Download PDF"
                 >
                   <Download size={14} />
-                  Download PDF
+                  PDF
                 </button>
                 <button
                   onClick={handleDownloadDOCX}
                   className="py-3 px-4 rounded-xl bg-gray-50 border border-gray-200 font-semibold text-xs text-gray-800 hover:bg-gray-100 hover:border-gray-300 transition-all flex items-center justify-center gap-2"
+                  title="Download DOCX"
                 >
                   <Download size={14} />
-                  Download DOCX
+                  DOCX
+                </button>
+                <button
+                  onClick={handleViewPDF}
+                  className="py-3 px-4 rounded-xl bg-indigo-50 border border-indigo-200 font-semibold text-xs text-indigo-700 hover:bg-indigo-100 hover:border-indigo-300 transition-all flex items-center justify-center gap-2"
+                  title="View PDF"
+                >
+                  <Eye size={14} />
+                  View
                 </button>
               </div>
             </div>
