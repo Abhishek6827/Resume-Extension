@@ -17,19 +17,64 @@ const AI_MODELS = [
 ];
 
 function extractCandidateNameFromLatex(latex: string): string {
-  const nameMatch = latex.match(/\\name\s*\{([^}]+)\}/i);
-  if (nameMatch && nameMatch[1]) {
-    return nameMatch[1].trim().replace(/[^a-zA-Z0-9]/g, "_");
+  if (!latex) return "";
+
+  const clean = (str: string) =>
+    str
+      .replace(/\\(?:textbf|textit|textnormal|mbox|small|large|Large|LARGE|huge|Huge|scshape)\s*\{([^}]*)\}/gi, "$1")
+      .replace(/\\[a-zA-Z]+/g, "")
+      .replace(/[\{\}]/g, "")
+      .replace(/[^a-zA-Z0-9\s]/g, " ")
+      .trim()
+      .replace(/\s+/g, "_");
+
+  // 1. \name{First}{Last}
+  const nameTwoArgsMatch = latex.match(/\\name\s*\{([^}]+)\}\s*\{([^}]+)\}/i);
+  if (nameTwoArgsMatch) {
+    const res = clean(`${nameTwoArgsMatch[1]} ${nameTwoArgsMatch[2]}`);
+    if (res && res.length < 60) return res;
   }
 
+  // 2. \name{Full Name}
+  const nameOneArgMatch = latex.match(/\\name\s*\{([^}]+)\}/i);
+  if (nameOneArgMatch) {
+    const res = clean(nameOneArgMatch[1]);
+    if (res && res.length < 60) return res;
+  }
+
+  // 3. \author{Full Name}
+  const authorMatch = latex.match(/\\author\s*\{([^}]+)\}/i);
+  if (authorMatch) {
+    const res = clean(authorMatch[1]);
+    if (res && res.length < 60) return res;
+  }
+
+  // 4. \fullname{Full Name}
+  const fullnameMatch = latex.match(/\\fullname\s*\{([^}]+)\}/i);
+  if (fullnameMatch) {
+    const res = clean(fullnameMatch[1]);
+    if (res && res.length < 60) return res;
+  }
+
+  // 5. \newcommand{\name}{Full Name}
+  const newcmdMatch = latex.match(/\\newcommand\s*\{\s*\\(?:my)?name\s*\}\s*\{([^}]+)\}/i);
+  if (newcmdMatch) {
+    const res = clean(newcmdMatch[1]);
+    if (res && res.length < 60) return res;
+  }
+
+  // 6. \header{Full Name}{...}
   const headerMatch = latex.match(/\\header\s*\{([^}]+)\}/i);
-  if (headerMatch && headerMatch[1]) {
-    return headerMatch[1].trim().replace(/[^a-zA-Z0-9]/g, "_");
+  if (headerMatch) {
+    const res = clean(headerMatch[1]);
+    if (res && res.length < 60) return res;
   }
 
-  const hugeMatch = latex.match(/\\(Huge|huge)\s*\{([^}]+)\}/i);
-  if (hugeMatch && hugeMatch[2]) {
-    return hugeMatch[2].trim().replace(/[^a-zA-Z0-9]/g, "_");
+  // 7. {\Huge Full Name} or {\LARGE Full Name}
+  const hugeMatch = latex.match(/\{\s*\\(?:Huge|huge|LARGE|Large)\s+([^}]+)\}/i);
+  if (hugeMatch) {
+    const res = clean(hugeMatch[1]);
+    if (res && !res.includes("\\") && res.length < 60) return res;
   }
 
   return "";
@@ -1651,10 +1696,11 @@ export default function Home() {
         if (!jdRes.ok) throw new Error("Failed to parse job description");
         const jdData = await jdRes.json();
 
-        const jobTitle = jdData?.jobTitle?.trim().replace(/[^a-zA-Z0-9]/g, "_") || "Professional";
         const candidateName = extractCandidateNameFromLatex(latexText);
-        const namePrefix = candidateName ? `${candidateName}_` : "";
-        setDownloadName(`${namePrefix}${jobTitle}_Resume.pdf`);
+        const jobTitle = jdData?.jobTitle?.trim().replace(/[^a-zA-Z0-9]/g, "_").replace(/_+/g, "_").replace(/^_+|_+$/g, "") || "";
+        const cleanCandidate = candidateName.replace(/_+/g, "_").replace(/^_+|_+$/g, "");
+        const finalFilename = [cleanCandidate, jobTitle].filter(Boolean).join("_") || "Resume";
+        setDownloadName(`${finalFilename}.pdf`);
 
         setStatus("tailoring");
 
@@ -1794,10 +1840,11 @@ export default function Home() {
       if (!tailorRes.ok) throw new Error("Failed to tailor resume");
       const tailoredResult = await tailorRes.json();
       
-      const candidateName = tailoredResult.tailoredResume?.name?.trim().replace(/[^a-zA-Z0-9]/g, "_");
-      const jobTitle = jdData?.jobTitle?.trim().replace(/[^a-zA-Z0-9]/g, "_") || "Professional";
-      const namePrefix = candidateName ? `${candidateName}_` : "";
-      setDownloadName(`${namePrefix}${jobTitle}_Resume.pdf`);
+      const candidateName = tailoredResult.tailoredResume?.name?.trim().replace(/[^a-zA-Z0-9]/g, "_") || extractCandidateNameFromLatex(latexText || "");
+      const jobTitle = jdData?.jobTitle?.trim().replace(/[^a-zA-Z0-9]/g, "_").replace(/_+/g, "_").replace(/^_+|_+$/g, "") || "";
+      const cleanCandidate = candidateName.replace(/_+/g, "_").replace(/^_+|_+$/g, "");
+      const finalFilename = [cleanCandidate, jobTitle].filter(Boolean).join("_") || "Resume";
+      setDownloadName(`${finalFilename}.pdf`);
 
       setStatus("compiling");
       const compileRes = await fetch(`${API_BASE_URL}/api/generate-latex-pdf`, {

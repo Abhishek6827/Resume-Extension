@@ -22,6 +22,75 @@ function ensureNewestFirst(resume: ResumeData) {
 }
 
 /**
+ * Extract candidate full name from raw LaTeX source code via regex patterns.
+ */
+export function extractNameFromLatex(text: string): string | null {
+  if (!text) return null;
+
+  const clean = (str: string) =>
+    str
+      .replace(/\\(?:textbf|textit|textnormal|mbox|small|large|Large|LARGE|huge|Huge|scshape)\s*\{([^}]*)\}/gi, "$1")
+      .replace(/\\[a-zA-Z]+/g, "")
+      .replace(/[\{\}]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  // 1. \name{First}{Last}
+  const nameTwoArgsMatch = text.match(/\\name\s*\{([^}]+)\}\s*\{([^}]+)\}/i);
+  if (nameTwoArgsMatch) {
+    const res = clean(`${nameTwoArgsMatch[1]} ${nameTwoArgsMatch[2]}`);
+    if (res && res.length < 60) return res;
+  }
+
+  // 2. \name{Full Name}
+  const nameOneArgMatch = text.match(/\\name\s*\{([^}]+)\}/i);
+  if (nameOneArgMatch) {
+    const res = clean(nameOneArgMatch[1]);
+    if (res && res.length < 60) return res;
+  }
+
+  // 3. \author{Full Name}
+  const authorMatch = text.match(/\\author\s*\{([^}]+)\}/i);
+  if (authorMatch) {
+    const res = clean(authorMatch[1]);
+    if (res && res.length < 60) return res;
+  }
+
+  // 4. \fullname{Full Name}
+  const fullnameMatch = text.match(/\\fullname\s*\{([^}]+)\}/i);
+  if (fullnameMatch) {
+    const res = clean(fullnameMatch[1]);
+    if (res && res.length < 60) return res;
+  }
+
+  // 5. \newcommand{\name}{Full Name}
+  const newcmdMatch = text.match(/\\newcommand\s*\{\s*\\(?:my)?name\s*\}\s*\{([^}]+)\}/i);
+  if (newcmdMatch) {
+    const res = clean(newcmdMatch[1]);
+    if (res && res.length < 60) return res;
+  }
+
+  // 6. {\Huge Full Name} or {\LARGE Full Name}
+  const hugeMatch = text.match(/\{\s*\\(?:Huge|huge|LARGE|Large)\s+([^}]+)\}/i);
+  if (hugeMatch) {
+    const res = clean(hugeMatch[1]);
+    if (res && !res.includes("\\") && res.length < 60) return res;
+  }
+
+  return null;
+}
+
+export function cleanLatexName(name: string): string {
+  if (!name) return "";
+  return name
+    .replace(/\\(?:name|author|fullname|textbf|textit|textnormal|mbox|small|large|Large|LARGE|huge|Huge|scshape)\s*\{([^}]*)\}/gi, "$1")
+    .replace(/\\[a-zA-Z]+/g, "")
+    .replace(/[\{\}]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
  * AI-assisted parse of raw resume text into structured ResumeData JSON.
  */
 export async function parseResumeWithAI(rawText: string, modelSelection?: ModelSelection): Promise<ResumeData> {
@@ -36,6 +105,7 @@ CRITICAL, MANDATORY INSTRUCTIONS:
 4. DO NOT SUMMARIZE. DO NOT SHORTEN. DO NOT OMIT ANYTHING. 
 5. Missing even a single bullet point or project will cause a critical system failure.
 6. For all textual fields (summary, highlights, descriptions), copy the exact verbatim text character-for-character.
+7. If the resume text is in LaTeX format (e.g. containing \\documentclass, \\name{...}, \\author{...}), parse and extract the candidate's actual full name without LaTeX macros or backslashes.
 
 Return ONLY a valid JSON object matching this exact structure (no markdown wrapper, no prose):
 {
@@ -101,6 +171,18 @@ CRITICAL REMINDER: You will be penalized if you drop any experience bullet point
 
     const jsonStr = extractJSON(response.content);
     const resume = JSON.parse(jsonStr) as ResumeData;
+
+    // Fallback LaTeX candidate name extraction & cleaning
+    if (!resume.name || resume.name.trim() === "" || resume.name.includes("\\")) {
+      const extractedName = extractNameFromLatex(rawText);
+      if (extractedName) {
+        resume.name = extractedName;
+      }
+    }
+    if (resume.name) {
+      resume.name = cleanLatexName(resume.name);
+    }
+
     ensureNewestFirst(resume);
     return resume;
   } catch (err: unknown) {

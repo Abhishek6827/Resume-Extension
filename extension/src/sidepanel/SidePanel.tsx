@@ -25,6 +25,55 @@ import {
 import { parseResume, parseJD, scoreResume, tailorSection, exportPDF, exportDOCX, applyApprovedChanges } from "../lib/api-client";
 import type { ResumeData, TailoredResult, TailoredChange, SkillsData } from "../lib/types";
 
+function extractNameFromLatex(text: string): string | null {
+  if (!text) return null;
+  const clean = (str: string) =>
+    str
+      .replace(/\\(?:textbf|textit|textnormal|mbox|small|large|Large|LARGE|huge|Huge|scshape)\s*\{([^}]*)\}/gi, "$1")
+      .replace(/\\[a-zA-Z]+/g, "")
+      .replace(/[\{\}]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const nameTwoArgsMatch = text.match(/\\name\s*\{([^}]+)\}\s*\{([^}]+)\}/i);
+  if (nameTwoArgsMatch) {
+    const res = clean(`${nameTwoArgsMatch[1]} ${nameTwoArgsMatch[2]}`);
+    if (res && res.length < 60) return res;
+  }
+
+  const nameOneArgMatch = text.match(/\\name\s*\{([^}]+)\}/i);
+  if (nameOneArgMatch) {
+    const res = clean(nameOneArgMatch[1]);
+    if (res && res.length < 60) return res;
+  }
+
+  const authorMatch = text.match(/\\author\s*\{([^}]+)\}/i);
+  if (authorMatch) {
+    const res = clean(authorMatch[1]);
+    if (res && res.length < 60) return res;
+  }
+
+  const fullnameMatch = text.match(/\\fullname\s*\{([^}]+)\}/i);
+  if (fullnameMatch) {
+    const res = clean(fullnameMatch[1]);
+    if (res && res.length < 60) return res;
+  }
+
+  const newcmdMatch = text.match(/\\newcommand\s*\{\s*\\(?:my)?name\s*\}\s*\{([^}]+)\}/i);
+  if (newcmdMatch) {
+    const res = clean(newcmdMatch[1]);
+    if (res && res.length < 60) return res;
+  }
+
+  const hugeMatch = text.match(/\{\s*\\(?:Huge|huge|LARGE|Large)\s+([^}]+)\}/i);
+  if (hugeMatch) {
+    const res = clean(hugeMatch[1]);
+    if (res && !res.includes("\\") && res.length < 60) return res;
+  }
+
+  return null;
+}
+
 export default function SidePanel() {
   const [resume, setResume] = useState<ResumeData | null>(null);
   const [originalPdf, setOriginalPdf] = useState<string | null>(null);
@@ -66,7 +115,7 @@ export default function SidePanel() {
       if (!dataToExport) return;
       try {
         const blob = await exportPDF(dataToExport, originalPdf, tailoredResult.changes);
-        
+
         // Convert Blob to Base64 Data URL to bypass Chrome Extension CSP iframe restrictions
         const reader = new FileReader();
         reader.onloadend = () => {
@@ -89,7 +138,7 @@ export default function SidePanel() {
     if (typeof chrome !== "undefined" && chrome.tabs) {
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (tabs[0]?.id) {
-          chrome.tabs.sendMessage(tabs[0].id, { type: "REQUEST_PAGE_SCAN" }).catch(() => {});
+          chrome.tabs.sendMessage(tabs[0].id, { type: "REQUEST_PAGE_SCAN" }).catch(() => { });
         }
       });
     }
@@ -148,7 +197,7 @@ export default function SidePanel() {
       chrome.tabs.query({ active: true }, (tabs) => {
         tabs.forEach((tab) => {
           if (tab.id) {
-            chrome.tabs.sendMessage(tab.id, { type: "SIDEPANEL_OPENED" }).catch(() => {});
+            chrome.tabs.sendMessage(tab.id, { type: "SIDEPANEL_OPENED" }).catch(() => { });
           }
         });
       });
@@ -160,7 +209,7 @@ export default function SidePanel() {
         chrome.tabs.query({ active: true }, (tabs) => {
           tabs.forEach((tab) => {
             if (tab.id) {
-              chrome.tabs.sendMessage(tab.id, { type: "SIDEPANEL_CLOSED" }).catch(() => {});
+              chrome.tabs.sendMessage(tab.id, { type: "SIDEPANEL_CLOSED" }).catch(() => { });
             }
           });
         });
@@ -261,37 +310,37 @@ export default function SidePanel() {
 
       // Start all calls in parallel
       const scorePromise = scoreResume(resume, parsedJD);
-      
+
       const summaryPromise = resume.summary
         ? tailorSection("summary", resume.summary, parsedJD).catch(e => {
-            console.error("Summary tailor failed", e);
-            failedSections.push({ section: "Summary", error: e.message || String(e) });
-            return null;
-          })
+          console.error("Summary tailor failed", e);
+          failedSections.push({ section: "Summary", error: e.message || String(e) });
+          return null;
+        })
         : Promise.resolve(null);
-        
+
       const experiencePromise = resume.experience && resume.experience.length > 0
         ? tailorSection("experience", resume.experience, parsedJD).catch(e => {
-            console.error("Experience tailor failed", e);
-            failedSections.push({ section: "Experience", error: e.message || String(e) });
-            return null;
-          })
+          console.error("Experience tailor failed", e);
+          failedSections.push({ section: "Experience", error: e.message || String(e) });
+          return null;
+        })
         : Promise.resolve(null);
-        
+
       const projectsPromise = resume.projects && resume.projects.length > 0
         ? tailorSection("projects", resume.projects, parsedJD).catch(e => {
-            console.error("Projects tailor failed", e);
-            failedSections.push({ section: "Projects", error: e.message || String(e) });
-            return null;
-          })
+          console.error("Projects tailor failed", e);
+          failedSections.push({ section: "Projects", error: e.message || String(e) });
+          return null;
+        })
         : Promise.resolve(null);
-        
+
       const skillsPromise = resume.skills
         ? tailorSection("skills", resume.skills, parsedJD).catch(e => {
-            console.error("Skills tailor failed", e);
-            failedSections.push({ section: "Skills", error: e.message || String(e) });
-            return null;
-          })
+          console.error("Skills tailor failed", e);
+          failedSections.push({ section: "Skills", error: e.message || String(e) });
+          return null;
+        })
         : Promise.resolve(null);
 
       // Await score first to initialize result
@@ -345,7 +394,7 @@ export default function SidePanel() {
             const origJob = resume.experience[i];
             const tailJob = experienceRes.experience[i];
             if (!tailJob) continue;
-            
+
             const maxBullets = Math.max(origJob.highlights?.length || 0, tailJob.highlights?.length || 0);
             for (let j = 0; j < maxBullets; j++) {
               const origB = origJob.highlights?.[j] || "";
@@ -365,10 +414,10 @@ export default function SidePanel() {
             const origP = resume.projects[i];
             const tailP = projectsRes.projects[i];
             if (!tailP) continue;
-            
+
             const chDesc = diffHelper("projects", `projects[${i}].description`, `${origP.name} — Description`, origP.description || "", tailP.description || "");
             if (chDesc) newCh.push(chDesc);
-            
+
             const maxBullets = Math.max(origP.highlights?.length || 0, tailP.highlights?.length || 0);
             for (let j = 0; j < maxBullets; j++) {
               const origB = origP.highlights?.[j] || "";
@@ -403,7 +452,7 @@ export default function SidePanel() {
       await Promise.all(tasks);
 
       if (failedSections.length > 0) {
-        const errorMsg = "Failed to tailor some sections due to LLM provider errors:\n" + 
+        const errorMsg = "Failed to tailor some sections due to LLM provider errors:\n" +
           failedSections.map(f => `• ${f.section}: ${f.error}`).join("\n");
         setError(errorMsg);
       }
@@ -435,17 +484,21 @@ export default function SidePanel() {
         .trim()
         .replace(/\s+/g, "_");
 
-    const name = sanitize(rawName);
+    let name = sanitize(rawName);
+    if (!name || name.includes("\\")) {
+      const extracted = extractNameFromLatex(rawResumeText);
+      if (extracted) name = sanitize(extracted);
+    }
     const title = sanitize(rawTitle);
 
     if (name && title) {
-      return `${name}_${title}_Resume.${ext}`;
+      return `${name}_${title}.${ext}`;
     }
     if (name) {
-      return `${name}_Resume.${ext}`;
+      return `${name}.${ext}`;
     }
     if (title) {
-      return `${title}_Resume.${ext}`;
+      return `${title}.${ext}`;
     }
     return `Resume.${ext}`;
   };
@@ -463,8 +516,10 @@ export default function SidePanel() {
         tailoredResult?.changes
       );
 
+      const candidateName = dataToExport.name || extractNameFromLatex(rawResumeText) || "";
+
       const filename = generateProfessionalFilename(
-        dataToExport.name,
+        candidateName,
         tailoredResult?.jobTitle,
         "pdf"
       );
@@ -483,8 +538,10 @@ export default function SidePanel() {
     try {
       const blob = await exportDOCX(dataToExport);
 
+      const candidateName = dataToExport.name || extractNameFromLatex(rawResumeText) || "";
+
       const filename = generateProfessionalFilename(
-        dataToExport.name,
+        candidateName,
         tailoredResult?.jobTitle,
         "docx"
       );
@@ -596,11 +653,11 @@ export default function SidePanel() {
   // Compute change stats
   const changeStats = tailoredResult
     ? {
-        total: tailoredResult.changes.length,
-        approved: tailoredResult.changes.filter((c) => c.status === "approved").length,
-        rejected: tailoredResult.changes.filter((c) => c.status === "rejected").length,
-        pending: tailoredResult.changes.filter((c) => c.status === "pending").length,
-      }
+      total: tailoredResult.changes.length,
+      approved: tailoredResult.changes.filter((c) => c.status === "approved").length,
+      rejected: tailoredResult.changes.filter((c) => c.status === "rejected").length,
+      pending: tailoredResult.changes.filter((c) => c.status === "pending").length,
+    }
     : null;
 
 
@@ -645,7 +702,7 @@ export default function SidePanel() {
             <AlertTriangle size={14} className="shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
-          <button 
+          <button
             onClick={handleReset}
             className="w-full mt-1 py-1.5 bg-rose-100 hover:bg-rose-200 rounded text-rose-600 font-medium transition-colors"
           >
@@ -721,255 +778,254 @@ export default function SidePanel() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start flex-1 w-full">
           {/* Left Panel: Configuration and Changes */}
           <div className="flex flex-col gap-4 w-full">
-          {/* Resume Uploaded Status Card */}
-          <div className="p-3 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FileText size={18} className="text-indigo-500" />
-              <div>
-                <h4 className="text-xs font-semibold leading-tight text-gray-900">{resume.name}</h4>
-                <p className="text-[10px] text-gray-500">{resume.title || "Resume Uploaded"}</p>
+            {/* Resume Uploaded Status Card */}
+            <div className="p-3 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText size={18} className="text-indigo-500" />
+                <div>
+                  <h4 className="text-xs font-semibold leading-tight text-gray-900">{resume.name}</h4>
+                  <p className="text-[10px] text-gray-500">{resume.title || "Resume Uploaded"}</p>
+                </div>
               </div>
-            </div>
-            <button
-              onClick={() => setStep(1)}
-              className="text-[10px] text-indigo-500 hover:underline"
-            >
-              Change
-            </button>
-          </div>
-
-          {/* JD Input Panel */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-gray-700">Job Description (JD)</label>
               <button
-                onClick={handlePasteClipboard}
-                className="flex items-center gap-1 text-[10px] text-indigo-500 hover:text-indigo-600 hover:underline"
+                onClick={() => setStep(1)}
+                className="text-[10px] text-indigo-500 hover:underline"
               >
-                <Clipboard size={10} />
-                Paste Clipboard
+                Change
               </button>
             </div>
 
-            <textarea
-              placeholder="Auto-detecting job description... Or paste a JD here manually."
-              value={jdInput}
-              onChange={(e) => setJdInput(e.target.value)}
-              rows={5}
-              className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 resize-none placeholder:text-gray-400 text-gray-800"
-            />
-
-            {isTailoring && !tailoredResult ? (
-              <div className="w-full py-3 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 font-semibold text-xs flex items-center justify-center gap-2 animate-pulse">
-                <RefreshCw size={14} className="animate-spin" />
-                {isParsingJD ? "Structuring Job Description..." : "AI Customizing Resume..."}
-              </div>
-            ) : !isTailoring ? (
-              <div className="w-full py-2 text-center text-[10px] text-gray-400">
-                AI will automatically tailor your resume when you paste a JD.
-              </div>
-            ) : null}
-          </div>
-
-          {/* AI TAILORED STATS */}
-          {tailoredResult && dynamicStats && (
-            <div className="flex flex-col gap-4 mt-2">
-              {/* ATS SCORE RING & REASONING */}
-              <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 flex items-center gap-4">
-                <div className="relative h-16 w-16 shrink-0">
-                  <svg className="h-full w-full transform -rotate-90">
-                    <circle cx="32" cy="32" r="28" className="stroke-gray-200 fill-none" strokeWidth="5" />
-                    <circle
-                      cx="32" cy="32" r="28"
-                      className={`fill-none transition-all duration-1000 ${
-                        dynamicStats.score >= 70 ? "stroke-emerald-500"
-                        : dynamicStats.score >= 40 ? "stroke-amber-500"
-                        : "stroke-rose-500"
-                      }`}
-                      strokeWidth="5"
-                      strokeDasharray="175"
-                      strokeDashoffset={175 - (175 * dynamicStats.score) / 100}
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center font-bold text-sm text-gray-900">
-                    {dynamicStats.score}%
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-xs font-bold mb-1 text-gray-900">ATS Compatibility Score</h3>
-                  <p className="text-[10px] text-gray-500 line-clamp-3">{tailoredResult.scoreReasoning}</p>
-                </div>
-              </div>
-
-              {/* KEYWORD BADGES */}
-              <div className="flex flex-col gap-3">
-                {dynamicStats.matchedKeywords.length > 0 && (
-                  <div>
-                    <h4 className="text-[10px] font-bold uppercase text-gray-500 mb-1 flex items-center gap-1">
-                      <CheckCircle size={10} className="text-emerald-500" />
-                      Matched Keywords ({dynamicStats.matchedKeywords.length})
-                    </h4>
-                    <div className="flex flex-wrap gap-1.5">
-                      {dynamicStats.matchedKeywords.map((kw, i) => (
-                        <span key={i} className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-medium border border-emerald-200">
-                          {kw}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {dynamicStats.missingKeywords.length > 0 && (
-                  <div>
-                    <h4 className="text-[10px] font-bold uppercase text-gray-500 mb-1 flex items-center gap-1">
-                      <AlertTriangle size={10} className="text-amber-500" />
-                      Missing Gaps ({dynamicStats.missingKeywords.length})
-                    </h4>
-                    <div className="flex flex-wrap gap-1.5">
-                      {dynamicStats.missingKeywords.map((kw, i) => (
-                        <span key={i} className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 text-[10px] font-medium border border-amber-200">
-                          {kw}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* CHANGE REVIEW BAR */}
-              {((changeStats && changeStats.total > 0) || isTailoring) && (
-                <div className="p-3 rounded-xl bg-gray-50 border border-gray-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
-                      {isTailoring ? (
-                        <>
-                          <RefreshCw size={12} className="text-indigo-500 animate-spin" />
-                          <span className="text-indigo-600">Generating AI Suggestions...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles size={12} className="text-amber-500" />
-                          {changeStats?.total || 0} AI Changes to Review
-                        </>
-                      )}
-                    </h4>
-                    <div className="flex gap-1.5">
-                      <button
-                        onClick={approveAll}
-                        className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-medium hover:bg-emerald-100 transition-colors border border-emerald-200"
-                      >
-                        ✅ Approve All
-                      </button>
-                      <button
-                        onClick={rejectAll}
-                        className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 text-[10px] font-medium hover:bg-rose-100 transition-colors border border-rose-200"
-                      >
-                        ❌ Reject All
-                      </button>
-                    </div>
-                  </div>
-                  {/* Progress bar */}
-                  {changeStats && changeStats.total > 0 && (
-                    <>
-                      <div className="flex gap-0.5 h-1.5 rounded-full overflow-hidden bg-gray-200">
-                        {changeStats.approved > 0 && (
-                          <div
-                            className="bg-emerald-500 rounded-full transition-all duration-300"
-                            style={{ width: `${(changeStats.approved / changeStats.total) * 100}%` }}
-                          />
-                        )}
-                        {changeStats.rejected > 0 && (
-                          <div
-                            className="bg-rose-500 rounded-full transition-all duration-300"
-                            style={{ width: `${(changeStats.rejected / changeStats.total) * 100}%` }}
-                          />
-                        )}
-                        {changeStats.pending > 0 && (
-                          <div
-                            className="bg-amber-400 rounded-full transition-all duration-300"
-                            style={{ width: `${(changeStats.pending / changeStats.total) * 100}%` }}
-                          />
-                        )}
-                      </div>
-                      <div className="flex gap-3 mt-1.5 text-[10px] text-gray-500 mb-4">
-                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" />{changeStats.approved} approved</span>
-                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500" />{changeStats.rejected} rejected</span>
-                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" />{changeStats.pending} pending</span>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Individual Changes List */}
-                  <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
-                    {tailoredResult.changes.map((change) => (
-                      <div key={change.id} className="p-3 rounded-lg border bg-white flex flex-col gap-2 shadow-sm border-gray-200">
-                        <div className="flex justify-between items-start">
-                          <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">{change.label}</span>
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => {
-                                const up = { ...tailoredResult, changes: tailoredResult.changes.map(c => c.id === change.id ? { ...c, status: "approved" as const } : c) };
-                                setTailoredResult(up); saveTailoredResult(up);
-                              }}
-                              className={`p-1 rounded-md transition-colors ${change.status === "approved" ? "bg-emerald-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-emerald-100 hover:text-emerald-600"}`}
-                            >
-                              <CheckCircle size={14} />
-                            </button>
-                            <button
-                              onClick={() => {
-                                const up = { ...tailoredResult, changes: tailoredResult.changes.map(c => c.id === change.id ? { ...c, status: "rejected" as const } : c) };
-                                setTailoredResult(up); saveTailoredResult(up);
-                              }}
-                              className={`p-1 rounded-md transition-colors ${change.status === "rejected" ? "bg-rose-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-rose-100 hover:text-rose-600"}`}
-                            >
-                              <XCircle size={14} />
-                            </button>
-                          </div>
-                        </div>
-                        <div className="text-[10px] text-gray-500 line-through decoration-rose-300">{change.originalValue}</div>
-                        <textarea
-                          value={change.newValue}
-                          onChange={(e) => {
-                            const up = { ...tailoredResult, changes: tailoredResult.changes.map(c => c.id === change.id ? { ...c, newValue: e.target.value } : c) };
-                            setTailoredResult(up);
-                            saveTailoredResult(up);
-                          }}
-                          className="text-xs text-gray-800 font-medium bg-gray-50 border border-gray-200 rounded p-2 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 w-full resize-y min-h-[60px]"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* DOWNLOAD BUTTONS */}
-              <div className="grid grid-cols-3 gap-3 mt-2">
+            {/* JD Input Panel */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-gray-700">Job Description (JD)</label>
                 <button
-                  onClick={handleDownloadPDF}
-                  className="py-3 px-4 rounded-xl bg-gray-50 border border-gray-200 font-semibold text-xs text-gray-800 hover:bg-gray-100 hover:border-gray-300 transition-all flex items-center justify-center gap-2"
-                  title="Download PDF"
+                  onClick={handlePasteClipboard}
+                  className="flex items-center gap-1 text-[10px] text-indigo-500 hover:text-indigo-600 hover:underline"
                 >
-                  <Download size={14} />
-                  PDF
-                </button>
-                <button
-                  onClick={handleDownloadDOCX}
-                  className="py-3 px-4 rounded-xl bg-gray-50 border border-gray-200 font-semibold text-xs text-gray-800 hover:bg-gray-100 hover:border-gray-300 transition-all flex items-center justify-center gap-2"
-                  title="Download DOCX"
-                >
-                  <Download size={14} />
-                  DOCX
-                </button>
-                <button
-                  onClick={handleViewPDF}
-                  className="py-3 px-4 rounded-xl bg-indigo-50 border border-indigo-200 font-semibold text-xs text-indigo-700 hover:bg-indigo-100 hover:border-indigo-300 transition-all flex items-center justify-center gap-2"
-                  title="View PDF"
-                >
-                  <Eye size={14} />
-                  View
+                  <Clipboard size={10} />
+                  Paste Clipboard
                 </button>
               </div>
+
+              <textarea
+                placeholder="Auto-detecting job description... Or paste a JD here manually."
+                value={jdInput}
+                onChange={(e) => setJdInput(e.target.value)}
+                rows={5}
+                className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-3 focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 resize-none placeholder:text-gray-400 text-gray-800"
+              />
+
+              {isTailoring && !tailoredResult ? (
+                <div className="w-full py-3 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 font-semibold text-xs flex items-center justify-center gap-2 animate-pulse">
+                  <RefreshCw size={14} className="animate-spin" />
+                  {isParsingJD ? "Structuring Job Description..." : "AI Customizing Resume..."}
+                </div>
+              ) : !isTailoring ? (
+                <div className="w-full py-2 text-center text-[10px] text-gray-400">
+                  AI will automatically tailor your resume when you paste a JD.
+                </div>
+              ) : null}
             </div>
-          )}
+
+            {/* AI TAILORED STATS */}
+            {tailoredResult && dynamicStats && (
+              <div className="flex flex-col gap-4 mt-2">
+                {/* ATS SCORE RING & REASONING */}
+                <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 flex items-center gap-4">
+                  <div className="relative h-16 w-16 shrink-0">
+                    <svg className="h-full w-full transform -rotate-90">
+                      <circle cx="32" cy="32" r="28" className="stroke-gray-200 fill-none" strokeWidth="5" />
+                      <circle
+                        cx="32" cy="32" r="28"
+                        className={`fill-none transition-all duration-1000 ${dynamicStats.score >= 70 ? "stroke-emerald-500"
+                            : dynamicStats.score >= 40 ? "stroke-amber-500"
+                              : "stroke-rose-500"
+                          }`}
+                        strokeWidth="5"
+                        strokeDasharray="175"
+                        strokeDashoffset={175 - (175 * dynamicStats.score) / 100}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center font-bold text-sm text-gray-900">
+                      {dynamicStats.score}%
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold mb-1 text-gray-900">ATS Compatibility Score</h3>
+                    <p className="text-[10px] text-gray-500 line-clamp-3">{tailoredResult.scoreReasoning}</p>
+                  </div>
+                </div>
+
+                {/* KEYWORD BADGES */}
+                <div className="flex flex-col gap-3">
+                  {dynamicStats.matchedKeywords.length > 0 && (
+                    <div>
+                      <h4 className="text-[10px] font-bold uppercase text-gray-500 mb-1 flex items-center gap-1">
+                        <CheckCircle size={10} className="text-emerald-500" />
+                        Matched Keywords ({dynamicStats.matchedKeywords.length})
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {dynamicStats.matchedKeywords.map((kw, i) => (
+                          <span key={i} className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-medium border border-emerald-200">
+                            {kw}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {dynamicStats.missingKeywords.length > 0 && (
+                    <div>
+                      <h4 className="text-[10px] font-bold uppercase text-gray-500 mb-1 flex items-center gap-1">
+                        <AlertTriangle size={10} className="text-amber-500" />
+                        Missing Gaps ({dynamicStats.missingKeywords.length})
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {dynamicStats.missingKeywords.map((kw, i) => (
+                          <span key={i} className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 text-[10px] font-medium border border-amber-200">
+                            {kw}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* CHANGE REVIEW BAR */}
+                {((changeStats && changeStats.total > 0) || isTailoring) && (
+                  <div className="p-3 rounded-xl bg-gray-50 border border-gray-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                        {isTailoring ? (
+                          <>
+                            <RefreshCw size={12} className="text-indigo-500 animate-spin" />
+                            <span className="text-indigo-600">Generating AI Suggestions...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles size={12} className="text-amber-500" />
+                            {changeStats?.total || 0} AI Changes to Review
+                          </>
+                        )}
+                      </h4>
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={approveAll}
+                          className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-medium hover:bg-emerald-100 transition-colors border border-emerald-200"
+                        >
+                          ✅ Approve All
+                        </button>
+                        <button
+                          onClick={rejectAll}
+                          className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 text-[10px] font-medium hover:bg-rose-100 transition-colors border border-rose-200"
+                        >
+                          ❌ Reject All
+                        </button>
+                      </div>
+                    </div>
+                    {/* Progress bar */}
+                    {changeStats && changeStats.total > 0 && (
+                      <>
+                        <div className="flex gap-0.5 h-1.5 rounded-full overflow-hidden bg-gray-200">
+                          {changeStats.approved > 0 && (
+                            <div
+                              className="bg-emerald-500 rounded-full transition-all duration-300"
+                              style={{ width: `${(changeStats.approved / changeStats.total) * 100}%` }}
+                            />
+                          )}
+                          {changeStats.rejected > 0 && (
+                            <div
+                              className="bg-rose-500 rounded-full transition-all duration-300"
+                              style={{ width: `${(changeStats.rejected / changeStats.total) * 100}%` }}
+                            />
+                          )}
+                          {changeStats.pending > 0 && (
+                            <div
+                              className="bg-amber-400 rounded-full transition-all duration-300"
+                              style={{ width: `${(changeStats.pending / changeStats.total) * 100}%` }}
+                            />
+                          )}
+                        </div>
+                        <div className="flex gap-3 mt-1.5 text-[10px] text-gray-500 mb-4">
+                          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" />{changeStats.approved} approved</span>
+                          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500" />{changeStats.rejected} rejected</span>
+                          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" />{changeStats.pending} pending</span>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Individual Changes List */}
+                    <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
+                      {tailoredResult.changes.map((change) => (
+                        <div key={change.id} className="p-3 rounded-lg border bg-white flex flex-col gap-2 shadow-sm border-gray-200">
+                          <div className="flex justify-between items-start">
+                            <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">{change.label}</span>
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => {
+                                  const up = { ...tailoredResult, changes: tailoredResult.changes.map(c => c.id === change.id ? { ...c, status: "approved" as const } : c) };
+                                  setTailoredResult(up); saveTailoredResult(up);
+                                }}
+                                className={`p-1 rounded-md transition-colors ${change.status === "approved" ? "bg-emerald-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-emerald-100 hover:text-emerald-600"}`}
+                              >
+                                <CheckCircle size={14} />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  const up = { ...tailoredResult, changes: tailoredResult.changes.map(c => c.id === change.id ? { ...c, status: "rejected" as const } : c) };
+                                  setTailoredResult(up); saveTailoredResult(up);
+                                }}
+                                className={`p-1 rounded-md transition-colors ${change.status === "rejected" ? "bg-rose-500 text-white" : "bg-gray-100 text-gray-500 hover:bg-rose-100 hover:text-rose-600"}`}
+                              >
+                                <XCircle size={14} />
+                              </button>
+                            </div>
+                          </div>
+                          <div className="text-[10px] text-gray-500 line-through decoration-rose-300">{change.originalValue}</div>
+                          <textarea
+                            value={change.newValue}
+                            onChange={(e) => {
+                              const up = { ...tailoredResult, changes: tailoredResult.changes.map(c => c.id === change.id ? { ...c, newValue: e.target.value } : c) };
+                              setTailoredResult(up);
+                              saveTailoredResult(up);
+                            }}
+                            className="text-xs text-gray-800 font-medium bg-gray-50 border border-gray-200 rounded p-2 focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 w-full resize-y min-h-[60px]"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* DOWNLOAD BUTTONS */}
+                <div className="grid grid-cols-3 gap-3 mt-2">
+                  <button
+                    onClick={handleDownloadPDF}
+                    className="py-3 px-4 rounded-xl bg-gray-50 border border-gray-200 font-semibold text-xs text-gray-800 hover:bg-gray-100 hover:border-gray-300 transition-all flex items-center justify-center gap-2"
+                    title="Download PDF"
+                  >
+                    <Download size={14} />
+                    PDF
+                  </button>
+                  <button
+                    onClick={handleDownloadDOCX}
+                    className="py-3 px-4 rounded-xl bg-gray-50 border border-gray-200 font-semibold text-xs text-gray-800 hover:bg-gray-100 hover:border-gray-300 transition-all flex items-center justify-center gap-2"
+                    title="Download DOCX"
+                  >
+                    <Download size={14} />
+                    DOCX
+                  </button>
+                  <button
+                    onClick={handleViewPDF}
+                    className="py-3 px-4 rounded-xl bg-indigo-50 border border-indigo-200 font-semibold text-xs text-indigo-700 hover:bg-indigo-100 hover:border-indigo-300 transition-all flex items-center justify-center gap-2"
+                    title="View PDF"
+                  >
+                    <Eye size={14} />
+                    View
+                  </button>
+                </div>
+              </div>
+            )}
 
           </div>
 
@@ -983,8 +1039,8 @@ export default function SidePanel() {
             {/* Resume Document Container — Shows real-time preview (borderless, no grey toolbar) */}
             {previewPdfUrl ? (
               <div className="w-full overflow-hidden" style={{ height: isInsideIframe ? 'calc(100vh - 160px)' : '600px' }}>
-                <iframe 
-                  src={`${previewPdfUrl}#toolbar=0&view=FitH`} 
+                <iframe
+                  src={`${previewPdfUrl}#toolbar=0&view=FitH`}
                   className="w-full h-full border-none"
                   title="Resume Preview"
                 />

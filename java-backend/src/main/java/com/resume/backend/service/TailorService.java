@@ -124,9 +124,86 @@ public class TailorService {
                 }
                 """;
 
-        String jsonStr = llmClient.callLLM(systemPrompt, "Resume text:\\n" + rawText, modelSelection);
+        String jsonStr = llmClient.callLLM(systemPrompt, "Resume text:\n" + rawText, modelSelection);
         ResumeData resume = objectMapper.readValue(jsonStr, ResumeData.class);
+        if (resume.name() == null || resume.name().isBlank() || resume.name().contains("\\")) {
+            String extracted = extractNameFromLatex(rawText);
+            if (extracted != null && !extracted.isBlank()) {
+                resume = new ResumeData(
+                    extracted,
+                    resume.title(),
+                    resume.contact(),
+                    resume.summary(),
+                    resume.experience(),
+                    resume.education(),
+                    resume.skills(),
+                    resume.certifications(),
+                    resume.projects(),
+                    resume.achievements()
+                );
+            }
+        }
+        if (resume.name() != null) {
+            String cleanedName = cleanLatexStr(resume.name());
+            if (!cleanedName.equals(resume.name())) {
+                resume = new ResumeData(
+                    cleanedName,
+                    resume.title(),
+                    resume.contact(),
+                    resume.summary(),
+                    resume.experience(),
+                    resume.education(),
+                    resume.skills(),
+                    resume.certifications(),
+                    resume.projects(),
+                    resume.achievements()
+                );
+            }
+        }
         return ensureNewestFirst(resume);
+    }
+
+    public String extractNameFromLatex(String text) {
+        if (text == null || text.isBlank()) return null;
+
+        Pattern p1 = Pattern.compile("\\\\name\\s*\\{([^}]+)\\}\\s*\\{([^}]+)\\}", Pattern.CASE_INSENSITIVE);
+        Matcher m1 = p1.matcher(text);
+        if (m1.find()) {
+            String res = cleanLatexStr(m1.group(1) + " " + m1.group(2));
+            if (!res.isBlank() && res.length() < 60) return res;
+        }
+
+        Pattern p2 = Pattern.compile("\\\\name\\s*\\{([^}]+)\\}", Pattern.CASE_INSENSITIVE);
+        Matcher m2 = p2.matcher(text);
+        if (m2.find()) {
+            String res = cleanLatexStr(m2.group(1));
+            if (!res.isBlank() && res.length() < 60) return res;
+        }
+
+        Pattern p3 = Pattern.compile("\\\\author\\s*\\{([^}]+)\\}", Pattern.CASE_INSENSITIVE);
+        Matcher m3 = p3.matcher(text);
+        if (m3.find()) {
+            String res = cleanLatexStr(m3.group(1));
+            if (!res.isBlank() && res.length() < 60) return res;
+        }
+
+        Pattern p4 = Pattern.compile("\\{\\s*\\\\(?:Huge|huge|LARGE|Large)\\s+([^}]+)\\}", Pattern.CASE_INSENSITIVE);
+        Matcher m4 = p4.matcher(text);
+        if (m4.find()) {
+            String res = cleanLatexStr(m4.group(1));
+            if (!res.isBlank() && !res.contains("\\") && res.length() < 60) return res;
+        }
+
+        return null;
+    }
+
+    private String cleanLatexStr(String str) {
+        if (str == null) return "";
+        return str.replaceAll("(?i)\\\\(?:name|author|fullname|textbf|textit|textnormal|mbox|small|large|Large|LARGE|huge|Huge|scshape)\\s*\\{([^}]*)\\}", "$1")
+                  .replaceAll("\\\\[a-zA-Z]+", "")
+                  .replaceAll("[{}]", "")
+                  .replaceAll("\\s+", " ")
+                  .trim();
     }
 
     public JDData parseJDWithAI(String rawText, Map<String, String> modelSelection) throws Exception {
