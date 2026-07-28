@@ -20,6 +20,48 @@ export async function OPTIONS(request: NextRequest) {
   return handleOptions(request);
 }
 
+function cleanLatexResponse(rawText: string): string {
+  if (!rawText) return "";
+  let cleaned = rawText.trim();
+
+  // 1. If wrapped in markdown code blocks anywhere in the response, extract the code inside
+  const codeBlockMatch = cleaned.match(/```(?:latex|tex)?\s*([\s\S]*?)\s*```/i);
+  if (codeBlockMatch && codeBlockMatch[1]) {
+    cleaned = codeBlockMatch[1].trim();
+  } else {
+    // If no complete code block, strip leading/trailing backticks or markdown fence leftovers
+    cleaned = cleaned.replace(/^```(?:latex|tex)?/i, '').replace(/```$/, '').trim();
+  }
+
+  // 2. Strip any leading conversational text or safety notices before \documentclass if present
+  const docClassIndex = cleaned.indexOf('\\documentclass');
+  if (docClassIndex > 0) {
+    cleaned = cleaned.substring(docClassIndex).trim();
+  }
+
+  // 3. Strip any trailing conversational text after \end{document} if present
+  const endDocIndex = cleaned.lastIndexOf('\\end{document}');
+  if (endDocIndex !== -1) {
+    cleaned = cleaned.substring(0, endDocIndex + 14).trim();
+  }
+
+  // 4. Sanitize common problematic Unicode characters that pdflatex chokes on
+  cleaned = cleaned
+    .replace(/\u202F/g, ' ') // Narrow No-Break Space
+    .replace(/\u200B/g, '')  // Zero Width Space
+    .replace(/\u2011/g, '-') // Non-Breaking Hyphen
+    .replace(/\u2013/g, '--') // En Dash
+    .replace(/\u2014/g, '---') // Em Dash
+    .replace(/[\u2018\u2019]/g, "'") // Smart single quotes
+    .replace(/[\u201C\u201D]/g, '"') // Smart double quotes
+    .replace(/\\to(?![a-zA-Z])/g, ' to ') // Replace naked math arrow commands with plain text
+    .replace(/\\rightarrow(?![a-zA-Z])/g, ' to ')
+    .replace(/\\gets(?![a-zA-Z])/g, ' from ')
+    .replace(/\\leftarrow(?![a-zA-Z])/g, ' from ');
+
+  return cleaned;
+}
+
 function fallbackKeywordEvaluation(latex: string, jdData: any) {
   const jdText = typeof jdData === 'string' ? jdData : JSON.stringify(jdData);
   const lowerJd = jdText.toLowerCase();
@@ -172,39 +214,7 @@ async function tailorForModel(
       jsonMode: false,
     });
 
-    tailoredLatex = response.content;
-    
-    // Clean up if the model wrapped it in markdown fences anyway
-    if (tailoredLatex.startsWith("```latex\n")) {
-      tailoredLatex = tailoredLatex.substring(9);
-    } else if (tailoredLatex.startsWith("```latex")) {
-      tailoredLatex = tailoredLatex.substring(8);
-    } else if (tailoredLatex.startsWith("```\n")) {
-      tailoredLatex = tailoredLatex.substring(4);
-    } else if (tailoredLatex.startsWith("```")) {
-      tailoredLatex = tailoredLatex.substring(3);
-    }
-    
-    if (tailoredLatex.endsWith("\n```")) {
-      tailoredLatex = tailoredLatex.substring(0, tailoredLatex.length - 4);
-    } else if (tailoredLatex.endsWith("```")) {
-      tailoredLatex = tailoredLatex.substring(0, tailoredLatex.length - 3);
-    }
-    tailoredLatex = tailoredLatex.trim();
-
-    // Sanitize common problematic Unicode characters that pdflatex chokes on
-    tailoredLatex = tailoredLatex
-      .replace(/\u202F/g, ' ') // Narrow No-Break Space
-      .replace(/\u200B/g, '')  // Zero Width Space
-      .replace(/\u2011/g, '-') // Non-Breaking Hyphen
-      .replace(/\u2013/g, '--') // En Dash
-      .replace(/\u2014/g, '---') // Em Dash
-      .replace(/[\u2018\u2019]/g, "'") // Smart single quotes
-      .replace(/[\u201C\u201D]/g, '"') // Smart double quotes
-      .replace(/\\to(?![a-zA-Z])/g, ' to ') // Replace naked math arrow commands with plain text
-      .replace(/\\rightarrow(?![a-zA-Z])/g, ' to ')
-      .replace(/\\gets(?![a-zA-Z])/g, ' from ')
-      .replace(/\\leftarrow(?![a-zA-Z])/g, ' from ');
+    tailoredLatex = cleanLatexResponse(response.content);
 
     if (tailoredLatex.length <= latexLength) {
       break;
@@ -386,10 +396,11 @@ The candidate has verified technical skills and real project achievements extrac
 - VERIFIED TECHNICAL SKILLS: ${topSkills}
 - VERIFIED GITHUB PROJECTS: ${topProjects}
 
-STRICT INSTRUCTIONS FOR SKILL BANK INTEGRATION:
+STRICT INSTRUCTIONS FOR SKILL BANK INTEGRATION & PROJECT UPDATION:
 1. YOU MUST CONSULT THIS SKILL BANK FIRST. Whenever the Job Description requires a skill, tool, framework, or architecture (e.g. Java, Spring Boot, MongoDB, Docker, REST API, Microservices, TypeScript, Go), check if it exists in the candidate's Verified Skill Bank.
-2. IF FOUND IN SKILL BANK, YOU MUST INJECT IT into the resume's Professional Summary and Work Experience bullet points.
-3. Integrate these verified skills naturally into existing bullet points as concrete technical achievements matching the JD requirements. Do NOT list raw keywords blindly—weave them into project responsibilities and outcomes.`;
+2. FORCEFUL CONTEXTUAL INJECTION IN PROJECTS & WORK EXPERIENCE: Do NOT merely add relevant skills to the comma-separated Skills section. You MUST forcefully inject and demonstrate the practical usage of these JD-matching verified skills inside the project descriptions and Work Experience bullet points!
+3. WEAVE INTO PROJECT BULLETS: Even if an existing resume project was not originally described with a specific required skill, if that skill is in the candidate's Verified Skill Bank, you MUST update and reframe the project bullet points to showcase that skill in action (e.g., "Architected backend services using Spring Boot and MongoDB...", "Containerized application workflows with Docker...").
+4. CONCRETE ACHIEVEMENTS: ATS algorithms score contextual usage higher than isolated keywords. Ensure every key verified skill required by the JD is actively demonstrated with a concrete technical achievement or architectural implementation in the project/experience bullet points.`;
     }
 
     const systemPrompt = `You are an expert ATS specialist and LaTeX editor. 
@@ -397,13 +408,16 @@ Your task is to take a raw LaTeX resume and rewrite its Professional Summary and
 
 CRITICAL INSTRUCTIONS:
 1. DO NOT CHANGE ANY LaTeX COMMANDS. Leave ALL macros, brackets, formatting (e.g. \\textbf, \\item, \\begin, \\end, \\vspace, \\hspace, \\href) exactly as they are.
-2. MAXIMIZE ATS SCORE: Aggressively inject the exact keywords, tools, and methodologies from the Job Description into the plain text prose of the summary and bullet points. Ensure NO critical JD requirement is missed if it can be reasonably mapped to the candidate's existing experience or Verified Skill Bank.
-3. Rewrite the bullet points to highlight outcomes and responsibilities that perfectly mirror the JD's core needs. Do not invent fake experience, but heavily reframe the existing experience to sound like the ideal candidate.
+2. TWO-TIER ATS KEYWORD & SKILL INJECTION (VERIFIED + UNVERIFIED JD SKILLS):
+   - Tier 1 (Verified GitHub Skills): Prioritize and aggressively inject matching skills found in the candidate's Verified Skill Bank into project bullet points and experience.
+   - Tier 2 (Missing / Unverified JD Skills): If the Job Description requires core technical skills (e.g., Docker, AWS, Kubernetes, Redis, GraphQL, CI/CD, MongoDB, Jest) that are NOT present in the candidate's Skill Bank, you MUST STILL INJECT AT LEAST 70-80% of these missing JD skills into the resume! Do not leave missing JD skills out, or the resume will fail automated ATS keyword filters.
+3. REFRAME PROJECTS & EXPERIENCE TO SHOW PRACTICAL SKILL USAGE: Technical recruiters and ATS require contextual proof of skill usage. For both Tier 1 and Tier 2 skills, do NOT leave them isolated in a comma-separated Skills section! You MUST weave and demonstrate practical usage of these required skills inside the Work Experience and Project bullet points using architectural reframing (even by reframing existing projects to incorporate those standard technologies, caching, containerization, cloud hosting, or testing pipelines).
 4. DO NOT add or remove bullet points. Keep the exact same number of items.
 5. **STRICT LENGTH CONSTRAINT**: The original LaTeX string has EXACTLY ${latexLength} characters. You must output the ENTIRE tailored LaTeX string such that its total character count is less than or equal to ${latexLength}. This is a hard requirement to ensure the generated PDF does not exceed 1 page or create a bottom gap. Do not make any section significantly longer than before.
 6. DO NOT use mathematical LaTeX commands (e.g., \\to, \\rightarrow, \\gets) in plain text. Always use plain English words (e.g., "to", "leads to") instead. pdflatex will fail to compile if you use math symbols outside of math mode.
 7. NEVER use \\newcommand for commands that already exist in standard LaTeX (such as \\section, \\subsection, \\item, \\textbf). Leave existing section definitions untouched or use \\renewcommand.
-8. Return ONLY the raw tailored LaTeX string. Do NOT wrap it in markdown code blocks (\`\`\`latex ... \`\`\`). Do NOT include any explanations or prose before or after. Start immediately with the first LaTeX character and end with the last LaTeX character.${skillBankInstruction}`;
+8. Return ONLY the raw tailored LaTeX string. Do NOT wrap it in markdown code blocks (\`\`\`latex ... \`\`\`). Do NOT include any explanations or prose before or after. Start immediately with the first LaTeX character and end with the last LaTeX character.
+9. NEVER use placeholders, ellipses (...), or comments like "(unchanged)" or "(rest of document remains same)". You MUST output the full, complete, compilable LaTeX document from \\documentclass to \\end{document} without missing or skipping any section.${skillBankInstruction}`;
 
     const userMessage = `Job Description:
 ${JSON.stringify(jdData, null, 2)}
@@ -450,38 +464,7 @@ ${latex}`;
                 jsonMode: false,
               });
 
-              latexResult = response.content;
-              
-              // Clean code fences if added by model
-              if (latexResult.startsWith("```latex\n")) {
-                latexResult = latexResult.substring(9);
-              } else if (latexResult.startsWith("```latex")) {
-                latexResult = latexResult.substring(8);
-              } else if (latexResult.startsWith("```\n")) {
-                latexResult = latexResult.substring(4);
-              } else if (latexResult.startsWith("```")) {
-                latexResult = latexResult.substring(3);
-              }
-              if (latexResult.endsWith("\n```")) {
-                latexResult = latexResult.substring(0, latexResult.length - 4);
-              } else if (latexResult.endsWith("```")) {
-                latexResult = latexResult.substring(0, latexResult.length - 3);
-              }
-              latexResult = latexResult.trim();
-
-              // Clean bad unicode characters
-              latexResult = latexResult
-                .replace(/\u202F/g, ' ')
-                .replace(/\u200B/g, '')
-                .replace(/\u2011/g, '-')
-                .replace(/\u2013/g, '--')
-                .replace(/\u2014/g, '---')
-                .replace(/[\u2018\u2019]/g, "'")
-                .replace(/[\u201C\u201D]/g, '"')
-                .replace(/\\to(?![a-zA-Z])/g, ' to ')
-                .replace(/\\rightarrow(?![a-zA-Z])/g, ' to ')
-                .replace(/\\gets(?![a-zA-Z])/g, ' from ')
-                .replace(/\\leftarrow(?![a-zA-Z])/g, ' from ');
+              latexResult = cleanLatexResponse(response.content);
 
               if (latexResult.length <= latexLength) {
                 break;

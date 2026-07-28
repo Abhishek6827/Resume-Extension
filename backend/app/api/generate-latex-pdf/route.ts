@@ -29,6 +29,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Sanitize common LLM LaTeX syntax mistakes before sending to pdflatex
+    const codeBlockMatch = latexString.match(/```(?:latex|tex)?\s*([\s\S]*?)\s*```/i);
+    if (codeBlockMatch && codeBlockMatch[1]) {
+      latexString = codeBlockMatch[1].trim();
+    } else {
+      latexString = latexString.replace(/^```(?:latex|tex)?/i, '').replace(/```$/, '').trim();
+    }
+    const docClassIndex = latexString.indexOf('\\documentclass');
+    if (docClassIndex > 0) {
+      latexString = latexString.substring(docClassIndex).trim();
+    }
+    const endDocIndex = latexString.lastIndexOf('\\end{document}');
+    if (endDocIndex !== -1) {
+      latexString = latexString.substring(0, endDocIndex + 14).trim();
+    }
+
     latexString = latexString
       .replace(/\\newcommand\{\\section\}/g, '\\renewcommand{\\section}')
       .replace(/\\newcommand\{\\subsection\}/g, '\\renewcommand{\\subsection}')

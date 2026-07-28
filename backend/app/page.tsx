@@ -2317,13 +2317,23 @@ export default function Home() {
                                 <span className="text-xs text-slate-400">Compiling PDF...</span>
                               </div>
                             ) : pdfUrl ? (
-                              <a 
-                                href={pdfUrl || undefined} 
-                                download={downloadName}
-                                className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-center w-full"
-                              >
-                                Download PDF
-                              </a>
+                              <div className="flex flex-col gap-2.5 w-full mt-1">
+                                <a 
+                                  href={pdfUrl || undefined} 
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center w-full"
+                                >
+                                  View PDF
+                                </a>
+                                <a 
+                                  href={pdfUrl || undefined} 
+                                  download={downloadName}
+                                  className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-center w-full"
+                                >
+                                  Download PDF
+                                </a>
+                              </div>
                             ) : (
                               <button
                                 onClick={() => compilePdfForIndex(selectedResultIndex, tailoredResumes)}
@@ -2413,6 +2423,14 @@ export default function Home() {
                   </div>
                   
                   <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                    <a 
+                      href={pdfUrl || undefined} 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full sm:w-auto px-8 py-3.5 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center"
+                    >
+                      View PDF
+                    </a>
                     <a 
                       href={pdfUrl || undefined} 
                       download={downloadName}
