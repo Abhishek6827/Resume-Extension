@@ -401,6 +401,7 @@ CRITICAL SAFETY RULES:
 1. NEVER invent experience, skills, or degrees.
 2. Keep it concise, punchy, and professional.
 3. **CRITICAL LENGTH CONSTRAINT**: Ensure the tailored professional summary is of a similar length (number of lines, approximately 4 lines, 70-85 words) as the original summary to avoid creating layout gaps or page overflow. Keep word/character count within +/- 15% of the original.
+4. MANDATORY DOMAIN & ARCHITECTURAL WEAVING: You MUST rewrite the summary to explicitly incorporate the highest-priority architectural scale, domain competencies, and core requirements from the Job Description! For example, if the JD asks for "large-scale distributed systems", "data structures & algorithms", and "accessible technologies", your tailored summary MUST explicitly state experience designing distributed systems, optimizing algorithmic complexity, and building accessible web applications at massive scale.
 
 Return ONLY a valid JSON object matching this exact structure:
 {
