@@ -435,6 +435,7 @@ CRITICAL SAFETY RULES:
 5. DO NOT reorder the jobs themselves. Keep the exact same array length and order.
 6. You MUST preserve the exact same number of bullet points in the "highlights" array for each work experience entry as the original. Do not merge bullet points, do not split bullet points, and do not add or delete bullet points. Rewrite each original bullet point at its exact corresponding index.
 7. **CRITICAL LENGTH CONSTRAINT**: For each tailored bullet point, keep its character length/word count within +/- 15% of the original bullet point. Do NOT turn a 1-line bullet into a 2-line bullet, and do NOT turn a 2-line bullet into a 1-line bullet.
+8. ABSOLUTE BAN ON LAZY SUFFIXES ("DEMONSTRATING EXPERTISE IN..."): You are STRICTLY BANNED from appending lazy meta-commentary suffixes like ", demonstrating expertise in...", ", showcasing proficiency in...", or ", demonstrating large-scale system design..." at the end of bullet points! You MUST genuinely rewrite the core engineering action verbs and architectural details of the bullet point itself.
 
 Return ONLY a valid JSON object matching this exact structure (keep the same array length and structure, just rewrite the highlights and preserve scope):
 {
@@ -478,6 +479,7 @@ CRITICAL SAFETY RULES:
 3. DO NOT reorder the projects. Keep the exact same array length and order.
 4. You MUST preserve the exact same number of bullet points in the "highlights" array for each project entry as the original. Do not merge bullet points, do not split bullet points, and do not add or delete bullet points. Rewrite each original bullet point at its exact corresponding index.
 5. **CRITICAL LENGTH CONSTRAINT**: Keep the character length/word count of each tailored bullet point and project description within +/- 15% of the original to maintain the single-page layout budget.
+6. ABSOLUTE BAN ON LAZY SUFFIXES ("DEMONSTRATING EXPERTISE IN..."): You are STRICTLY BANNED from appending lazy meta-commentary suffixes like ", demonstrating expertise in...", ", showcasing proficiency in...", or ", demonstrating large-scale system design..." at the end of bullet points! You MUST genuinely rewrite the core engineering action verbs and architectural details of the bullet point itself.
 
 Return ONLY a valid JSON object matching this exact structure (keep the same array length and structure):
 {
