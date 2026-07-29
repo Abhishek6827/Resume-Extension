@@ -401,7 +401,7 @@ CRITICAL SAFETY RULES:
 1. NEVER invent experience, skills, or degrees.
 2. Keep it concise, punchy, and professional.
 3. **CRITICAL LENGTH CONSTRAINT**: Ensure the tailored professional summary is of a similar length (number of lines, approximately 4 lines, 70-85 words) as the original summary to avoid creating layout gaps or page overflow. Keep word/character count within +/- 15% of the original.
-4. MANDATORY DOMAIN & ARCHITECTURAL WEAVING: You MUST rewrite the summary to explicitly incorporate the highest-priority architectural scale, domain competencies, and core requirements from the Job Description! For example, if the JD asks for "large-scale distributed systems", "data structures & algorithms", and "accessible technologies", your tailored summary MUST explicitly state experience designing distributed systems, optimizing algorithmic complexity, and building accessible web applications at massive scale.
+4. MANDATORY DOMAIN & ARCHITECTURAL WEAVING: You MUST rewrite the summary to explicitly incorporate the highest-priority architectural scale, domain competencies, and core requirements from the Job Description (e.g. large-scale distributed systems, data structures & algorithms, accessible technologies, Java/Python/TypeScript/Angular/HTML/CSS, design/code reviews, triage/debugging)!
 
 Return ONLY a valid JSON object matching this exact structure:
 {
@@ -430,7 +430,7 @@ export async function tailorExperienceWithAI(
 CRITICAL SAFETY RULES:
 1. NEVER invent any work experience, company names, dates, or locations.
 2. Keep all factual details (companies, degrees, years, roles) exactly the same.
-3. You may rewrite, reorder, and refine phrasing of bullet points to naturally incorporate keywords and highlight relevant aspects of the candidate's actual experience.
+3. You may rewrite, reorder, and refine phrasing of bullet points to naturally incorporate JD keywords and core responsibilities (e.g., data structures & algorithms, large-scale distributed systems, accessible technologies, Java, Python, Angular, HTML/CSS, code reviews, design reviews, triage & debugging).
 4. Highlight outcomes and metrics if present.
 5. DO NOT reorder the jobs themselves. Keep the exact same array length and order.
 6. You MUST preserve the exact same number of bullet points in the "highlights" array for each work experience entry as the original. Do not merge bullet points, do not split bullet points, and do not add or delete bullet points. Rewrite each original bullet point at its exact corresponding index.
@@ -472,14 +472,14 @@ export async function tailorProjectsWithAI(
   jd: JDData,
   modelSelection?: ModelSelection
 ): Promise<{ projects: ProjectEntry[] }> {
-  const systemPrompt = `You are an expert resume optimizer. Rewrite the candidate's Projects section to align with the JD.
-CRITICAL SAFETY RULES:
-1. NEVER invent any projects, features, or tech stack not present in the original.
-2. You may refine phrasing of descriptions and bullet points to naturally incorporate keywords.
+  const systemPrompt = `You are an expert resume optimizer. Rewrite the candidate's Projects section to align deeply with the target JD.
+CRITICAL SAFETY & REPLACEMENT RULES:
+1. FORCEFULLY INJECT TOP JD SKILLS: Across the projects, replace older/irrelevant skills and tech stack descriptions with top JD-required technologies (e.g. Java, Python, Angular, JavaScript, TypeScript, HTML, CSS, Data Structures & Algorithms, Large-Scale Distributed Systems, Accessible Technologies). At least 7-8 core JD skills must be explicitly represented across the Projects section.
+2. Each project must highlight 2-3 distinct JD skills in its tech list and bullet points.
 3. DO NOT reorder the projects. Keep the exact same array length and order.
-4. You MUST preserve the exact same number of bullet points in the "highlights" array for each project entry as the original. Do not merge bullet points, do not split bullet points, and do not add or delete bullet points. Rewrite each original bullet point at its exact corresponding index.
-5. **CRITICAL LENGTH CONSTRAINT**: Keep the character length/word count of each tailored bullet point and project description within +/- 15% of the original to maintain the single-page layout budget.
-6. ABSOLUTE BAN ON LAZY SUFFIXES ("DEMONSTRATING EXPERTISE IN..."): You are STRICTLY BANNED from appending lazy meta-commentary suffixes like ", demonstrating expertise in...", ", showcasing proficiency in...", or ", demonstrating large-scale system design..." at the end of bullet points! You MUST genuinely rewrite the core engineering action verbs and architectural details of the bullet point itself.
+4. You MUST preserve the exact same number of bullet points in the "highlights" array for each project entry as the original. Do not merge, split, add, or delete bullet points.
+5. **CRITICAL LENGTH CONSTRAINT**: Keep the character length/word count of each tailored bullet point and project description within +/- 15% of the original to maintain single-page budget.
+6. ABSOLUTE BAN ON LAZY SUFFIXES: Do NOT append lazy suffixes like ", demonstrating expertise in...". Truly rewrite the engineering details.
 
 Return ONLY a valid JSON object matching this exact structure (keep the same array length and structure):
 {
@@ -487,10 +487,9 @@ Return ONLY a valid JSON object matching this exact structure (keep the same arr
     {
       "name": "Same project name",
       "description": "Tailored description",
-      "tech": ["Same tech stack"],
+      "tech": ["Top JD skills and relevant technologies"],
       "highlights": [
-        "Tailored bullet point 1",
-        "Tailored bullet point 2"
+        "Tailored bullet point 1"
       ]
     }
   ]
@@ -514,17 +513,18 @@ export async function tailorSkillsWithAI(
   jd: JDData,
   modelSelection?: ModelSelection
 ): Promise<{ skills: SkillsData }> {
-  const systemPrompt = `You are an expert resume optimizer. Filter and categorize the candidate's Skills, prioritizing those from the original list that are also present in the JD.
-CRITICAL SAFETY RULES:
-1. NEVER add skills to the candidate's skills list that are not present in the original resume.
-2. Only reorganize, filter, or reorder the existing skills within each category.
-3. Keep the exact same category keys as in the input skills.
-4. **CRITICAL LENGTH CONSTRAINT**: Keep the number of skills in each category approximately the same as the original. DO NOT drop any categories or return empty lists. If a category has no matching skills for the JD, retain its original skills verbatim so the layout height does not shrink.
+  const systemPrompt = `You are an expert resume optimizer. Reorder and refine the candidate's Skills section to perfectly match the target Job Description.
+CRITICAL MANDATORY RULES:
+1. JD SKILLS FIRST & AT THE TOP: Within each skill category, place JD-matching skills at the VERY BEGINNING (first items in the array). Do NOT append them at the end.
+2. CATEGORY REORDERING: Order the skill categories so that categories containing core JD requirements (e.g., Languages, Frontend, Backend, Data Structures & System Design) appear at the VERY TOP of the Skills section.
+3. LEARNING/WORKING KNOWLEDGE: If JD requires specific languages (e.g., Golang, C++) that are in the candidate's background/scope, list them cleanly as "Golang (Learning)", "C++ (Working Knowledge)" at the top of Languages.
+4. DO NOT REMOVE relevant existing skills, but ensure top JD skills appear first so recruiters immediately see JD alignment.
+5. **CRITICAL LENGTH CONSTRAINT**: Keep the total number of skills per category approximately the same to maintain layout balance.
 
 Return ONLY a valid JSON object matching this exact structure:
 {
   "skills": {
-    "Original Category Name": ["Relevant and sorted skills from this category"]
+    "Category Name": ["JD-matching skills first, followed by other skills"]
   }
 }
 `;
