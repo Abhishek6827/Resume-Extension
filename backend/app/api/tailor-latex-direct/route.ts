@@ -427,6 +427,11 @@ CRITICAL INSTRUCTIONS:
 5. STRICT PURITY OF TECHNICAL SKILLS SECTION (TOOLS ONLY, NO SOFT SKILLS):
    - The comma-separated "Technical Skills" section is reserved EXCLUSIVELY for specific programming languages, frameworks, libraries, databases, cloud platforms, and developer tools (e.g. Java, Python, TypeScript, React, Spring Boot, Docker, PostgreSQL, AWS, Git, gRPC, Redis, Kafka).
    - NEVER put soft engineering concepts, responsibilities, or domain phrases (such as "Code Review", "Debugging", "Data Storage", "System Design", "UI Design", "Mobile Development", "Infrastructure", "Security", "Distributed Computing", "Information Retrieval") into the Technical Skills lists! Those concepts belong exclusively inside Work Experience and Project bullet points as actions and outcomes.
+5b. STRICT CATEGORY LIMITS (NO CUSTOM CATEGORIES):
+   - You MUST strictly format the skills section into EXACTLY 4 standard categories. DO NOT invent arbitrary categories like "Payments & Billing" or "AI & LLM".
+   - You MUST merge all original skills and new JD skills into EXACTLY these 4 buckets: "Languages", "Frontend", "Backend & Databases", "DevOps & Tools". Do not output any other category names in the LaTeX skills section!
+5c. DEDUPLICATION RULE:
+   - A skill MUST ONLY appear in ONE category. Do not list the same skill (e.g., Python, Java) across multiple categories. Pick the single most relevant category for it.
 6. COHESIVE TECH-STACK REALISM (RESPECT 'OR' LISTS, NO FRANKEN-STACKS):
    - When a Job Description lists multiple alternative technologies separated by "or", slashes, or commas (e.g., "Java, Python, Golang, or C++" or "PostgreSQL/MySQL/MongoDB" or "AWS/GCP/Azure"), DO NOT stuff all of them into the same project or sentence!
    - Every project and work experience role must maintain a cohesive, realistic engineering ecosystem. Do NOT create "Franken-stacks" where incompatible or redundant languages are mashed together in a single bullet point (e.g. DO NOT claim a single web app backend was built with "Java Spring Boot AND C++ parsing utilities" simultaneously!).
@@ -440,7 +445,8 @@ CRITICAL INSTRUCTIONS:
 10. DO NOT use mathematical LaTeX commands (e.g., \\to, \\rightarrow, \\gets) in plain text. Always use plain English words (e.g., "to", "leads to") instead. pdflatex will fail to compile if you use math symbols outside of math mode.
 11. NEVER use \\newcommand for commands that already exist in standard LaTeX (such as \\section, \\subsection, \\item, \\textbf). Leave existing section definitions untouched or use \\renewcommand.
 12. Return ONLY the raw tailored LaTeX string. Do NOT wrap it in markdown code blocks (\`\`\`latex ... \`\`\`). Do NOT include any explanations or prose before or after. Start immediately with the first LaTeX character and end with the last LaTeX character.
-13. NEVER use placeholders, ellipses (...), or comments like "(unchanged)" or "(rest of document remains same)". You MUST output the full, complete, compilable LaTeX document from \\documentclass to \\end{document} without missing or skipping any section.${skillBankInstruction}`;
+13. NEVER use placeholders, ellipses (...), or comments like "(unchanged)" or "(rest of document remains same)". You MUST output the full, complete, compilable LaTeX document from \\documentclass to \\end{document} without missing or skipping any section.
+14. PRESERVE VERTICAL SPACING & SECTION GAPS: DO NOT remove any \\vspace, \\medskip, or blank lines between sections (especially after the Skills section and before the Education section). Ensure proper vertical spacing is maintained between all major sections!${skillBankInstruction}`;
 
     const userMessage = `Job Description:
 ${JSON.stringify(jdData, null, 2)}

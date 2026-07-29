@@ -308,6 +308,17 @@ function generateChanges(
       tailProj.description || ""
     );
 
+    // Diff project tech stacks
+    const origTech = (origProj.tech || []).join(", ");
+    const tailTech = (tailProj.tech || []).join(", ");
+    addChange(
+      "projects",
+      `projects[${i}].tech`,
+      `${origProj.name} — Tech Stack`,
+      origTech,
+      tailTech
+    );
+
     const maxProjBullets = Math.min(origProj.highlights?.length || 0, tailProj.highlights?.length || 0);
     for (let j = 0; j < maxProjBullets; j++) {
       const origBullet = origProj.highlights?.[j] || "";
@@ -322,19 +333,17 @@ function generateChanges(
     }
   }
 
-  // Skills — compare each category as a joined string
+  // Skills — compare ALL categories dynamically as joined strings
   if (original.skills && tailored.skills) {
-    const categories: Array<{ key: keyof typeof original.skills; label: string }> = [
-      { key: "languages", label: "Skills — Languages" },
-      { key: "frameworks", label: "Skills — Frameworks" },
-      { key: "tools", label: "Skills — Tools/Databases" },
-      { key: "other", label: "Skills — Other" },
-    ];
+    const allKeys = new Set([
+      ...Object.keys(original.skills),
+      ...Object.keys(tailored.skills)
+    ]);
 
-    for (const cat of categories) {
-      const origVal = (original.skills[cat.key] || []).join(", ");
-      const tailVal = (tailored.skills[cat.key] || []).join(", ");
-      addChange("skills", `skills.${cat.key}`, cat.label, origVal, tailVal);
+    for (const key of allKeys) {
+      const origVal = ((original.skills as Record<string, string[]>)[key] || []).join(", ");
+      const tailVal = ((tailored.skills as Record<string, string[]>)[key] || []).join(", ");
+      addChange("skills", `skills.${key}`, `Skills — ${key}`, origVal, tailVal);
     }
   }
 
@@ -432,6 +441,7 @@ CRITICAL SAFETY RULES:
 2. Keep all factual details (companies, degrees, years, roles) exactly the same.
 3. You may rewrite, reorder, and refine phrasing of bullet points to naturally incorporate JD keywords and core responsibilities (e.g., data structures & algorithms, large-scale distributed systems, accessible technologies, Java, Python, Angular, HTML/CSS, code reviews, design reviews, triage & debugging).
 4. Highlight outcomes and metrics if present.
+4b. ARCHITECTURAL REALISM (MUTUALLY EXCLUSIVE TECH): If injecting a JD-required technology, you MUST REPLACE the original conflicting technology. DO NOT list multiple overlapping backend languages or frameworks for the same component (e.g., do not list both Java and Node.js for the same backend API). Ensure the tech stack makes logical architectural sense.
 5. DO NOT reorder the jobs themselves. Keep the exact same array length and order.
 6. You MUST preserve the exact same number of bullet points in the "highlights" array for each work experience entry as the original. Do not merge bullet points, do not split bullet points, and do not add or delete bullet points. Rewrite each original bullet point at its exact corresponding index.
 7. **CRITICAL LENGTH CONSTRAINT**: For each tailored bullet point, keep its character length/word count within +/- 15% of the original bullet point. Do NOT turn a 1-line bullet into a 2-line bullet, and do NOT turn a 2-line bullet into a 1-line bullet.
@@ -476,6 +486,8 @@ export async function tailorProjectsWithAI(
 CRITICAL SAFETY & REPLACEMENT RULES:
 1. FORCEFULLY INJECT TOP JD SKILLS: Across the projects, replace older/irrelevant skills and tech stack descriptions with top JD-required technologies (e.g. Java, Python, Angular, JavaScript, TypeScript, HTML, CSS, Data Structures & Algorithms, Large-Scale Distributed Systems, Accessible Technologies). At least 7-8 core JD skills must be explicitly represented across the Projects section.
 2. Each project must highlight 2-3 distinct JD skills in its tech list and bullet points.
+2b. ARCHITECTURAL REALISM (DYNAMIC DEDUPLICATION): If injecting a JD-required language/framework (e.g. Java), you MUST remove the original conflicting technology (e.g. Node.js or C++). DO NOT list mutually exclusive overlapping backend languages or frameworks for the same component. The tech stack must make logical architectural sense.
+2c. STACK LIMIT: Limit the "tech" array for each project to a maximum of 5 to 7 core technologies.
 3. DO NOT reorder the projects. Keep the exact same array length and order.
 4. You MUST preserve the exact same number of bullet points in the "highlights" array for each project entry as the original. Do not merge, split, add, or delete bullet points.
 5. **CRITICAL LENGTH CONSTRAINT**: Keep the character length/word count of each tailored bullet point and project description within +/- 15% of the original to maintain single-page budget.
@@ -516,15 +528,19 @@ export async function tailorSkillsWithAI(
   const systemPrompt = `You are an expert resume optimizer. Reorder and refine the candidate's Skills section to perfectly match the target Job Description.
 CRITICAL MANDATORY RULES:
 1. JD SKILLS FIRST & AT THE TOP: Within each skill category, place JD-matching skills at the VERY BEGINNING (first items in the array). Do NOT append them at the end.
-2. CATEGORY REORDERING: Order the skill categories so that categories containing core JD requirements (e.g., Languages, Frontend, Backend, Data Structures & System Design) appear at the VERY TOP of the Skills section.
-3. LEARNING/WORKING KNOWLEDGE: If JD requires specific languages (e.g., Golang, C++) that are in the candidate's background/scope, list them cleanly as "Golang (Learning)", "C++ (Working Knowledge)" at the top of Languages.
-4. DO NOT REMOVE relevant existing skills, but ensure top JD skills appear first so recruiters immediately see JD alignment.
-5. **CRITICAL LENGTH CONSTRAINT**: Keep the total number of skills per category approximately the same to maintain layout balance.
+2. CATEGORY REORDERING: Order the skill categories so that categories containing core JD requirements appear at the VERY TOP of the Skills section.
+3. LEARNING/WORKING KNOWLEDGE: If JD requires specific languages that are in the candidate's background/scope, list them cleanly as "Golang (Learning)".
+4. STRICT CATEGORY MERGE: You MUST output exactly 4 categories. You MUST merge all original skills and new JD skills into exactly these 4 standard buckets: "Languages", "Frontend", "Backend & Databases", "DevOps & Tools". Do not output any other category names.
+5. DEDUPLICATION RULE: A skill MUST ONLY appear in ONE category. Do not list the same skill (e.g., Python, Java) across multiple categories. Pick the single most relevant category for it.
+6. **CRITICAL LENGTH CONSTRAINT**: You MUST strictly limit each category to a maximum of 5 to 7 highly relevant skills. You are explicitly authorized to aggressively DELETE older, generic, or non-JD-matching skills to keep the resume clean and breathable.
 
-Return ONLY a valid JSON object matching this exact structure:
+Return ONLY a valid JSON object matching this EXACT strict structure:
 {
   "skills": {
-    "Category Name": ["JD-matching skills first, followed by other skills"]
+    "Languages": ["JD-matching skills first, followed by others", "max 7 total"],
+    "Frontend": ["JD-matching skills first, followed by others", "max 7 total"],
+    "Backend & Databases": ["JD-matching skills first, followed by others", "max 7 total"],
+    "DevOps & Tools": ["JD-matching skills first, followed by others", "max 7 total"]
   }
 }
 `;

@@ -18,7 +18,8 @@ A powerful, AI-driven resume tailoring platform that helps you customize your re
 - **Deployment:** Vercel (Ready)
 
 ### Backend (Java Spring Boot)
-- **Framework:** Spring Boot (Java 21)
+- **Framework:** Spring Boot (Java 17/21)
+- **Deployment:** AWS Elastic Beanstalk (Single Instance Corretto 17)
 - **Document Processing:** Apache PDFBox (PDF), Apache POI (DOCX)
 - **AI Integration:** Spring WebClient for direct API calls to LLMs
 - **PDF Compilation:** TexLive API integration for LaTeX to PDF compilation
@@ -32,7 +33,7 @@ A powerful, AI-driven resume tailoring platform that helps you customize your re
 
 ### 1. Prerequisites
 - Node.js (v18+)
-- Java 21+ & Maven
+- Java 17+ & Maven
 - API Keys for the LLM providers you wish to use (Groq, Cerebras, NVIDIA, OpenRouter).
 
 ### 2. Environment Variables
@@ -51,11 +52,18 @@ CEREBRAS_API_KEY=your_cerebras_api_key
 
 # OpenRouter (Fallback)
 OPENROUTER_API_KEY=your_openrouter_api_key
+
+# Port Configuration for AWS Elastic Beanstalk
+SERVER_PORT=5000
 ```
 
-For the **Frontend**, create a `.env.local` inside the `/backend` folder:
+For the **Frontend**, update `.env.local` inside the `/backend` folder:
 ```properties
-NEXT_PUBLIC_API_URL=http://localhost:8080
+# For local testing with Spring Boot:
+# NEXT_PUBLIC_API_URL=http://localhost:8080
+
+# For Live Production (AWS Elastic Beanstalk):
+NEXT_PUBLIC_API_URL=http://resume-backend-app-env.eba-e2kpjm2t.us-east-1.elasticbeanstalk.com
 ```
 
 ### 3. Running the Backend (Spring Boot)
@@ -65,7 +73,7 @@ Navigate to the `java-backend` folder and run:
 cd java-backend
 mvn spring-boot:run
 ```
-The backend will start on `http://localhost:8080`.
+The backend will start on `http://localhost:8080` (or `5000` if `SERVER_PORT=5000` is set).
 
 ### 4. Running the Frontend (Next.js)
 
@@ -76,6 +84,18 @@ npm install
 npm run dev
 ```
 The frontend will be available at `http://localhost:3000`.
+
+## ☁️ Cloud Deployment
+
+### Java Backend on AWS Elastic Beanstalk
+1. Package the Java application: `./mvnw clean package -DskipTests`
+2. Create an AWS Elastic Beanstalk application choosing **Java Corretto 17** platform.
+3. Upload the generated JAR file from `java-backend/target/resume-backend-1.0.0-SNAPSHOT.jar`.
+4. Under **Environment properties**, set `SERVER_PORT=5000` and all LLM API Keys (`GROQ_API_KEY`, `NVIDIA_API_KEY`, etc.).
+
+### Frontend on Vercel
+1. Import the `/backend` folder into Vercel.
+2. Add environment variable `NEXT_PUBLIC_API_URL` pointing to your AWS Elastic Beanstalk domain URL.
 
 ## 🧠 Multi-Provider AI Architecture
 

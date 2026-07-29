@@ -104,10 +104,9 @@ public class TailorService {
                     }
                   ],
                   "skills": {
-                    "languages": ["Skill names"],
-                    "frameworks": ["Skill names"],
-                    "tools": ["Skill names"],
-                    "other": ["Skill names"]
+                    "Dynamic Category 1 (e.g. Languages)": ["Skill names"],
+                    "Dynamic Category 2 (e.g. Frameworks)": ["Skill names"],
+                    "Dynamic Category 3 (e.g. AI & LLM)": ["Skill names"]
                   },
                   "certifications": ["Certification names"],
                   "projects": [
@@ -239,7 +238,18 @@ public class TailorService {
                 6. Keep the vertical layout page budget of the original resume strictly.
                 7. **Professional Summary Length**: Keep the tailored professional summary word count within +/- 15% of the original summary (approximately 4 lines, 70-85 words).
                 8. **Highlights Length**: For each rewritten bullet point in experience and projects, ensure its character/word length is within +/- 15% of the original bullet point. Do NOT turn a 1-line bullet into a 2-line bullet, and do NOT turn a 2-line bullet into a 1-line bullet.
-                9. **Skills Length**: Keep the number of skills in each category approximately the same as the original to prevent text line wrapping. DO NOT drop any categories or return empty lists. If a category has no matching skills, retain its original skills verbatim.
+                9. **Skills Length**: You MUST strictly limit each skill category to a maximum of 5 to 7 highly relevant skills. You are explicitly authorized to aggressively DELETE older, generic, or non-JD-matching skills to keep the resume clean and breathable.
+                9b. **Category Limit**: You MUST strictly limit the total number of skill categories to exactly 4 standard categories. You MUST merge all original skills and new JD skills into exactly these 4 standard buckets: "Languages", "Frontend", "Backend & Databases", "DevOps & Tools". Do not output any other category names.
+                9c. DEDUPLICATION RULE: A skill MUST ONLY appear in ONE category. Do not list the same skill (e.g., Python, Java) across multiple categories. Pick the single most relevant category for it.
+
+                JD INTEGRATION & SKILL REORDERING RULES:
+                10. JD SKILLS MUST BE FIRST: In the "skills" section, you MUST inject the required skills from the JD. For every category, reorder the array so that the exact JD matching skills appear FIRST, before the original skills. 
+                11. PROJECT TECH STACKS: Forcefully update the "tech" array for projects to include relevant JD skills used. JD skills MUST appear FIRST in the "tech" array. Limit the "tech" array to a maximum of 5 to 7 core technologies.
+                11b. ARCHITECTURAL REALISM (DYNAMIC DEDUPLICATION): If injecting a JD-required language/framework (e.g. Java), you MUST remove the original conflicting technology (e.g. Node.js or C++). DO NOT list mutually exclusive overlapping backend languages or frameworks for the same component (projects or experience). The tech stack must make logical architectural sense.
+                12. REPLACE OLD SKILLS: If you need to stay within the skill length limit, aggressively drop older/irrelevant skills (like C, C++, basic HTML) to make room for required JD skills.
+                13. HIGHLIGHTS INJECTION: Forcefully weave JD keywords into experience and project highlights. Frame bullet points around the JD requirements.
+                14. DOMAIN COMPETENCY: Subtly weave elements showing proficiency in Data Structures, Algorithms, Distributed Systems, and Accessible Technologies into the experience descriptions if they fit naturally.
+                15. DESIGN/CODE REVIEW: Mention code reviews, design reviews, or system architecture planning where appropriate in senior-level experiences.
 
                 Return ONLY a valid JSON matching the input ResumeData structure.
                 """;

@@ -32,13 +32,19 @@ export function applyApprovedChanges(
         }
       }
     } else if (change.field.startsWith("projects[")) {
-      // Parse projects[i].description or projects[i].highlights[j]
+      // Parse projects[i].description, projects[i].tech, or projects[i].highlights[j]
       const descMatch = change.field.match(/^projects\[(\d+)\]\.description$/);
+      const techMatch = change.field.match(/^projects\[(\d+)\]\.tech$/);
       const bulletMatch = change.field.match(/^projects\[(\d+)\]\.highlights\[(\d+)\]$/);
       if (descMatch) {
         const projIdx = parseInt(descMatch[1], 10);
         if (result.projects[projIdx]) {
           result.projects[projIdx].description = change.newValue;
+        }
+      } else if (techMatch) {
+        const projIdx = parseInt(techMatch[1], 10);
+        if (result.projects[projIdx]) {
+          result.projects[projIdx].tech = change.newValue.split(",").map(s => s.trim()).filter(Boolean);
         }
       } else if (bulletMatch) {
         const projIdx = parseInt(bulletMatch[1], 10);
@@ -48,11 +54,11 @@ export function applyApprovedChanges(
         }
       }
     } else if (change.field.startsWith("skills.")) {
-      // Parse skills.languages, skills.frameworks, etc.
-      const skillKey = change.field.replace("skills.", "") as keyof typeof result.skills;
+      // Parse skills.<category> — supports dynamic category keys
+      const skillKey = change.field.replace("skills.", "");
       if (result.skills) {
         // change.newValue is a comma separated string, so split it back to array
-        result.skills[skillKey] = change.newValue.split(",").map(s => s.trim()).filter(Boolean);
+        (result.skills as Record<string, string[]>)[skillKey] = change.newValue.split(",").map(s => s.trim()).filter(Boolean);
       }
     }
   }

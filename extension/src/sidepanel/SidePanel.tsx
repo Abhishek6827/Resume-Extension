@@ -23,7 +23,7 @@ import {
   getOriginalPDF,
 } from "../lib/storage";
 import { parseResume, parseJD, scoreResume, tailorSection, exportPDF, exportDOCX, applyApprovedChanges } from "../lib/api-client";
-import type { ResumeData, TailoredResult, TailoredChange, SkillsData } from "../lib/types";
+import type { ResumeData, TailoredResult, TailoredChange } from "../lib/types";
 
 function extractNameFromLatex(text: string): string | null {
   if (!text) return null;
@@ -418,6 +418,12 @@ export default function SidePanel() {
             const chDesc = diffHelper("projects", `projects[${i}].description`, `${origP.name} — Description`, origP.description || "", tailP.description || "");
             if (chDesc) newCh.push(chDesc);
 
+            // Diff project tech stacks so JD skill injections are tracked
+            const origTech = (origP.tech || []).join(", ");
+            const tailTech = (tailP.tech || []).join(", ");
+            const chTech = diffHelper("projects", `projects[${i}].tech`, `${origP.name} — Tech Stack`, origTech, tailTech);
+            if (chTech) newCh.push(chTech);
+
             const maxBullets = Math.max(origP.highlights?.length || 0, tailP.highlights?.length || 0);
             for (let j = 0; j < maxBullets; j++) {
               const origB = origP.highlights?.[j] || "";
@@ -433,16 +439,15 @@ export default function SidePanel() {
       tasks.push(skillsPromise.then(skillsRes => {
         const newCh: TailoredChange[] = [];
         if (skillsRes && skillsRes.skills) {
-          const cats: Array<{ key: keyof SkillsData; label: string }> = [
-            { key: "languages", label: "Skills — Languages" },
-            { key: "frameworks", label: "Skills — Frameworks" },
-            { key: "tools", label: "Skills — Tools/Databases" },
-            { key: "other", label: "Skills — Other" },
-          ];
-          for (const cat of cats) {
-            const origVal = (resume.skills[cat.key] || []).join(", ");
-            const tailVal = (skillsRes.skills[cat.key] || []).join(", ");
-            const ch = diffHelper("skills", `skills.${cat.key}`, cat.label, origVal, tailVal);
+          // Dynamically iterate ALL skill category keys (not just hardcoded 4)
+          const allSkillKeys = new Set([
+            ...Object.keys(resume.skills || {}),
+            ...Object.keys(skillsRes.skills || {})
+          ]);
+          for (const key of allSkillKeys) {
+            const origVal = ((resume.skills as Record<string, string[]>)[key] || []).join(", ");
+            const tailVal = ((skillsRes.skills as Record<string, string[]>)[key] || []).join(", ");
+            const ch = diffHelper("skills", `skills.${key}`, `Skills — ${key}`, origVal, tailVal);
             if (ch) newCh.push(ch);
           }
         }
