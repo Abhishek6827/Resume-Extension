@@ -183,7 +183,7 @@ public class LatexGeneratorService {
         String summary = escapeLatex((String) tailoredResume.get("summary"));
         String summaryLatex = "";
         if (summary != null && !summary.isEmpty()) {
-            summaryLatex = "\\section*{Summary}\n" + summary + "\n";
+            summaryLatex = "\\section*{Summary}\n" + summary + "\\par\\vspace{4pt}\n\n";
         }
 
         // Experience
@@ -210,7 +210,7 @@ public class LatexGeneratorService {
                         String cleanHl = hl.replaceAll("^[\\s•\\-\\*]+", "");
                         experienceLatex.append("  \\item ").append(escapeLatex(cleanHl)).append("\n");
                     }
-                    experienceLatex.append("\\end{itemize}\n\n");
+                    experienceLatex.append("\\end{itemize}\\vspace{4pt}\n\n");
                 } else {
                     experienceLatex.append("\n");
                 }
@@ -240,7 +240,7 @@ public class LatexGeneratorService {
                         String cleanHl = hl.replaceAll("^[\\s•\\-\\*]+", "");
                         projectsLatex.append("  \\item ").append(escapeLatex(cleanHl)).append("\n");
                     }
-                    projectsLatex.append("\\end{itemize}\n\n");
+                    projectsLatex.append("\\end{itemize}\\vspace{4pt}\n\n");
                 } else {
                     projectsLatex.append("\n");
                 }
@@ -286,7 +286,7 @@ public class LatexGeneratorService {
                            .append("  \\small{\\item{\n")
                            .append(String.join(" \\\\\n", skillLines))
                            .append("\n  }}\n")
-                           .append("\\end{itemize}\n\n");
+                           .append("\\end{itemize}\\vspace{4pt}\n\n");
             }
         }
 
@@ -317,7 +317,7 @@ public class LatexGeneratorService {
                "\\titleformat{\\section}\n" +
                "  {\\normalsize\\bfseries\\scshape\\color{darkgray}}\n" +
                "  {}{0em}{}[\\vspace{1pt}\\titrule]\n" +
-               "\\titlespacing{\\section}{0pt}{4pt}{2pt}\n\n" +
+               "\\titlespacing{\\section}{0pt}{9pt}{3pt}\n\n" +
                "\\setlist[itemize]{leftmargin=12pt, topsep=0pt, itemsep=0.3pt,\n" +
                "                  parsep=0pt, label=\\textbullet}\n\n" +
                "\\newcommand{\\role}[3]{%\n" +

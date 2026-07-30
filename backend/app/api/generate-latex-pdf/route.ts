@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCorsHeaders, handleOptions } from "../../../lib/cors";
-import { generateLatex } from "../../../lib/latex-generator";
+import { generateLatex, ensureLatexSpacing } from "../../../lib/latex-generator";
 import type { ResumeData } from "../../../lib/types";
 
 export const dynamic = "force-dynamic";
@@ -51,6 +51,9 @@ export async function POST(request: NextRequest) {
       .replace(/\\newcommand\{\\item\}/g, '\\renewcommand{\\item}')
       .replace(/\\to\b/g, 'to')
       .replace(/\\rightarrow\b/g, 'to');
+
+    // Ensure LaTeX spacing and section transitions are preserved
+    latexString = ensureLatexSpacing(latexString);
 
     // Compress LaTeX to avoid 414 Request-URI Too Large (Nginx 8KB limit)
     // Remove comments and compress multiple spaces/newlines

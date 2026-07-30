@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCorsHeaders, handleOptions } from "../../../lib/cors";
 import { callLLM, callFastLLM, extractJSON } from "../../../lib/llm-client";
 import { sanitizeMissingKeywords } from "../../../lib/skill-bank";
+import { ensureLatexSpacing } from "../../../lib/latex-generator";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -58,6 +59,9 @@ function cleanLatexResponse(rawText: string): string {
     .replace(/\\rightarrow(?![a-zA-Z])/g, ' to ')
     .replace(/\\gets(?![a-zA-Z])/g, ' from ')
     .replace(/\\leftarrow(?![a-zA-Z])/g, ' from ');
+
+  // 5. Ensure LaTeX spacing and section transitions are preserved
+  cleaned = ensureLatexSpacing(cleaned);
 
   return cleaned;
 }
