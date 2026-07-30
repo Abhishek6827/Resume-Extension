@@ -50,15 +50,16 @@ export async function POST(request: NextRequest) {
       .replace(/\\newcommand\{\\subsubsection\}/g, '\\renewcommand{\\subsubsection}')
       .replace(/\\newcommand\{\\item\}/g, '\\renewcommand{\\item}')
       .replace(/\\to\b/g, 'to')
-      .replace(/\\rightarrow\b/g, 'to');
-
-    // Ensure LaTeX spacing and section transitions are preserved
-    latexString = ensureLatexSpacing(latexString);
+      .replace(/\\rightarrow\b/g, 'to')
+      .replace(/¡/g, 'under ')
+      .replace(/<(?=\s*\d|\s*min|\s*ms|\s*\$)/gi, 'under ')
+      .replace(/>(?=\s*\d|\s*min|\s*ms|\s*\$)/gi, 'over ')
+      .replace(/(\d+)\s*%(?!\w)/g, '$1\\%');
 
     // Compress LaTeX to avoid 414 Request-URI Too Large (Nginx 8KB limit)
-    // Remove comments and compress multiple spaces/newlines
+    // Remove actual comments (avoiding escaped \%) and compress multiple spaces/newlines
     const compressedLatex = latexString
-      .replace(/%.*$/gm, "") // Remove comments
+      .replace(/(?<!\\)%.*$/gm, "") // Remove comments (only unescaped %)
       .replace(/\n\s*\n/g, "\n") // Remove empty lines
       .replace(/([\{\}\\])\s+/g, "$1") // Remove spaces after brackets/commands where safe
       .replace(/\s+([\{\}\\])/g, " $1") 

@@ -196,16 +196,18 @@ CRITICAL REMINDER: You will be penalized if you drop any experience bullet point
  */
 export async function parseJDWithAI(rawText: string, modelSelection?: ModelSelection): Promise<JDData> {
   const systemPrompt = `You are an expert job description parsing assistant.
-Your task is to take raw text from a Job Description (JD) and extract key requirements into a structured JSON object.
+Your task is to take raw text from a Job Description (JD) and perform an EXHAUSTIVE extraction of ALL requirements, programming languages, tools, domain competencies, and responsibilities into a structured JSON object.
+
+CRITICAL INSTRUCTION: Be extremely thorough. Extract EVERY single programming language (e.g., Java, Python, Golang, C++, JavaScript, TypeScript, AngularJS, HTML, CSS), framework, database, tool, core engineering concept (e.g. Data Structures, Algorithms, Distributed Systems, Accessible Technologies, WCAG, High Throughput, Concurrency), and operational responsibility (e.g. Code Reviews, Design Reviews, Technical Documentation, Debugging, Triaging Issues). Do NOT summarize or leave out details.
 
 Return ONLY a valid JSON object matching this exact structure (no markdown wrapper, no prose):
 {
   "jobTitle": "Job Title",
   "company": "Company name if present, else empty string",
-  "mustHaveSkills": ["Key technical skills explicitly required or marked mandatory"],
-  "niceToHaveSkills": ["Desired or preferred skills"],
-  "responsibilities": ["Main responsibilities/tasks listed"],
-  "keywords": ["Key industries, tools, methodologies, or standard keywords/buzzwords in the JD"]
+  "mustHaveSkills": ["EVERY programming language, framework, database, tool, or mandatory technical skill mentioned in minimum or core qualifications"],
+  "niceToHaveSkills": ["Desired or preferred skills, degrees, or optional qualifications"],
+  "responsibilities": ["EXHAUSTIVE list of all tasks, operational workflows, reviews, documentation, debugging, and engineering responsibilities listed"],
+  "keywords": ["EXHAUSTIVE list of domain concepts, e.g. Data Structures, Algorithms, Distributed Systems, Accessible Technologies (WCAG/ARIA), Large-Scale System Design, Networking, Storage, Security, AI, NLP, UI Design"]
 }
 `;
 

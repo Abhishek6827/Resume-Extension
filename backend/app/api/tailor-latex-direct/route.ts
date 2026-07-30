@@ -58,10 +58,13 @@ function cleanLatexResponse(rawText: string): string {
     .replace(/\\to(?![a-zA-Z])/g, ' to ') // Replace naked math arrow commands with plain text
     .replace(/\\rightarrow(?![a-zA-Z])/g, ' to ')
     .replace(/\\gets(?![a-zA-Z])/g, ' from ')
-    .replace(/\\leftarrow(?![a-zA-Z])/g, ' from ');
+    .replace(/\\leftarrow(?![a-zA-Z])/g, ' from ')
+    .replace(/¡/g, 'under ') // Fix Spanish inverted exclamation mark caused by raw < in LaTeX
+    .replace(/<(?=\s*\d|\s*min|\s*ms|\s*\$)/gi, 'under ')
+    .replace(/>(?=\s*\d|\s*min|\s*ms|\s*\$)/gi, 'over ');
 
-  // 5. Ensure LaTeX spacing and section transitions are preserved
-  cleaned = ensureLatexSpacing(cleaned);
+  // 5. Escape unescaped % signs (e.g. 25% -> 25\%) so LaTeX doesn't comment out the rest of the line
+  cleaned = cleaned.replace(/(\d+)\s*%(?!\w)/g, '$1\\%');
 
   return cleaned;
 }
@@ -223,7 +226,7 @@ async function tailorForModel(
     if (tailoredLatex.length <= latexLength) {
       break;
     }
-    
+
     currentSystemPrompt = systemPrompt + `\n\nWARNING: Your previous response was ${tailoredLatex.length} characters long, which EXCEEDS the absolute maximum limit of ${latexLength} characters. You MUST shorten your response by at least ${tailoredLatex.length - latexLength} characters. Be extremely concise.`;
     attempt++;
   }
@@ -295,7 +298,7 @@ function formatApiError(err: any): string {
       if (parsed?.error?.message) {
         message = parsed.error.message;
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   if (message.includes("tokens per minute") || message.includes("TPM") || message.includes("rate_limit_exceeded") || message.includes("Request too large")) {
@@ -367,8 +370,7 @@ export async function POST(request: NextRequest) {
   const corsHeaders = getCorsHeaders(request);
 
   try {
-    const body = await request.json();
-    const { latex, jdData, skillBank, modelsToRun } = body;
+    const { latex, jdData, rawJdText, skillBank, modelsToRun } = await request.json();
 
     if (!latex || !latex.trim()) {
       return NextResponse.json({ error: "Missing LaTeX input" }, { status: 400, headers: corsHeaders });
@@ -390,7 +392,7 @@ export async function POST(request: NextRequest) {
 
       const topSkills = selectedSkills.map((s: any) => `${s.name}${s.versionDetails ? ` (${s.versionDetails})` : ""} [Repo: ${s.sourceRepo}]`).join(", ");
       const topProjects = selectedProjects.map((p: any) => `${p.name}: ${p.description}`).join("; ");
-      
+
       console.log(`[tailor-latex-direct] Smart JD Skill Lookup: Found ${matchCount} direct JD-matching skills out of ${skillBank.skills.length} total skills.`);
 
       skillBankInstruction = `
@@ -408,51 +410,65 @@ STRICT INSTRUCTIONS FOR SKILL BANK INTEGRATION & PROJECT UPDATION:
     }
 
     const systemPrompt = `You are an expert ATS specialist and LaTeX editor. 
-Your task is to take a raw LaTeX resume and rewrite its Professional Summary and Work Experience / Project bullet points to perfectly align with the target Job Description by consulting the candidate's Verified GitHub Skill Bank.
+Your task is to take a raw LaTeX resume and rewrite its Professional Summary, Work Experience & Project tech-stack subtitles, and bullet points to perfectly align with the target Job Description by consulting the candidate's Verified GitHub Skill Bank.
 
 CRITICAL INSTRUCTIONS:
+0. IMMUTABLE TEMPLATE RULE: You MUST use the exact original LaTeX provided by the user as your base template. DO NOT invent your own generic LaTeX template. DO NOT change the \\documentclass, margins, geometry, packages, custom commands (e.g., \\role, \\project), or any formatting whatsoever. Use the user's provided LaTeX EXACTLY.
 1. DO NOT CHANGE ANY LaTeX COMMANDS. Leave ALL macros, brackets, formatting (e.g. \\textbf, \\item, \\begin, \\end, \\vspace, \\hspace, \\href) exactly as they are.
 2. MANDATORY SUMMARY TRANSFORMATION (TOP OF RESUME ATS IMPACT):
    - You MUST rewrite the candidate's Professional Summary at the very top of the document to explicitly highlight the primary architectural scope, domain competencies, and scale required by the target Job Description!
    - For example, if the JD asks for "large-scale distributed systems", "data structures & algorithms", and "accessible technologies", your tailored summary MUST explicitly incorporate those competencies (e.g. "Full-stack software engineer with 3+ years of experience architecting large-scale distributed systems and accessible web applications using Java, Python, and TypeScript. Proven track record of optimizing algorithmic complexity, designing high-throughput microservices handling massive scale, and deploying containerized workloads on AWS with robust CI/CD pipelines.").
-3. TWO-PILLAR ATS INJECTION (TECH STACK + CORE DOMAIN/ARCHITECTURAL COMPETENCIES):
+3. THREE-PILLAR ATS INJECTION (TECH STACK + ARCHITECTURAL COMPETENCIES + OPERATIONAL WORKFLOWS):
    - Pillar 1 (Hard Tools & Tech Stack): Prioritize matching tools from the candidate's Verified Skill Bank. If the JD requires missing tools (e.g. Docker, AWS, Kubernetes, Redis, GraphQL, CI/CD, MongoDB, Jest), inject at least 70-80% of them into appropriate project ecosystems.
    - Pillar 2 (Core Domain & Architectural Competencies - MANDATORY): Top-tier JDs (like Google, Amazon, Microsoft) require high-level engineering concepts such as "Data Structures & Algorithms", "Large-Scale Distributed Systems", "Massive Scale / High Throughput", "Low Latency / Concurrency", "Accessible Technologies (WCAG/a11y)", "Fault Tolerance", or "Security/RBAC". You MUST identify ALL such architectural and domain requirements in the JD and WEAVE THEM DIRECTLY as concrete engineering actions and measurable outcomes inside the Work Experience and Project bullet points!
-   - Examples of weaving Pillar 2 domain competencies without artificial suffixes:
+   - Pillar 3 (Operational Workflows & Responsibilities - MANDATORY): JDs explicitly list operational responsibilities such as "Debugging / Triaging System Issues", "Rigorous Testing / Testability", "Technical Documentation", "Design Reviews", "Code Reviews", and "Core Infrastructure / Developer Platforms". You MUST weave these specific operational workflow terms into at least 2-3 bullet points across Work Experience & Projects (e.g., "Led design reviews and code reviews to improve testability, documentation, and system efficiency...", "Triaged and debugged complex production issues across hardware, network, and service operations...").
+   - Examples of weaving Pillar 2 & 3 domain competencies without artificial suffixes:
      * Data Structures & Algorithms: "Refactored core data ingestion pipelines by applying advanced tree/hash data structures and algorithmic complexity optimizations, reducing search latency from O(n) to O(1) and cutting CPU utilization by 40%."
      * Large-Scale Distributed Systems / Massive Scale: "Architected high-throughput distributed microservices on AWS/Kubernetes communicating via asynchronous event queues, sustaining 10k+ concurrent requests at massive scale with 99.99% availability."
      * Accessible Technologies: "Developed responsive, accessible web interfaces adhering to WCAG 2.1 AA standards and ARIA best practices, ensuring seamless screen-reader compatibility and keyboard navigation across all user flows."
+     * Operational Workflows (Debugging/Testing/Docs/Reviews): "Triaged and debugged production service issues while conducting rigorous code reviews and design reviews, improving testability, documentation, and system reliability across core team workflows."
 4. ABSOLUTE BAN ON LAZY SUFFIXES AND META-COMMENTARY ("DEMONSTRATING EXPERTISE IN..."):
    - NEVER tack on clumsy, artificial suffixes at the end of sentences or bullets! You are STRICTLY BANNED from appending phrases like ", demonstrating expertise in...", ", showcasing proficiency in...", ", demonstrating large-scale system design...", ", showcasing expertise in...", or ", while supporting X".
    - WHY THIS IS BANNED: Appending ", demonstrating expertise in data structures" to an unchanged bullet point is lazy, artificial, and rejected by recruiters and human reviewers.
    - SHOW, DON'T TELL (GENUINE REWRITING REQUIRED): You MUST genuinely rewrite the core engineering action verbs and architectural workflow of the bullet point itself!
    - BAD (LAZY SUFFIX - FORBIDDEN): "Replaced scheduled polling with a webhook pipeline using RabbitMQ, reducing lag from 20 min to 3 min, demonstrating expertise in data structures and algorithms."
    - GOOD (GENUINE ARCHITECTURAL REWRITING - REQUIRED): "Engineered high-throughput webhook event pipelines using RabbitMQ and custom hash-map caching data structures, optimizing algorithmic complexity to cut failure detection latency from 20 min to 3 min."
-5. STRICT PURITY OF TECHNICAL SKILLS SECTION (TOOLS ONLY, NO SOFT SKILLS):
+5. MANDATORY PROJECT TECH STACK & BULLET REWRITING (CRITICAL):
+   - You MUST update BOTH the Project Tech Stack subtitles/headers (the tools listed next to or under each project name, e.g. in \project{Name}{Sub}{Tech Stack} or \textit{Tools}) AND the project bullet points!
+   - UPDATE TECH STACK SUBTITLES: Update the comma-separated tech stack list next to each Project title to prominently feature the primary JD-required programming languages and tools (e.g. if the JD asks for Python, C++, Docker, AWS, or Java, ensure those technologies replace or augment the old tech stack in the project headers).
+   - REWRITE BULLET POINTS: Do NOT leave the Projects section unmodified! You MUST rewrite the project bullet points to incorporate the JD's required technologies and architectural workflows.
+6. STRICT PURITY OF TECHNICAL SKILLS SECTION (TOOLS ONLY, NO SOFT SKILLS):
    - The comma-separated "Technical Skills" section is reserved EXCLUSIVELY for specific programming languages, frameworks, libraries, databases, cloud platforms, and developer tools (e.g. Java, Python, TypeScript, React, Spring Boot, Docker, PostgreSQL, AWS, Git, gRPC, Redis, Kafka).
    - NEVER put soft engineering concepts, responsibilities, or domain phrases (such as "Code Review", "Debugging", "Data Storage", "System Design", "UI Design", "Mobile Development", "Infrastructure", "Security", "Distributed Computing", "Information Retrieval") into the Technical Skills lists! Those concepts belong exclusively inside Work Experience and Project bullet points as actions and outcomes.
-5b. STRICT CATEGORY LIMITS (NO CUSTOM CATEGORIES):
-   - You MUST strictly format the skills section into EXACTLY 4 standard categories. DO NOT invent arbitrary categories like "Payments & Billing" or "AI & LLM".
-   - You MUST merge all original skills and new JD skills into EXACTLY these 4 buckets: "Languages", "Frontend", "Backend & Databases", "DevOps & Tools". Do not output any other category names in the LaTeX skills section!
-5c. DEDUPLICATION RULE:
+6b. PRESERVE ORIGINAL SKILL CATEGORIES:
+   - You MUST preserve ALL the original skill categories exactly as they were provided in the input LaTeX (e.g., if there are 8 categories, keep all 8). 
+   - DO NOT condense, rename, or merge them into fewer buckets (like 4 categories). 
+   - Simply weave the new JD-required skills into the most appropriate existing categories without altering the category names or their total count.
+6c. DEDUPLICATION RULE:
    - A skill MUST ONLY appear in ONE category. Do not list the same skill (e.g., Python, Java) across multiple categories. Pick the single most relevant category for it.
-6. COHESIVE TECH-STACK REALISM (RESPECT 'OR' LISTS, NO FRANKEN-STACKS):
+6d. REORDER SKILLS FOR IMPACT:
+   - Within each skill category, you MUST reorder the skills so that the JD-aligned/required skills appear FIRST, before the non-JD skills.
+7. COHESIVE TECH-STACK REALISM (RESPECT 'OR' LISTS, NO FRANKEN-STACKS):
    - When a Job Description lists multiple alternative technologies separated by "or", slashes, or commas (e.g., "Java, Python, Golang, or C++" or "PostgreSQL/MySQL/MongoDB" or "AWS/GCP/Azure"), DO NOT stuff all of them into the same project or sentence!
    - Every project and work experience role must maintain a cohesive, realistic engineering ecosystem. Do NOT create "Franken-stacks" where incompatible or redundant languages are mashed together in a single bullet point (e.g. DO NOT claim a single web app backend was built with "Java Spring Boot AND C++ parsing utilities" simultaneously!).
    - Pick the ONE or TWO technologies from an "or" list that best match that specific project's primary ecosystem. If you want to showcase a different language or database required by the JD, introduce it in a separate, distinct project or role where that tool makes natural architectural sense (e.g., C++/Python in AI/compute pipelines, Java/Node in web API servers).
-7. EVEN SKILL DISTRIBUTION & ARCHITECTURAL SPREADING (DO NOT DUMP EVERYTHING IN ROLE #1 OR PROJECT #1):
+8. EVEN SKILL DISTRIBUTION & ARCHITECTURAL SPREADING (DO NOT DUMP EVERYTHING IN ROLE #1 OR PROJECT #1):
    - AVOID FRONT-LOADING: When injecting required JD skills, do NOT dump all of them into the very first Work Experience entry or the very first Project!
    - DISTRIBUTE EQUITABLY: Spread the required keywords, technologies, and architectural concepts evenly across ALL your Work Experience entries and ALL your Project descriptions.
    - MATCH EACH SKILL TO THE MOST RELEVANT PROJECT: Review all available projects and roles before generating. For example, assign backend/database scaling to your SaaS platform project, assign NLP/AI/compute optimizations (like Python/C++) to your AI pipeline project, and assign real-time/networking skills to your websocket project. Every single project and role should showcase 2-3 distinct, relevant JD competencies rather than overloading one project with 10 skills!
-8. DO NOT add or remove bullet points. Keep the exact same number of items.
-9. **STRICT LENGTH CONSTRAINT**: The original LaTeX string has EXACTLY ${latexLength} characters. You must output the ENTIRE tailored LaTeX string such that its total character count is less than or equal to ${latexLength}. This is a hard requirement to ensure the generated PDF does not exceed 1 page or create a bottom gap. Do not make any section significantly longer than before.
-10. DO NOT use mathematical LaTeX commands (e.g., \\to, \\rightarrow, \\gets) in plain text. Always use plain English words (e.g., "to", "leads to") instead. pdflatex will fail to compile if you use math symbols outside of math mode.
-11. NEVER use \\newcommand for commands that already exist in standard LaTeX (such as \\section, \\subsection, \\item, \\textbf). Leave existing section definitions untouched or use \\renewcommand.
-12. Return ONLY the raw tailored LaTeX string. Do NOT wrap it in markdown code blocks (\`\`\`latex ... \`\`\`). Do NOT include any explanations or prose before or after. Start immediately with the first LaTeX character and end with the last LaTeX character.
-13. NEVER use placeholders, ellipses (...), or comments like "(unchanged)" or "(rest of document remains same)". You MUST output the full, complete, compilable LaTeX document from \\documentclass to \\end{document} without missing or skipping any section.
-14. PRESERVE VERTICAL SPACING & SECTION GAPS: DO NOT remove any \\vspace, \\medskip, or blank lines between sections (especially after the Skills section and before the Education section). Ensure proper vertical spacing is maintained between all major sections!${skillBankInstruction}`;
+9. DO NOT add or remove bullet points. Keep the exact same number of items.
+10. **STRICT 1-PAGE LENGTH CONSTRAINT (PREVENT OVERFLOW)**: The original resume fit exactly on 1 page. To ensure your tailored version also fits on 1 page without spilling to a second page, you MUST:
+    a) Make the tailored bullet points SLIGHTLY SHORTER than the originals (use concise, strong verbs, remove fluff and filler words).
+    b) NEVER add extra \\\\vspace, \\\\newline, \\\\\\\\, or blank lines that were not in the original.
+    c) Remember that ATS keywords are often long words that cause line-wrapping, which pushes content down. Therefore, you MUST tighten the phrasing of the rest of the bullet point to compensate. Guarantee a 1-page output!
+11. DO NOT use raw '<' or '>' symbols (e.g. "< 3 min", "> 90 ms") or naked math commands in plain text. Always write plain English words like "under 3 min", "over 90 ms", "to". Raw '<' renders as Spanish inverted exclamation mark '¡' in LaTeX! ALWAYS escape '%' signs as '\%' (e.g., "25\%" instead of "25%"), otherwise LaTeX will treat it as a comment and truncate the line!
+12. NEVER use \\newcommand for commands that already exist in standard LaTeX (such as \\section, \\subsection, \\item, \\textbf). Leave existing section definitions untouched or use \\renewcommand.
+13. Return ONLY the raw tailored LaTeX string. Do NOT wrap it in markdown code blocks (\`\`\`latex ... \`\`\`). Do NOT include any explanations or prose before or after. Start immediately with the first LaTeX character and end with the last LaTeX character.
+14. NEVER use placeholders, ellipses (...), or comments like "(unchanged)" or "(rest of document remains same)". You MUST output the full, complete, compilable LaTeX document from \\documentclass to \\end{document} without missing or skipping any section.
+15. PRESERVE VERTICAL SPACING & PREAMBLE: DO NOT modify the LaTeX preamble (everything before \\begin{document}). Leave all \\titlespacing, \\documentclass, \\usepackage, and custom command definitions EXACTLY as they were pasted. NEVER remove any \\vspace, \\vspace*, \\hspace, \\medskip, \\smallskip, or blank lines between sections. Ensure proper vertical spacing is maintained exactly as provided in the original input!${skillBankInstruction}`;
 
-    const userMessage = `Job Description:
+    const userMessage = `TARGET JOB DESCRIPTION (FULL RAW TEXT & EXTRACTED REQUIREMENTS):
+${rawJdText ? `FULL RAW JOB DESCRIPTION TEXT:\n${rawJdText}\n\n` : ""}STRUCTURED JD REQUIREMENTS SUMMARY:
 ${JSON.stringify(jdData, null, 2)}
 ${selectedSkills.length > 0 ? `\nVERIFIED CANDIDATE GITHUB SKILL BANK (SMART RELEVANT LOOKUP):\n${JSON.stringify({ skills: selectedSkills, projects: selectedProjects }, null, 2)}` : ""}
 
@@ -460,7 +476,7 @@ Original LaTeX (Length: ${latexLength} characters):
 ${latex}`;
 
     console.log(`[tailor-latex-direct] Initializing parallel streaming response...`);
-    
+
     const targetModels = Array.isArray(modelsToRun) && modelsToRun.length > 0
       ? AI_MODELS.filter(m => modelsToRun.includes(m.id))
       : AI_MODELS;
@@ -502,7 +518,7 @@ ${latex}`;
               if (latexResult.length <= latexLength) {
                 break;
               }
-              
+
               currentSystemPrompt = systemPrompt + `\n\nWARNING: Your previous response was ${latexResult.length} characters long, which EXCEEDS the absolute maximum limit of ${latexLength} characters. You MUST shorten your response by at least ${latexResult.length - latexLength} characters. Be extremely concise.`;
               attempt++;
             }

@@ -1575,6 +1575,7 @@ export default function Home() {
         body: JSON.stringify({
           latex: latexText,
           jdData,
+          rawJdText: jdText,
           skillBank: useSkillBankInTailoring ? skillBank : null,
           modelsToRun: [modelId]
         }),
@@ -1711,6 +1712,7 @@ export default function Home() {
           body: JSON.stringify({
             latex: latexText,
             jdData,
+            rawJdText: jdText,
             skillBank: useSkillBankInTailoring ? skillBank : null,
             modelsToRun: isAutoRun ? undefined : [primaryModel]
           }),
