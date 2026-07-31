@@ -437,19 +437,24 @@ export async function tailorExperienceWithAI(
   jd: JDData,
   modelSelection?: ModelSelection
 ): Promise<{ experience: ExperienceEntry[] }> {
-  const systemPrompt = `You are an expert resume optimizer. Rewrite the candidate's Work Experience bullet points to align with the JD's responsibilities and keywords.
-CRITICAL SAFETY RULES:
-1. NEVER invent any work experience, company names, dates, or locations.
-2. Keep all factual details (companies, degrees, years, roles) exactly the same.
-3. You may rewrite, reorder, and refine phrasing of bullet points to naturally incorporate JD keywords and core responsibilities (e.g., data structures & algorithms, large-scale distributed systems, accessible technologies, Java, Python, Angular, HTML/CSS, code reviews, design reviews, triage & debugging).
-4. Highlight outcomes and metrics if present.
-4b. ARCHITECTURAL REALISM (MUTUALLY EXCLUSIVE TECH): If injecting a JD-required technology, you MUST REPLACE the original conflicting technology. DO NOT list multiple overlapping backend languages or frameworks for the same component (e.g., do not list both Java and Node.js for the same backend API). Ensure the tech stack makes logical architectural sense.
-5. DO NOT reorder the jobs themselves. Keep the exact same array length and order.
-6. You MUST preserve the exact same number of bullet points in the "highlights" array for each work experience entry as the original. Do not merge bullet points, do not split bullet points, and do not add or delete bullet points. Rewrite each original bullet point at its exact corresponding index.
-7. **CRITICAL LENGTH CONSTRAINT**: For each tailored bullet point, keep its character length/word count within +/- 15% of the original bullet point. Do NOT turn a 1-line bullet into a 2-line bullet, and do NOT turn a 2-line bullet into a 1-line bullet.
-8. ABSOLUTE BAN ON LAZY SUFFIXES ("DEMONSTRATING EXPERTISE IN..."): You are STRICTLY BANNED from appending lazy meta-commentary suffixes like ", demonstrating expertise in...", ", showcasing proficiency in...", or ", demonstrating large-scale system design..." at the end of bullet points! You MUST genuinely rewrite the core engineering action verbs and architectural details of the bullet point itself.
+  const mustHave = Array.isArray(jd.mustHaveSkills) ? jd.mustHaveSkills : [];
+  const niceToHave = Array.isArray(jd.niceToHaveSkills) ? jd.niceToHaveSkills : [];
+  const keywords = Array.isArray(jd.keywords) ? jd.keywords : [];
+  const allJdRequirements = Array.from(new Set([...mustHave, ...niceToHave, ...keywords])).filter(Boolean);
 
-Return ONLY a valid JSON object matching this exact structure (keep the same array length and structure, just rewrite the highlights and preserve scope):
+  const systemPrompt = `You are an expert resume optimizer. Rewrite the candidate's Work Experience bullet points to align deeply with the target Job Description.
+CRITICAL MANDATORY INSTRUCTIONS FOR 100% JD COVERAGE & ATS SCORE MAXIMIZATION:
+1. INJECT ALL MISSING JD REQUIREMENTS & OPERATIONAL WORKFLOWS: You MUST weave the target Job Description requirements (including hard tools like Kubernetes, Docker, GraphQL, Terraform/IaC, SSO, Vector DBs, CI/CD, AWS, PostgreSQL and operational terms like code reviews, design reviews, triaging/debugging production issues) directly into the work experience bullet points as realistic engineering actions!
+2. NEVER invent work experience, company names, dates, or locations. Keep all factual metadata identical.
+3. You may rewrite and refine phrasing of bullet points to naturally incorporate JD keywords and core responsibilities (e.g., data structures & algorithms, large-scale distributed systems, accessible technologies, Java, Python, Angular, HTML/CSS, code reviews, design reviews, triage & debugging).
+4. Highlight outcomes, metrics, and scale where possible.
+4b. ARCHITECTURAL REALISM (MUTUALLY EXCLUSIVE TECH): Ensure the tech stack makes logical architectural sense for each component.
+5. DO NOT reorder the jobs. Keep the exact same array length and order.
+6. You MUST preserve the exact same number of bullet points in the "highlights" array for each work experience entry as the original. Do not merge, split, add, or delete bullet points.
+7. **CRITICAL LENGTH CONSTRAINT**: Keep character length/word count of each tailored bullet point within +/- 15% of the original bullet point.
+8. ABSOLUTE BAN ON LAZY SUFFIXES: Do NOT append lazy suffixes like ", demonstrating expertise in...". Truly rewrite the engineering action verbs.
+
+Return ONLY a valid JSON object matching this exact structure:
 {
   "experience": [
     {
@@ -469,7 +474,7 @@ Return ONLY a valid JSON object matching this exact structure (keep the same arr
 
   const response = await callLLM({
     systemPrompt,
-    userMessage: `Job Description:\n${JSON.stringify(jd)}\n\nOriginal Experience:\n${JSON.stringify(experience)}`,
+    userMessage: `TARGET JD REQUIREMENTS CHECKLIST TO INJECT:\n${allJdRequirements.map(s => `- ${s}`).join("\n")}\n\nFull Job Description:\n${JSON.stringify(jd)}\n\nOriginal Experience:\n${JSON.stringify(experience)}`,
     modelSelection,
   });
 
@@ -484,18 +489,23 @@ export async function tailorProjectsWithAI(
   jd: JDData,
   modelSelection?: ModelSelection
 ): Promise<{ projects: ProjectEntry[] }> {
+  const mustHave = Array.isArray(jd.mustHaveSkills) ? jd.mustHaveSkills : [];
+  const niceToHave = Array.isArray(jd.niceToHaveSkills) ? jd.niceToHaveSkills : [];
+  const keywords = Array.isArray(jd.keywords) ? jd.keywords : [];
+  const allJdRequirements = Array.from(new Set([...mustHave, ...niceToHave, ...keywords])).filter(Boolean);
+
   const systemPrompt = `You are an expert resume optimizer. Rewrite the candidate's Projects section to align deeply with the target JD.
 CRITICAL SAFETY & REPLACEMENT RULES:
-1. FORCEFULLY INJECT TOP JD SKILLS WHILE RETAINING MATCHING CORE SKILLS: Across the projects, retain candidate's existing technologies that match or support the JD (e.g., Stripe, AssemblyAI, WebRTC, React, TypeScript). Replace only outdated/irrelevant tools with top JD-required technologies (e.g. Java, Python, Spring Boot, Docker, PostgreSQL, Microservices, Data Structures & Algorithms). At least 7-8 core JD skills must be explicitly represented across the Projects section.
+1. FORCEFULLY INJECT TOP JD SKILLS & ELIMINATE MISSING KEYWORD GAPS: Across the projects, inject 100% of missing JD technologies (e.g. GraphQL, Kubernetes, Terraform, SSO, Vector Databases, Microservices, CI/CD, AWS) into project "tech" arrays and bullet points while retaining candidate's core matching skills (e.g. Stripe, AssemblyAI, WebRTC, React, TypeScript).
 2. Each project's "tech" array must include candidate's core technologies + top JD skills (5-7 total per project).
-2b. ARCHITECTURAL REALISM (DYNAMIC DEDUPLICATION): If injecting a JD-required language/framework (e.g. Java), ensure the tech stack makes logical architectural sense. Do NOT list mutually exclusive overlapping backend languages for the exact same component.
+2b. ARCHITECTURAL REALISM: Ensure the tech stack makes logical architectural sense.
 2c. STACK LIMIT: Limit the "tech" array for each project to a maximum of 5 to 7 core technologies.
 3. DO NOT reorder the projects. Keep the exact same array length and order.
 4. You MUST preserve the exact same number of bullet points in the "highlights" array for each project entry as the original. Do not merge, split, add, or delete bullet points.
-5. **CRITICAL LENGTH CONSTRAINT**: Keep the character length/word count of each tailored bullet point and project description within +/- 15% of the original to maintain single-page budget.
+5. **CRITICAL LENGTH CONSTRAINT**: Keep character length/word count of each tailored bullet point and project description within +/- 15% of original.
 6. ABSOLUTE BAN ON LAZY SUFFIXES: Do NOT append lazy suffixes like ", demonstrating expertise in...". Truly rewrite the engineering details.
 
-Return ONLY a valid JSON object matching this exact structure (keep the same array length and structure):
+Return ONLY a valid JSON object matching this exact structure:
 {
   "projects": [
     {
@@ -512,7 +522,7 @@ Return ONLY a valid JSON object matching this exact structure (keep the same arr
 
   const response = await callLLM({
     systemPrompt,
-    userMessage: `Job Description:\n${JSON.stringify(jd)}\n\nOriginal Projects:\n${JSON.stringify(projects)}`,
+    userMessage: `TARGET JD REQUIREMENTS CHECKLIST TO INJECT:\n${allJdRequirements.map(s => `- ${s}`).join("\n")}\n\nFull Job Description:\n${JSON.stringify(jd)}\n\nOriginal Projects:\n${JSON.stringify(projects)}`,
     modelSelection,
   });
 
@@ -527,16 +537,21 @@ export async function tailorSkillsWithAI(
   jd: JDData,
   modelSelection?: ModelSelection
 ): Promise<{ skills: SkillsData }> {
+  const mustHave = Array.isArray(jd.mustHaveSkills) ? jd.mustHaveSkills : [];
+  const niceToHave = Array.isArray(jd.niceToHaveSkills) ? jd.niceToHaveSkills : [];
+  const keywords = Array.isArray(jd.keywords) ? jd.keywords : [];
+  const allJdRequirements = Array.from(new Set([...mustHave, ...niceToHave, ...keywords])).filter(Boolean);
+
   const systemPrompt = `You are an expert resume optimizer. Reorder and refine the candidate's Skills section to perfectly match the target Job Description.
 CRITICAL MANDATORY RULES:
-1. PRESERVE ALL ORIGINAL SKILL CATEGORIES: You MUST preserve ALL skill categories present in the candidate's input resume (e.g., "Payments & Billing", "AI & LLM", "Languages", "Frontend", "Backend", "Databases", "DevOps & Tools", "Auth & Security", etc.). Do NOT merge, rename, drop, or delete any category name provided in the input resume.
-2. JD SKILLS FIRST: Within each skill category, place JD-matching skills at the VERY BEGINNING (first items in the array).
-3. RETAIN CANDIDATE'S CORE SKILLS & AUGMENT WITH JD SKILLS: Retain the candidate's valid core skills in each category. Replace less relevant or outdated skills with top JD-required technologies. DO NOT wipe out or leave any category empty.
-4. LEARNING/WORKING KNOWLEDGE: If JD requires specific languages/tools that fit the candidate's background, list them cleanly as "Golang (Learning)".
+1. MANDATORY 100% JD SKILLS INJECTION: Every single technical skill, framework, database, tool, container technology, and security concept listed in the target Job Description (e.g. GraphQL, Kubernetes, Terraform, SSO, Vector Databases, REST APIs, Microservices, Docker, PostgreSQL, AWS) MUST be added to its respective category line in the returned skills object!
+2. PRESERVE ALL ORIGINAL SKILL CATEGORIES: You MUST preserve ALL skill categories present in the candidate's input resume (e.g., "Payments & Billing", "AI & LLM", "Languages", "Frontend", "Backend", "Databases", "DevOps & Tools", "Auth & Security", etc.). Do NOT merge, rename, drop, or delete any category name provided in the input resume.
+3. JD SKILLS FIRST: Within each skill category, place JD-matching skills at the VERY BEGINNING (first items in the array).
+4. RETAIN CANDIDATE'S CORE SKILLS & AUGMENT WITH JD SKILLS: Retain the candidate's valid core skills in each category. Replace less relevant or outdated skills with top JD-required technologies. DO NOT wipe out or leave any category empty.
 5. DEDUPLICATION RULE: A skill MUST ONLY appear in ONE category. Do not list the same skill across multiple categories. Pick the single most relevant category for it.
 6. **CRITICAL LENGTH CONSTRAINT**: Limit each category to a maximum of 5 to 7 highly relevant skills to keep the resume clean and breathable.
 
-Return ONLY a valid JSON object matching this exact structure (keys MUST match the input category names exactly):
+Return ONLY a valid JSON object matching this exact structure (keys MUST match input category names exactly):
 {
   "skills": {
     "<Input Category Name>": ["JD-matching skills first, followed by candidate's core skills", "max 7 total"]
@@ -546,7 +561,7 @@ Return ONLY a valid JSON object matching this exact structure (keys MUST match t
 
   const response = await callLLM({
     systemPrompt,
-    userMessage: `Job Description:\n${JSON.stringify(jd)}\n\nOriginal Skills:\n${JSON.stringify(skills)}`,
+    userMessage: `TARGET JD REQUIREMENTS CHECKLIST TO INJECT:\n${allJdRequirements.map(s => `- ${s}`).join("\n")}\n\nFull Job Description:\n${JSON.stringify(jd)}\n\nOriginal Skills:\n${JSON.stringify(skills)}`,
     modelSelection,
   });
 
