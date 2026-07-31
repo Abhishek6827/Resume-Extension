@@ -486,9 +486,9 @@ export async function tailorProjectsWithAI(
 ): Promise<{ projects: ProjectEntry[] }> {
   const systemPrompt = `You are an expert resume optimizer. Rewrite the candidate's Projects section to align deeply with the target JD.
 CRITICAL SAFETY & REPLACEMENT RULES:
-1. FORCEFULLY INJECT TOP JD SKILLS: Across the projects, replace older/irrelevant skills and tech stack descriptions with top JD-required technologies (e.g. Java, Python, Angular, JavaScript, TypeScript, HTML, CSS, Data Structures & Algorithms, Large-Scale Distributed Systems, Accessible Technologies). At least 7-8 core JD skills must be explicitly represented across the Projects section.
-2. Each project must highlight 2-3 distinct JD skills in its tech list and bullet points.
-2b. ARCHITECTURAL REALISM (DYNAMIC DEDUPLICATION): If injecting a JD-required language/framework (e.g. Java), you MUST remove the original conflicting technology (e.g. Node.js or C++). DO NOT list mutually exclusive overlapping backend languages or frameworks for the same component. The tech stack must make logical architectural sense.
+1. FORCEFULLY INJECT TOP JD SKILLS WHILE RETAINING MATCHING CORE SKILLS: Across the projects, retain candidate's existing technologies that match or support the JD (e.g., Stripe, AssemblyAI, WebRTC, React, TypeScript). Replace only outdated/irrelevant tools with top JD-required technologies (e.g. Java, Python, Spring Boot, Docker, PostgreSQL, Microservices, Data Structures & Algorithms). At least 7-8 core JD skills must be explicitly represented across the Projects section.
+2. Each project's "tech" array must include candidate's core technologies + top JD skills (5-7 total per project).
+2b. ARCHITECTURAL REALISM (DYNAMIC DEDUPLICATION): If injecting a JD-required language/framework (e.g. Java), ensure the tech stack makes logical architectural sense. Do NOT list mutually exclusive overlapping backend languages for the exact same component.
 2c. STACK LIMIT: Limit the "tech" array for each project to a maximum of 5 to 7 core technologies.
 3. DO NOT reorder the projects. Keep the exact same array length and order.
 4. You MUST preserve the exact same number of bullet points in the "highlights" array for each project entry as the original. Do not merge, split, add, or delete bullet points.
@@ -529,20 +529,17 @@ export async function tailorSkillsWithAI(
 ): Promise<{ skills: SkillsData }> {
   const systemPrompt = `You are an expert resume optimizer. Reorder and refine the candidate's Skills section to perfectly match the target Job Description.
 CRITICAL MANDATORY RULES:
-1. JD SKILLS FIRST & AT THE TOP: Within each skill category, place JD-matching skills at the VERY BEGINNING (first items in the array). Do NOT append them at the end.
-2. CATEGORY REORDERING: Order the skill categories so that categories containing core JD requirements appear at the VERY TOP of the Skills section.
-3. LEARNING/WORKING KNOWLEDGE: If JD requires specific languages that are in the candidate's background/scope, list them cleanly as "Golang (Learning)".
-4. STRICT CATEGORY MERGE: You MUST output exactly 4 categories. You MUST merge all original skills and new JD skills into exactly these 4 standard buckets: "Languages", "Frontend", "Backend & Databases", "DevOps & Tools". Do not output any other category names.
-5. DEDUPLICATION RULE: A skill MUST ONLY appear in ONE category. Do not list the same skill (e.g., Python, Java) across multiple categories. Pick the single most relevant category for it.
-6. **CRITICAL LENGTH CONSTRAINT**: You MUST strictly limit each category to a maximum of 5 to 7 highly relevant skills. You are explicitly authorized to aggressively DELETE older, generic, or non-JD-matching skills to keep the resume clean and breathable.
+1. PRESERVE ALL ORIGINAL SKILL CATEGORIES: You MUST preserve ALL skill categories present in the candidate's input resume (e.g., "Payments & Billing", "AI & LLM", "Languages", "Frontend", "Backend", "Databases", "DevOps & Tools", "Auth & Security", etc.). Do NOT merge, rename, drop, or delete any category name provided in the input resume.
+2. JD SKILLS FIRST: Within each skill category, place JD-matching skills at the VERY BEGINNING (first items in the array).
+3. RETAIN CANDIDATE'S CORE SKILLS & AUGMENT WITH JD SKILLS: Retain the candidate's valid core skills in each category. Replace less relevant or outdated skills with top JD-required technologies. DO NOT wipe out or leave any category empty.
+4. LEARNING/WORKING KNOWLEDGE: If JD requires specific languages/tools that fit the candidate's background, list them cleanly as "Golang (Learning)".
+5. DEDUPLICATION RULE: A skill MUST ONLY appear in ONE category. Do not list the same skill across multiple categories. Pick the single most relevant category for it.
+6. **CRITICAL LENGTH CONSTRAINT**: Limit each category to a maximum of 5 to 7 highly relevant skills to keep the resume clean and breathable.
 
-Return ONLY a valid JSON object matching this EXACT strict structure:
+Return ONLY a valid JSON object matching this exact structure (keys MUST match the input category names exactly):
 {
   "skills": {
-    "Languages": ["JD-matching skills first, followed by others", "max 7 total"],
-    "Frontend": ["JD-matching skills first, followed by others", "max 7 total"],
-    "Backend & Databases": ["JD-matching skills first, followed by others", "max 7 total"],
-    "DevOps & Tools": ["JD-matching skills first, followed by others", "max 7 total"]
+    "<Input Category Name>": ["JD-matching skills first, followed by candidate's core skills", "max 7 total"]
   }
 }
 `;
@@ -616,24 +613,37 @@ export async function tailorResume(
         return {
           ...origProj,
           description: matchedProj?.description || origProj.description,
+          tech: (matchedProj?.tech && Array.isArray(matchedProj.tech) && matchedProj.tech.length > 0)
+            ? matchedProj.tech
+            : origProj.tech,
           highlights,
         };
       }),
       skills: (() => {
         const finalSkills: Record<string, string[]> = {};
+        const rawSkills = (tailoredSkillsObj.skills || {}) as Record<string, string[]>;
+        
+        // 1. First, process all original categories from candidate's resume
         Object.entries(resume.skills || {}).forEach(([category, originalList]) => {
-          const rawSkills = tailoredSkillsObj.skills as any;
-          const tailoredList = rawSkills?.[category] || 
-                               rawSkills?.[category.toLowerCase()] ||
-                               rawSkills?.[category.replace(/&/g, "and")] ||
-                               rawSkills?.[category.replace(/and/g, "&")];
+          const tailoredList = rawSkills[category] || 
+                               rawSkills[category.toLowerCase()] ||
+                               rawSkills[category.replace(/&/g, "and")] ||
+                               rawSkills[category.replace(/and/g, "&")];
           
-          if (tailoredList && Array.isArray(tailoredList)) {
+          if (tailoredList && Array.isArray(tailoredList) && tailoredList.length > 0) {
             finalSkills[category] = tailoredList;
           } else {
             finalSkills[category] = originalList || [];
           }
         });
+
+        // 2. Include any additional new categories returned by LLM that were not in original
+        Object.entries(rawSkills).forEach(([category, list]) => {
+          if (!finalSkills[category] && Array.isArray(list) && list.length > 0) {
+            finalSkills[category] = list;
+          }
+        });
+
         return finalSkills as SkillsData;
       })(),
     };

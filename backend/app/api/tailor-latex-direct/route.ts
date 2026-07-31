@@ -435,15 +435,15 @@ CRITICAL INSTRUCTIONS:
    - GOOD (GENUINE ARCHITECTURAL REWRITING - REQUIRED): "Engineered high-throughput webhook event pipelines using RabbitMQ and custom hash-map caching data structures, optimizing algorithmic complexity to cut failure detection latency from 20 min to 3 min."
 5. MANDATORY PROJECT TECH STACK & BULLET REWRITING (CRITICAL):
    - You MUST update BOTH the Project Tech Stack subtitles/headers (the tools listed next to or under each project name, e.g. in \project{Name}{Sub}{Tech Stack} or \textit{Tools}) AND the project bullet points!
-   - UPDATE TECH STACK SUBTITLES: Update the comma-separated tech stack list next to each Project title to prominently feature the primary JD-required programming languages and tools (e.g. if the JD asks for Python, C++, Docker, AWS, or Java, ensure those technologies replace or augment the old tech stack in the project headers).
+   - UPDATE TECH STACK SUBTITLES: Update the comma-separated tech stack list next to each Project title to prominently feature the primary JD-required programming languages and tools, WHILE RETAINING candidate's core technologies that support the project (e.g. retain Java, React, TypeScript, Stripe, WebRTC, AssemblyAI). Combine candidate's core stack + top JD skills (5-7 total per project header).
    - REWRITE BULLET POINTS: Do NOT leave the Projects section unmodified! You MUST rewrite the project bullet points to incorporate the JD's required technologies and architectural workflows.
 6. STRICT PURITY OF TECHNICAL SKILLS SECTION (TOOLS ONLY, NO SOFT SKILLS):
    - The comma-separated "Technical Skills" section is reserved EXCLUSIVELY for specific programming languages, frameworks, libraries, databases, cloud platforms, and developer tools (e.g. Java, Python, TypeScript, React, Spring Boot, Docker, PostgreSQL, AWS, Git, gRPC, Redis, Kafka).
    - NEVER put soft engineering concepts, responsibilities, or domain phrases (such as "Code Review", "Debugging", "Data Storage", "System Design", "UI Design", "Mobile Development", "Infrastructure", "Security", "Distributed Computing", "Information Retrieval") into the Technical Skills lists! Those concepts belong exclusively inside Work Experience and Project bullet points as actions and outcomes.
-6b. PRESERVE ORIGINAL SKILL CATEGORIES:
-   - You MUST preserve ALL the original skill categories exactly as they were provided in the input LaTeX (e.g., if there are 8 categories, keep all 8). 
-   - DO NOT condense, rename, or merge them into fewer buckets (like 4 categories). 
-   - Simply weave the new JD-required skills into the most appropriate existing categories without altering the category names or their total count.
+6b. PRESERVE ALL ORIGINAL SKILL CATEGORIES & RETAIN CORE SKILLS:
+   - You MUST preserve ALL the original skill categories exactly as they were provided in the input LaTeX (e.g., if there are 8 categories like Payments & Billing, AI & LLM, Languages, Frontend, Backend, Databases, DevOps & Tools, Auth & Security, keep ALL 8 categories). 
+   - DO NOT condense, rename, merge, drop, or delete any category line from \section*{Technical Skills}!
+   - Simply weave the new JD-required skills into the most appropriate existing categories, placing JD-matching skills FIRST in each line, while retaining candidate's core valid skills.
 6c. DEDUPLICATION RULE:
    - A skill MUST ONLY appear in ONE category. Do not list the same skill (e.g., Python, Java) across multiple categories. Pick the single most relevant category for it.
 6d. REORDER SKILLS FOR IMPACT:

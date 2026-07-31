@@ -447,8 +447,10 @@ export default function SidePanel() {
           for (const key of allSkillKeys) {
             const origVal = ((resume.skills as Record<string, string[]>)[key] || []).join(", ");
             const tailVal = ((skillsRes.skills as Record<string, string[]>)[key] || []).join(", ");
-            const ch = diffHelper("skills", `skills.${key}`, `Skills — ${key}`, origVal, tailVal);
-            if (ch) newCh.push(ch);
+            if (tailVal && tailVal.trim().length > 0) {
+              const ch = diffHelper("skills", `skills.${key}`, `Skills — ${key}`, origVal, tailVal);
+              if (ch) newCh.push(ch);
+            }
           }
         }
         appendChanges(newCh);
