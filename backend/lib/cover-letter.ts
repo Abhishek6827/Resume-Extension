@@ -11,7 +11,8 @@ Your task is to write a highly professional, ATS-friendly cover letter for a can
 The cover letter MUST NOT use any placeholders like [Date], [Hiring Manager], or [Company Name] except if absolutely necessary and impossible to infer from the provided JD. 
 Try to infer the Company Name and Job Title from the Job Description.
 Format the cover letter in plain text with clear paragraphs. Do NOT wrap it in markdown code blocks.
-The cover letter should be concise (around 3-4 paragraphs) and highlight the candidate's most relevant experience based on the JD.`;
+The cover letter should be concise (around 3-4 paragraphs) and highlight the candidate's most relevant experience based on the JD.
+In the closing paragraph, formally convey availability and enthusiasm for a 1-on-1 meeting/interview, or completing a technical assessment/assignment to demonstrate capabilities.`;
 
   const userMessage = `
 --- JOB DESCRIPTION ---
