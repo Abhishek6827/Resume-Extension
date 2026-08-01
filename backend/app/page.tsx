@@ -1270,6 +1270,8 @@ export default function Home() {
   const [fileKey, setFileKey] = useState(0);
   const [generatedLatexLength, setGeneratedLatexLength] = useState<number | null>(null);
   
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const [primaryModel, setPrimaryModel] = useState(AI_MODELS[0].id);
 
   // Multi-model states
@@ -1408,7 +1410,12 @@ export default function Home() {
     }
   };
 
-  const handleReset = () => {
+  const handleReset = (clearInputs: boolean = true) => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+
     setStatus("idle");
     setErrorMessage("");
     setPdfUrl(null);
@@ -1416,6 +1423,20 @@ export default function Home() {
     setGeneratedLatexLength(null);
     setTailoredResumes([]);
     setSelectedResultIndex(0);
+    setParallelProgress({});
+    setParallelPhases({});
+    setRetryingModels(new Set());
+
+    setCoverLetter("");
+    setClError("");
+
+    if (clearInputs) {
+      setJdText("");
+      setFile(null);
+      setFileKey((prev) => prev + 1);
+      setIsEditingJd(false);
+      localStorage.removeItem("jdText");
+    }
 
     // Clear persisted result/status data in localStorage
     localStorage.removeItem("tailoredResumes");
@@ -1423,6 +1444,11 @@ export default function Home() {
     localStorage.removeItem("selectedResultIndex");
     localStorage.removeItem("downloadName");
     localStorage.removeItem("generatedLatexLength");
+  };
+
+  const handleJdChange = (val: string) => {
+    setJdText(val);
+    handleReset(false);
   };
 
   const handleGenerateCoverLetter = async () => {
@@ -1653,6 +1679,12 @@ export default function Home() {
   };
 
   const handleGenerate = async () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
     if (activeTab === "latex") {
       if (!latexText.trim() || !jdText.trim()) {
         setErrorMessage("Please provide both your LaTeX code and a job description.");
@@ -1866,6 +1898,7 @@ export default function Home() {
       setStatus("success");
 
     } catch (err: any) {
+      if (err.name === "AbortError") return;
       console.error(err);
       setErrorMessage(err.message || "An unexpected error occurred");
       setStatus("error");
@@ -1924,14 +1957,14 @@ export default function Home() {
             <div className="flex gap-4 border-b border-white/10 pb-2">
               <button
                 type="button"
-                onClick={() => { setActiveTab("file"); handleReset(); }}
+                onClick={() => { setActiveTab("file"); handleReset(false); }}
                 className={`py-2 px-4 font-semibold text-sm border-b-2 transition-all ${activeTab === "file" ? "border-indigo-500 text-indigo-400" : "border-transparent text-slate-400 hover:text-slate-300"}`}
               >
                 Tailor Resume (File + JD)
               </button>
               <button
                 type="button"
-                onClick={() => { setActiveTab("latex"); handleReset(); }}
+                onClick={() => { setActiveTab("latex"); handleReset(false); }}
                 className={`py-2 px-4 font-semibold text-sm border-b-2 transition-all ${activeTab === "latex" ? "border-indigo-500 text-indigo-400" : "border-transparent text-slate-400 hover:text-slate-300"}`}
               >
                 Compile LaTeX Directly
@@ -2056,7 +2089,7 @@ export default function Home() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => setJdText("")}
+                          onClick={() => handleJdChange("")}
                           className="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 transition-colors"
                         >
                           Clear
@@ -2091,7 +2124,7 @@ export default function Home() {
                     </div>
                     <textarea 
                       value={jdText}
-                      onChange={(e) => setJdText(e.target.value)}
+                      onChange={(e) => handleJdChange(e.target.value)}
                       placeholder="Paste the target job description here..."
                       rows={16}
                       className="w-full flex-1 bg-white/5 border border-white/10 rounded-xl p-4 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"
@@ -2407,9 +2440,8 @@ export default function Home() {
                       Regenerate
                     </button>
                     <button 
-                      onClick={handleReset}
-                      disabled={["parsing", "tailoring", "compiling"].includes(status)}
-                      className="w-full sm:w-auto px-8 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-all text-center disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => handleReset(true)}
+                      className="w-full sm:w-auto px-8 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-all text-center cursor-pointer"
                     >
                       Clear All
                     </button>
@@ -2447,8 +2479,8 @@ export default function Home() {
                       Regenerate
                     </button>
                     <button 
-                      onClick={handleReset}
-                      className="w-full sm:w-auto px-8 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-all text-center"
+                      onClick={() => handleReset(true)}
+                      className="w-full sm:w-auto px-8 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-all text-center cursor-pointer"
                     >
                       Clear All
                     </button>
@@ -2466,13 +2498,12 @@ export default function Home() {
                   >
                     {["parsing", "tailoring", "compiling"].includes(status) ? "Processing..." : "Generate Tailored PDF"}
                   </button>
-                  {(file || jdText || latexText) && (
+                  {(file || jdText || latexText || ["parsing", "tailoring", "compiling"].includes(status)) && (
                     <button 
-                      onClick={handleReset}
-                      disabled={["parsing", "tailoring", "compiling"].includes(status)}
-                      className="w-full sm:w-auto px-8 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl transition-all text-center disabled:opacity-50 disabled:cursor-not-allowed"
+                      onClick={() => handleReset(true)}
+                      className="w-full sm:w-auto px-8 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl transition-all text-center cursor-pointer"
                     >
-                      Reset
+                      Clear All
                     </button>
                   )}
                 </div>
