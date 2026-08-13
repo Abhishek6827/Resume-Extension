@@ -146,8 +146,7 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
     .trim();
 
   try {
-    // stream: false avoids SSE chunk stalls on NIM endpoints
-    const completion = await nvidia.chat.completions.create({
+    const requestOptions: any = {
       model: modelToUse,
       messages: [
         { role: "system", content: options.systemPrompt },
@@ -156,7 +155,20 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
       temperature: options.temperature ?? 0.3,
       max_tokens: options.maxTokens ?? 8000,
       stream: false,
-    });
+    };
+
+    if (modelToUse === "nvidia/nemotron-3.5-lightning-30b-a3b") {
+      requestOptions.temperature = 1;
+      requestOptions.top_p = 0.95;
+      requestOptions.max_tokens = 16384;
+      requestOptions.extra_body = {
+        chat_template_kwargs: { enable_thinking: true },
+        reasoning_budget: 16384,
+      };
+    }
+
+    // stream: false avoids SSE chunk stalls on NIM endpoints
+    const completion = await nvidia.chat.completions.create(requestOptions);
 
     const content = completion.choices[0]?.message?.content || "";
     if (!content) throw new Error("Empty NVIDIA response");

@@ -8,6 +8,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 const AI_MODELS = [
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)", shortName: "NVIDIA Nemotron", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
+  { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron Lightning 30B (Thinking)", shortName: "NVIDIA Nemotron Lightning", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
   { id: "openrouter:openrouter/free", name: "Auto Free Model (OpenRouter)", shortName: "OpenRouter Auto", icon: "https://www.google.com/s2/favicons?domain=openrouter.ai&sz=128" },
   { id: "nvidia:z-ai/glm-5.2", name: "GLM-5.2 (Balanced)", shortName: "NVIDIA GLM-5.2", icon: "https://www.google.com/s2/favicons?domain=zhipuai.cn&sz=128" },
   { id: "cerebras:gpt-oss-120b", name: "Cerebras GPT-OSS 120B (Fast)", shortName: "Cerebras GPT-OSS", icon: "https://www.google.com/s2/favicons?domain=cerebras.net&sz=128" },
@@ -743,6 +744,7 @@ const ParallelPipelineVisualizer = ({
             "openrouter:openrouter/free": 0.25,
             "nvidia:z-ai/glm-5.2": 0.15,
             "nvidia:nvidia/nemotron-3-ultra-550b-a55b": 0.08,
+            "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b": 0.06,
           };
           const increment = incrementRates[modelId] || 0.15;
 

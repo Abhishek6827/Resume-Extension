@@ -9,6 +9,7 @@ export const maxDuration = 300;
 
 const AI_MODELS = [
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)" },
+  { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron Lightning 30B (Thinking)" },
   { id: "openrouter:openrouter/free", name: "Auto Free Model (OpenRouter)" },
   { id: "nvidia:z-ai/glm-5.2", name: "GLM-5.2 (Balanced)" },
   { id: "cerebras:gpt-oss-120b", name: "Cerebras GPT-OSS 120B (Fast)" },
