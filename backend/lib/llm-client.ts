@@ -161,10 +161,10 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
       requestOptions.temperature = 1;
       requestOptions.top_p = 0.95;
       requestOptions.max_tokens = 16384;
-      requestOptions.extra_body = {
-        chat_template_kwargs: { enable_thinking: true },
-        reasoning_budget: 16384,
-      };
+      // In the JS SDK, we can pass these directly into the request options object
+      // rather than using extra_body (which is a Python SDK convention)
+      requestOptions.chat_template_kwargs = { enable_thinking: true };
+      requestOptions.reasoning_budget = 16384;
     }
 
     // stream: false avoids SSE chunk stalls on NIM endpoints
