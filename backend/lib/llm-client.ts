@@ -1,8 +1,9 @@
-// ─── Multi-Provider LLM Client ─────────────────────────────
-// Provider chain: NVIDIA (quality) → OpenRouter (free/fallback) → Groq (fast)
-// Same proven pattern as Chintu's answer/route.ts
+// ─── NVIDIA NIM LLM Client ─────────────────────────────
+// Supported models:
+// - z-ai/glm-5.2 (Balanced / Top ATS Accuracy)
+// - nvidia/nemotron-3.5-lightning-30b-a3b (Fast / Thinking)
+// - nvidia/nemotron-3-ultra-550b-a55b (Quality / 550B)
 
-import Groq from "groq-sdk";
 import OpenAI from "openai";
 import type { LLMResponse } from "./types";
 
@@ -16,10 +17,17 @@ interface LLMCallOptions {
 }
 
 /**
- * Strip <think>...</think> tags from model responses (some models include reasoning)
+ * Strip <think>...</think> tags and raw thinking process preambles from model responses
  */
 function stripThinkTags(text: string): string {
-  return text.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+  if (!text) return "";
+  let cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+  // If model outputs raw thinking process in plain text before LaTeX
+  if (cleaned.includes("\\documentclass")) {
+    const docIdx = cleaned.indexOf("\\documentclass");
+    cleaned = cleaned.substring(docIdx);
+  }
+  return cleaned.trim();
 }
 
 /**
@@ -29,11 +37,9 @@ export function extractJSON(text: string): string {
   const cleaned = stripThinkTags(text);
   const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
   if (jsonMatch) {
-    // Repair common trailing commas issue before returning
     return jsonMatch[0].replace(/,\s*([\}\]])/g, "$1");
   }
   
-  // Auto-repair truncated JSON (e.g. unterminated string or missing closing braces)
   const firstBrace = cleaned.indexOf("{");
   if (firstBrace !== -1) {
     let str = cleaned.substring(firstBrace);
@@ -52,99 +58,22 @@ export function extractJSON(text: string): string {
   throw new Error("No JSON object found in LLM response");
 }
 
-// ponytail: isVersatileModel removed — only model that matched was deprecated llama-3.3-70b-versatile
-
 /**
- * Try Groq provider (primary — fast inference)
- */
-async function tryGroq(options: LLMCallOptions, forceModel?: string): Promise<LLMResponse> {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) throw new Error("GROQ_API_KEY not set");
-
-  // Compress whitespace to save precious tokens and bypass strict limits
-  const cleanedUserMessage = options.userMessage
-    .replace(/\r\n/g, "\n")
-    .replace(/\n+/g, "\n")
-    .replace(/[ \t]+/g, " ")
-    .trim();
-
-  const groq = new Groq({ apiKey, maxRetries: 3, timeout: 60000 });
-  const modelToUse = forceModel || "qwen/qwen3.6-27b";
-  
-  try {
-    const requestPayload: any = {
-      model: modelToUse,
-      messages: [
-        { role: "system", content: options.systemPrompt },
-        { role: "user", content: cleanedUserMessage },
-      ],
-      temperature: options.temperature ?? 0.3,
-      max_tokens: options.maxTokens ?? 3500,
-      ...(options.jsonMode !== false && { response_format: { type: "json_object" } }),
-    };
-
-    if (modelToUse === "openai/gpt-oss-120b") {
-      requestPayload.reasoning_format = "hidden";
-    }
-    if (modelToUse.includes("qwen")) {
-      requestPayload.reasoning_effort = "none";
-    }
-
-    const response = await groq.chat.completions.create(requestPayload);
-
-    const msg = response.choices[0]?.message as any;
-    let content = msg?.content || msg?.reasoning || msg?.reasoning_content || "";
-
-    if (content.includes("\\documentclass")) {
-      const docIdx = content.indexOf("\\documentclass");
-      content = content.substring(docIdx);
-    } else if (content.includes("<think>")) {
-      content = content.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
-    }
-
-    if (!content) throw new Error("Empty Groq response");
-
-    return { content, provider: "groq", model: modelToUse };
-  } catch (err: any) {
-    const isRateOrSizeLimit = 
-      err.status === 413 || 
-      err.status === 429 || 
-      (err.message && (
-        err.message.includes("limit") || 
-        err.message.includes("large") || 
-        err.message.includes("TPM") ||
-        err.message.includes("rate_limit_exceeded") ||
-        err.message.includes("json_validate_failed")
-      ));
-
-    // Fallback to OpenRouter if Groq token/rate limit or json validation fails
-    if (isRateOrSizeLimit) {
-      console.warn(`[LLM] Groq (${modelToUse}) issue (${err.message}). Falling back to OpenRouter...`);
-      return await tryOpenRouter(options, "nvidia/nemotron-3-ultra-550b-a55b:free");
-    }
-
-    throw err;
-  }
-}
-
-/**
- * Try NVIDIA provider (primary — high quality inference)
+ * Call NVIDIA NIM API provider
  */
 async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<LLMResponse> {
   const apiKey = process.env.NVIDIA_API_KEY;
   if (!apiKey) throw new Error("NVIDIA_API_KEY not set");
 
-  const modelToUse = forceModel || "nvidia/nemotron-3-ultra-550b-a55b";
-  const isGlm = modelToUse.includes("glm");
+  const modelToUse = forceModel || "z-ai/glm-5.2";
 
   const nvidia = new OpenAI({
     baseURL: "https://integrate.api.nvidia.com/v1",
     apiKey,
-    timeout: 280000, // 280s to fail gracefully before Next.js 300s hard limit
-    maxRetries: 0, // No retries because we only have 300s total execution time
+    timeout: 180000,
+    maxRetries: 2,
   });
 
-  // Compress whitespace to save tokens
   const cleanedUserMessage = options.userMessage
     .replace(/\r\n/g, "\n")
     .replace(/\n+/g, "\n")
@@ -159,110 +88,40 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
         { role: "user", content: cleanedUserMessage },
       ],
       temperature: options.temperature ?? 0.3,
-      max_tokens: options.maxTokens ?? 8000,
-      stream: false,
+      max_tokens: options.maxTokens ?? 16384,
+      stream: true, // Always use stream: true for NVIDIA NIM endpoints to prevent truncation and 429 concurrency drops
     };
 
-    if (modelToUse === "nvidia/nemotron-3.5-lightning-30b-a3b") {
+    // Specific model configurations as specified in NVIDIA specs
+    if (modelToUse === "nvidia/nemotron-3.5-lightning-30b-a3b" || modelToUse.includes("lightning")) {
+      requestOptions.temperature = 0.2;
+      requestOptions.max_tokens = 16384;
+      requestOptions.chat_template_kwargs = { enable_thinking: false };
+    } else if (modelToUse === "z-ai/glm-5.2" || modelToUse.includes("glm")) {
       requestOptions.temperature = 1;
+      requestOptions.top_p = 1;
+      requestOptions.max_tokens = 16384;
+      requestOptions.seed = 42;
+    } else if (modelToUse === "nvidia/nemotron-3-ultra-550b-a55b" || modelToUse.includes("550b")) {
+      requestOptions.temperature = 0.2;
       requestOptions.top_p = 0.95;
       requestOptions.max_tokens = 16384;
-      // In the JS SDK, we can pass these directly into the request options object
-      // rather than using extra_body (which is a Python SDK convention)
-      requestOptions.chat_template_kwargs = { enable_thinking: true };
-      requestOptions.reasoning_budget = 16384;
     }
 
-    // stream: false avoids SSE chunk stalls on NIM endpoints
-    const completion = await nvidia.chat.completions.create(requestOptions);
-
-    const content = completion.choices[0]?.message?.content || "";
-    if (!content) throw new Error("Empty NVIDIA response");
-
+    const stream = await nvidia.chat.completions.create(requestOptions) as any;
+    let content = "";
+    for await (const chunk of stream) {
+      const delta = chunk.choices?.[0]?.delta;
+      if (delta?.content) {
+        content += delta.content;
+      }
+    }
+    content = stripThinkTags(content);
+    if (!content) throw new Error(`Empty streamed response from NVIDIA (${modelToUse})`);
     return { content, provider: "nvidia", model: modelToUse };
   } catch (err: any) {
     throw err;
   }
-}
-
-/**
- * Try OpenRouter provider (fallback 2 — wide model access)
- */
-async function tryOpenRouter(options: LLMCallOptions, forceModel?: string): Promise<LLMResponse> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error("OPENROUTER_API_KEY not set");
-
-  const openrouter = new OpenAI({
-    baseURL: "https://openrouter.ai/api/v1",
-    apiKey,
-    timeout: 90000, // 90s timeout for OpenRouter queues
-    maxRetries: 3,
-  });
-
-  const modelToUse = forceModel || "openrouter/free";
-
-  try {
-    const completion = await openrouter.chat.completions.create({
-      model: modelToUse,
-      messages: [
-        { role: "system", content: options.systemPrompt },
-        { role: "user", content: options.userMessage },
-      ],
-      temperature: options.temperature ?? 0.3,
-      max_tokens: options.maxTokens ?? 8000,
-      stream: false,
-    });
-
-    const msg = completion.choices[0]?.message;
-    const response = msg?.content || (msg as any)?.reasoning || (msg as any)?.reasoning_content || "";
-
-    if (!response) throw new Error("Empty OpenRouter response");
-
-    return { content: response, provider: "openrouter", model: modelToUse };
-  } catch (err: any) {
-    console.warn(`[LLM] OpenRouter model (${modelToUse}) failed or rate limited (${err.message}). Falling back to Groq...`);
-    return await tryGroq(options, "qwen/qwen3.6-27b");
-  }
-}
-
-/**
- * Try Cerebras provider (primary — incredibly fast inference)
- */
-async function tryCerebras(options: LLMCallOptions, forceModel?: string): Promise<LLMResponse> {
-  const apiKey = process.env.CEREBRAS_API_KEY;
-  if (!apiKey) throw new Error("CEREBRAS_API_KEY not set");
-
-  const cerebras = new OpenAI({
-    baseURL: "https://api.cerebras.ai/v1",
-    apiKey,
-    timeout: 45000,
-    maxRetries: 3,
-  });
-
-  // Compress whitespace to save precious tokens
-  const cleanedUserMessage = options.userMessage
-    .replace(/\r\n/g, "\n")
-    .replace(/\n+/g, "\n")
-    .replace(/[ \t]+/g, " ")
-    .trim();
-
-  const modelToUse = forceModel || "gpt-oss-120b";
-
-  const response = await cerebras.chat.completions.create({
-    model: modelToUse,
-    messages: [
-      { role: "system", content: options.systemPrompt },
-      { role: "user", content: cleanedUserMessage },
-    ],
-    temperature: options.temperature ?? 0.3,
-    max_tokens: options.maxTokens ?? 8000,
-    ...(options.jsonMode !== false && { response_format: { type: "json_object" } }),
-  });
-
-  const content = response.choices[0]?.message?.content || "";
-  if (!content) throw new Error("Empty Cerebras response");
-
-  return { content, provider: "cerebras", model: modelToUse };
 }
 
 /**
@@ -276,26 +135,16 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
   if (primary) {
     try {
       console.log(`[LLM] Trying Primary Model (${primary})...`);
-      let result;
-      if (primary.startsWith("cerebras:")) {
-        const modelId = primary.substring(primary.indexOf(":") + 1);
-        result = await tryCerebras(options, modelId);
-      } else if (primary.startsWith("groq:")) {
-        const modelId = primary.substring(primary.indexOf(":") + 1);
-        result = await tryGroq(options, modelId);
-      } else if (primary.startsWith("openrouter:")) {
-        const modelId = primary.substring(primary.indexOf(":") + 1);
-        result = await tryOpenRouter(options, modelId);
-      } else {
-        const modelId = primary.startsWith("nvidia:") ? primary.substring(primary.indexOf(":") + 1) : primary;
-        result = await tryNvidia(options, modelId);
-      }
+      const modelId = primary.startsWith("nvidia:") ? primary.substring(primary.indexOf(":") + 1) : primary;
+      const result = await tryNvidia(options, modelId);
       console.log(`[LLM] Success with Primary Model (${primary})`);
       return result;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       console.error(`[LLM] Selected Model (${primary}) failed: ${message}`);
-      // Always fall through to fallback chain instead of throwing immediately
+      if (!options.modelSelection?.fallbackModel) {
+        throw err;
+      }
       errors.push(`Primary Model (${primary}): ${message}`);
     }
   }
@@ -305,20 +154,8 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
     const fallback = options.modelSelection.fallbackModel;
     try {
       console.log(`[LLM] Trying Fallback Model (${fallback})...`);
-      let result;
-      if (fallback.startsWith("cerebras:")) {
-        const modelId = fallback.substring(fallback.indexOf(":") + 1);
-        result = await tryCerebras(options, modelId);
-      } else if (fallback.startsWith("groq:")) {
-        const modelId = fallback.substring(fallback.indexOf(":") + 1);
-        result = await tryGroq(options, modelId);
-      } else if (fallback.startsWith("openrouter:")) {
-        const modelId = fallback.substring(fallback.indexOf(":") + 1);
-        result = await tryOpenRouter(options, modelId);
-      } else {
-        const modelId = fallback.startsWith("nvidia:") ? fallback.substring(fallback.indexOf(":") + 1) : fallback;
-        result = await tryNvidia(options, modelId);
-      }
+      const modelId = fallback.startsWith("nvidia:") ? fallback.substring(fallback.indexOf(":") + 1) : fallback;
+      const result = await tryNvidia(options, modelId);
       console.log(`[LLM] Success with Fallback Model (${fallback})`);
       return result;
     } catch (err: unknown) {
@@ -328,18 +165,17 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
     }
   }
 
-  // 2. Global fallbacks if no user selection or user-selected models failed
+  // 2. Global fallbacks across NVIDIA models
   const globalProviders = [
-    { name: "Groq (GPT-OSS 120B)", fn: () => tryGroq(options, "openai/gpt-oss-120b") },
-    { name: "NVIDIA (Default Nemotron)", fn: () => tryNvidia(options, "nvidia/nemotron-3-ultra-550b-a55b") },
-    { name: "OpenRouter (Nemotron Free)", fn: () => tryOpenRouter(options, "nvidia/nemotron-3-ultra-550b-a55b:free") },
-    { name: "Groq (Qwen)", fn: () => tryGroq(options, "qwen/qwen3.6-27b") },
+    { name: "NVIDIA (GLM-5.2)", modelId: "z-ai/glm-5.2" },
+    { name: "NVIDIA (Nemotron Lightning)", modelId: "nvidia/nemotron-3.5-lightning-30b-a3b" },
+    { name: "NVIDIA (Nemotron 550B)", modelId: "nvidia/nemotron-3-ultra-550b-a55b" },
   ];
 
   for (const provider of globalProviders) {
     try {
       console.log(`[LLM] Trying ${provider.name}...`);
-      const result = await provider.fn();
+      const result = await tryNvidia(options, provider.modelId);
       console.log(`[LLM] Success with ${provider.name}`);
       return result;
     } catch (err: unknown) {
@@ -353,60 +189,32 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
 }
 
 /**
- * Call LLM prioritizing speed (Groq → OpenRouter → NVIDIA) for large payload tasks (like full resume parsing) to prevent Vercel Serverless timeouts.
- * Always tries the user's Primary Model first if provided.
+ * Call LLM prioritizing speed for utilities (like full resume parsing, JD parsing).
  */
 export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse> {
   const errors: string[] = [];
   const primary = options.modelSelection?.primaryModel;
 
-  // 1. Try Primary Model if specified
   if (primary) {
     try {
       console.log(`[LLM Fast] Trying Primary Model (${primary})...`);
-      let result;
-      if (primary.startsWith("cerebras:")) {
-        const modelId = primary.substring(primary.indexOf(":") + 1);
-        result = await tryCerebras(options, modelId);
-      } else if (primary.startsWith("groq:")) {
-        const modelId = primary.substring(primary.indexOf(":") + 1);
-        result = await tryGroq(options, modelId);
-      } else if (primary.startsWith("openrouter:")) {
-        const modelId = primary.substring(primary.indexOf(":") + 1);
-        result = await tryOpenRouter(options, modelId);
-      } else {
-        const modelId = primary.startsWith("nvidia:") ? primary.substring(primary.indexOf(":") + 1) : primary;
-        result = await tryNvidia(options, modelId);
-      }
+      const modelId = primary.startsWith("nvidia:") ? primary.substring(primary.indexOf(":") + 1) : primary;
+      const result = await tryNvidia(options, modelId);
       console.log(`[LLM Fast] Success with Primary Model (${primary})`);
       return result;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       console.error(`[LLM Fast] Selected Model (${primary}) failed: ${message}`);
-      // Internal utilities like Parse JD should always fallback to ensure reliability
       errors.push(`Primary Model (${primary}): ${message}`);
     }
   }
 
-  // 1.5 Try Fallback Model if specified
   if (options.modelSelection?.fallbackModel) {
     const fallback = options.modelSelection.fallbackModel;
     try {
       console.log(`[LLM Fast] Trying Fallback Model (${fallback})...`);
-      let result;
-      if (fallback.startsWith("cerebras:")) {
-        const modelId = fallback.substring(fallback.indexOf(":") + 1);
-        result = await tryCerebras(options, modelId);
-      } else if (fallback.startsWith("groq:")) {
-        const modelId = fallback.substring(fallback.indexOf(":") + 1);
-        result = await tryGroq(options, modelId);
-      } else if (fallback.startsWith("openrouter:")) {
-        const modelId = fallback.substring(fallback.indexOf(":") + 1);
-        result = await tryOpenRouter(options, modelId);
-      } else {
-        const modelId = fallback.startsWith("nvidia:") ? fallback.substring(fallback.indexOf(":") + 1) : fallback;
-        result = await tryNvidia(options, modelId);
-      }
+      const modelId = fallback.startsWith("nvidia:") ? fallback.substring(fallback.indexOf(":") + 1) : fallback;
+      const result = await tryNvidia(options, modelId);
       console.log(`[LLM Fast] Success with Fallback Model (${fallback})`);
       return result;
     } catch (err: unknown) {
@@ -416,18 +224,16 @@ export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse>
     }
   }
 
-  // 2. Global fallbacks (Speed priority)
   const globalProviders = [
-    { name: "Groq (GPT-OSS 120B)", fn: () => tryGroq(options, "openai/gpt-oss-120b") },
-    { name: "Groq (Qwen)", fn: () => tryGroq(options, "qwen/qwen3.6-27b") },
-    { name: "OpenRouter (Nemotron Free)", fn: () => tryOpenRouter(options, "nvidia/nemotron-3-ultra-550b-a55b:free") },
-    { name: "NVIDIA (Fallback Nemotron)", fn: () => tryNvidia(options, "nvidia/nemotron-3-ultra-550b-a55b") },
+    { name: "NVIDIA (Nemotron Lightning)", modelId: "nvidia/nemotron-3.5-lightning-30b-a3b" },
+    { name: "NVIDIA (GLM-5.2)", modelId: "z-ai/glm-5.2" },
+    { name: "NVIDIA (Nemotron 550B)", modelId: "nvidia/nemotron-3-ultra-550b-a55b" },
   ];
 
   for (const provider of globalProviders) {
     try {
       console.log(`[LLM Fast] Trying ${provider.name}...`);
-      const result = await provider.fn();
+      const result = await tryNvidia(options, provider.modelId);
       console.log(`[LLM Fast] Success with ${provider.name}`);
       return result;
     } catch (err: unknown) {
@@ -439,4 +245,3 @@ export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse>
 
   throw new Error(`All Fast LLM providers failed:\n${errors.join("\n")}`);
 }
-

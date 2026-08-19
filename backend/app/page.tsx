@@ -7,12 +7,9 @@ import type { SkillBank } from "../lib/skill-bank";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 const AI_MODELS = [
-  { id: "openrouter:nvidia/nemotron-3-ultra-550b-a55b:free", name: "Nemotron 550B (Quality)", shortName: "Nemotron 550B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
-  { id: "openrouter:nvidia/nemotron-3.5-lightning:free", name: "Nemotron Lightning (Thinking)", shortName: "Nemotron Lightning", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
-  { id: "openrouter:openrouter/free", name: "Auto Free Model (OpenRouter)", shortName: "OpenRouter Auto", icon: "https://www.google.com/s2/favicons?domain=openrouter.ai&sz=128" },
-  { id: "groq:openai/gpt-oss-120b", name: "Groq GPT-OSS 120B (Fast)", shortName: "Groq GPT-OSS", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" },
-  { id: "groq:qwen/qwen3.6-27b", name: "Groq Qwen 3.6 27B (Fast)", shortName: "Groq Qwen 3.6", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" },
   { id: "nvidia:z-ai/glm-5.2", name: "GLM-5.2 (Balanced)", shortName: "NVIDIA GLM-5.2", icon: "https://www.google.com/s2/favicons?domain=zhipuai.cn&sz=128" },
+  { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron Lightning (Fast)", shortName: "Nemotron Lightning", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
+  { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)", shortName: "Nemotron 550B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
 ];
 
 function extractCandidateNameFromLatex(latex: string): string {
@@ -737,12 +734,12 @@ const ParallelPipelineVisualizer = ({
           const current = next[modelId];
 
           const incrementRates: { [key: string]: number } = {
-            "cerebras:gpt-oss-120b": 0.5,
-            "groq:llama-3.3-70b-versatile": 0.4,
-            "openrouter:openrouter/free": 0.25,
+            "groq:openai/gpt-oss-120b": 0.5,
+            "groq:qwen/qwen3.6-27b": 0.45,
+            "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b": 0.35,
             "nvidia:z-ai/glm-5.2": 0.15,
-            "nvidia:nvidia/nemotron-3-ultra-550b-a55b": 0.08,
-            "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b": 0.06,
+            "openrouter:openrouter/free": 0.2,
+            "nvidia:nvidia/nemotron-3-ultra-550b-a55b": 0.1,
           };
           const increment = incrementRates[modelId] || 0.15;
 
@@ -1561,8 +1558,10 @@ export default function Home() {
       });
 
       if (!compileRes.ok) {
-        const errDetails = await compileRes.json();
-        throw new Error(errDetails.error || "LaTeX compilation failed");
+        const errDetails = await compileRes.json().catch(() => ({}));
+        setPdfUrl(null);
+        setErrorMessage(`LaTeX compilation error for ${result.modelName}: ${errDetails.error || "Syntax error in generated LaTeX"}`);
+        return;
       }
 
       const blob = await compileRes.blob();

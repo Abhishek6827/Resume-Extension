@@ -8,12 +8,9 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 const AI_MODELS = [
-  { id: "openrouter:nvidia/nemotron-3-ultra-550b-a55b:free", name: "Nemotron 550B (Quality)" },
-  { id: "openrouter:nvidia/nemotron-3.5-lightning:free", name: "Nemotron Lightning (Thinking)" },
-  { id: "openrouter:openrouter/free", name: "Auto Free Model (OpenRouter)" },
-  { id: "groq:openai/gpt-oss-120b", name: "Groq GPT-OSS 120B (Fast)" },
-  { id: "groq:qwen/qwen3.6-27b", name: "Groq Qwen 3.6 27B (Fast)" },
   { id: "nvidia:z-ai/glm-5.2", name: "GLM-5.2 (Balanced)" },
+  { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron Lightning (Fast)" },
+  { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)" },
 ];
 
 export async function OPTIONS(request: NextRequest) {
@@ -23,6 +20,9 @@ export async function OPTIONS(request: NextRequest) {
 function cleanLatexResponse(rawText: string): string {
   if (!rawText) return "";
   let cleaned = rawText.trim();
+
+  // 0. Strip think tags if present
+  cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
 
   // 1. If wrapped in markdown code blocks anywhere in the response, extract the code inside
   const codeBlockMatch = cleaned.match(/```(?:latex|tex)?\s*([\s\S]*?)\s*```/i);
@@ -34,9 +34,9 @@ function cleanLatexResponse(rawText: string): string {
   }
 
   // 2. Strip any leading conversational text or safety notices before \documentclass if present
-  const docClassIndex = cleaned.indexOf('\\documentclass');
-  if (docClassIndex > 0) {
-    cleaned = cleaned.substring(docClassIndex).trim();
+  const docClassMatch = cleaned.match(/\\documentclass\s*(?:\[[^\]]*\])?\s*\{[^}]+\}/i);
+  if (docClassMatch && docClassMatch.index !== undefined && docClassMatch.index > 0) {
+    cleaned = cleaned.substring(docClassMatch.index).trim();
   }
 
   // 3. Strip any trailing conversational text after \end{document} if present
@@ -65,7 +65,13 @@ function cleanLatexResponse(rawText: string): string {
   // 5. Escape unescaped % signs (e.g. 25% -> 25\%) so LaTeX doesn't comment out the rest of the line
   cleaned = cleaned.replace(/(\d+)\s*%(?!\w)/g, '$1\\%');
 
-  return cleaned;
+  // 6. Strip standalone LaTeX comments and trim redundant formatting bloat
+  cleaned = cleaned.replace(/^\s*%.*$/gm, '');
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
+  cleaned = cleaned.replace(/[ \t]+$/gm, '');
+  cleaned = cleaned.replace(/[ \t]+\\\\/g, '\\\\');
+
+  return cleaned.trim();
 }
 
 function fallbackKeywordEvaluation(latex: string, jdData: any) {
@@ -97,15 +103,11 @@ function fallbackKeywordEvaluation(latex: string, jdData: any) {
   const total = matched.length + sanitizedMissing.length;
   const score = total > 0 ? Math.round((matched.length / total) * 100) : 85;
 
-  const reasoning = matched.length > 0
-    ? `The resume aligns strongly with key requirements including ${matched.slice(0, 5).join(", ")}, with opportunities to further emphasize ${sanitizedMissing.slice(0, 3).join(", ") || "niche Domain terms"}.`
-    : "ATS evaluation completed with automated keyword matching.";
-
   return {
     score,
-    reasoning,
+    reasoning: `Matches ${matched.length} core job competencies (${matched.slice(0, 3).join(', ')}...). ATS alignment is solid.`,
     matchedKeywords: matched,
-    missingKeywords: sanitizedMissing,
+    missingKeywords: sanitizedMissing
   };
 }
 
@@ -115,8 +117,17 @@ async function evaluateTailoredResume(latex: string, jdData: any): Promise<{
   matchedKeywords: string[];
   missingKeywords: string[];
 }> {
-  const evalSystemPrompt = `You are an expert ATS (Applicant Tracking System) grader.
-Your task is to analyze the tailored LaTeX resume and evaluate its alignment with the target Job Description.
+  // If LaTeX is empty or invalid (does not have \begin{document}), return fallback instantly
+  if (!latex || !latex.includes("\\begin{document}")) {
+    return {
+      score: 0,
+      reasoning: "Generated LaTeX is incomplete or invalid.",
+      matchedKeywords: [],
+      missingKeywords: [],
+    };
+  }
+
+  const evalSystemPrompt = `You are an expert technical recruiter and ATS (Applicant Tracking System) optimization algorithm. Your job is to evaluate how well a tailored LaTeX resume matches a target Job Description.
 
 CRITICAL KEYWORD RULE:
 - Do NOT list version-specific variants (e.g., "Java 8", "Java 17", "Java 21", "Python 3") in "missingKeywords" if the core base skill/technology (e.g. "Java", "Python") is already present/matched in the candidate's resume.
@@ -124,10 +135,10 @@ CRITICAL KEYWORD RULE:
 
 You MUST return a JSON object with EXACTLY the following structure. Do NOT wrap it in markdown code blocks. Start and end with the JSON curly braces:
 {
-  "score": <number from 0 to 100 representing how well the resume aligns with the JD (skills, requirements, keywords)>,
-  "reasoning": "<1-2 sentences explaining why the score was given>",
-  "matchedKeywords": ["<list of important keywords from the JD that are matched in the resume>"],
-  "missingKeywords": ["<list of key JD requirements or skills that are missing, weak, or could be better highlighted>"]
+  "score": <number from 0 to 100>,
+  "reasoning": "<1-2 sentences>",
+  "matchedKeywords": ["<list>"],
+  "missingKeywords": ["<list>"]
 }`;
 
   const evalUserMessage = `Job Description:
@@ -139,7 +150,7 @@ ${latex}`;
   try {
     let evalTimer: NodeJS.Timeout | null = null;
     const timeoutPromise = new Promise<never>((_, reject) => {
-      evalTimer = setTimeout(() => reject(new Error("ATS evaluation timeout")), 90000);
+      evalTimer = setTimeout(() => reject(new Error("ATS evaluation timeout")), 12000);
     });
 
     const response = await Promise.race([
@@ -174,7 +185,7 @@ ${latex}`;
       missingKeywords: sanitizedMissing,
     };
   } catch (err) {
-    console.error("[evaluateTailoredResume] Error or timeout:", err);
+    console.warn("[evaluateTailoredResume] Fast fallback used:", (err as any)?.message || err);
     return fallbackKeywordEvaluation(latex, jdData);
   }
 }
@@ -485,22 +496,23 @@ CRITICAL INSTRUCTIONS:
    - DISTRIBUTE EQUITABLY: Spread the required keywords, technologies, and architectural concepts evenly across ALL your Work Experience entries and ALL your Project descriptions.
    - MATCH EACH SKILL TO THE MOST RELEVANT PROJECT: Review all available projects and roles before generating. For example, assign backend/database scaling to your SaaS platform project, assign NLP/AI/compute optimizations (like Python/C++) to your AI pipeline project, and assign real-time/networking skills to your websocket project. Every single project and role should showcase 2-3 distinct, relevant JD competencies rather than overloading one project with 10 skills!
 9. DO NOT add or remove bullet points. Keep the exact same number of items.
-10. **STRICT 1-PAGE LENGTH CONSTRAINT (PREVENT OVERFLOW)**: The original resume fit exactly on 1 page. To ensure your tailored version also fits on 1 page without spilling to a second page, you MUST:
-    a) Make the tailored bullet points SLIGHTLY SHORTER than the originals (use concise, strong verbs, remove fluff and filler words).
-    b) NEVER add extra \\\\vspace, \\\\newline, \\\\\\\\, or blank lines that were not in the original.
-    c) Remember that ATS keywords are often long words that cause line-wrapping, which pushes content down. Therefore, you MUST tighten the phrasing of the rest of the bullet point to compensate. Guarantee a 1-page output!
+10. **STRICT 1-PAGE LENGTH CONSTRAINT (PREVENT OVERFLOW - TARGET UNDER ${latexLength} CHARACTERS)**:
+    - The original input document has exactly ${latexLength} characters.
+    - Your tailored LaTeX MUST be UNDER OR EQUAL to ${latexLength} characters (Target budget: ~${Math.round(latexLength * 0.93)} to ${Math.round(latexLength * 0.98)} characters).
+    - To inject new JD keywords without increasing overall document length, you MUST actively tighten existing bullet points by removing filler words and passive phrasing (e.g., shorten "Responsible for developing and deploying..." to "Architected and deployed...").
+    - NEVER add extra \\vspace, \\newline, \\\\, or blank lines. Guarantee an output length <= ${latexLength} characters!
 11. DO NOT use raw '<' or '>' symbols (e.g. "< 3 min", "> 90 ms") or naked math commands in plain text. Always write plain English words like "under 3 min", "over 90 ms", "to". Raw '<' renders as Spanish inverted exclamation mark '¡' in LaTeX! ALWAYS escape '%' signs as '\%' (e.g., "25\%" instead of "25%"), otherwise LaTeX will treat it as a comment and truncate the line!
 12. NEVER use \\newcommand for commands that already exist in standard LaTeX (such as \\section, \\subsection, \\item, \\textbf). Leave existing section definitions untouched or use \\renewcommand.
 13. Return ONLY the raw tailored LaTeX string. Do NOT wrap it in markdown code blocks (\`\`\`latex ... \`\`\`). Do NOT include any explanations or prose before or after. Start immediately with the first LaTeX character and end with the last LaTeX character.
 14. NEVER use placeholders, ellipses (...), or comments like "(unchanged)" or "(rest of document remains same)". You MUST output the full, complete, compilable LaTeX document from \\documentclass to \\end{document} without missing or skipping any section.
 15. PRESERVE VERTICAL SPACING & PREAMBLE: DO NOT modify the LaTeX preamble (everything before \\begin{document}). Leave all \\titlespacing, \\documentclass, \\usepackage, and custom command definitions EXACTLY as they were pasted. NEVER remove any \\vspace, \\vspace*, \\hspace, \\medskip, \\smallskip, or blank lines between sections. Ensure proper vertical spacing is maintained exactly as provided in the original input!${skillBankInstruction}`;
 
-    const userMessage = `TARGET JOB DESCRIPTION (FULL RAW TEXT & EXTRACTED REQUIREMENTS):
-${rawJdText ? `FULL RAW JOB DESCRIPTION TEXT:\n${rawJdText}\n\n` : ""}STRUCTURED JD REQUIREMENTS SUMMARY:
+    const userMessage = `TARGET JOB DESCRIPTION & REQUIREMENTS:
+${rawJdText && rawJdText.length < 2000 ? `RAW JOB DESCRIPTION:\n${rawJdText}\n\n` : ""}STRUCTURED JD REQUIREMENTS SUMMARY:
 ${JSON.stringify(jdData, null, 2)}
 ${selectedSkills.length > 0 ? `\nVERIFIED CANDIDATE GITHUB SKILL BANK (SMART RELEVANT LOOKUP):\n${JSON.stringify({ skills: selectedSkills, projects: selectedProjects }, null, 2)}` : ""}
 
-Original LaTeX (Length: ${latexLength} characters):
+Original LaTeX (Length: ${latexLength} characters, Target tailored length: <= ${latexLength} characters):
 ${latex}`;
 
     console.log(`[tailor-latex-direct] Initializing parallel streaming response...`);
@@ -547,7 +559,8 @@ ${latex}`;
                 break;
               }
 
-              currentSystemPrompt = systemPrompt + `\n\nWARNING: Your previous response was ${latexResult.length} characters long, which EXCEEDS the absolute maximum limit of ${latexLength} characters. You MUST shorten your response by at least ${latexResult.length - latexLength} characters. Be extremely concise.`;
+              const excess = latexResult.length - latexLength;
+              currentSystemPrompt = systemPrompt + `\n\nCRITICAL LENGTH VIOLATION (ATTEMPT ${attempt + 1}/${maxAttempts}): Your generated LaTeX was ${latexResult.length} characters long, which EXCEEDS the ${latexLength} limit by ${excess} characters. You MUST actively tighten and shorten bullet points across all sections to produce a final document of ~${Math.round(latexLength * 0.95)} characters. Be extremely concise.`;
               attempt++;
             }
             tailoredLatex = latexResult;

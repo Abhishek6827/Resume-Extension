@@ -35,9 +35,9 @@ export async function POST(request: NextRequest) {
     } else {
       latexString = latexString.replace(/^```(?:latex|tex)?/i, '').replace(/```$/, '').trim();
     }
-    const docClassIndex = latexString.indexOf('\\documentclass');
-    if (docClassIndex > 0) {
-      latexString = latexString.substring(docClassIndex).trim();
+    const docClassMatch = latexString.match(/\\documentclass\s*(?:\[[^\]]*\])?\s*\{[^}]+\}/i);
+    if (docClassMatch && docClassMatch.index !== undefined && docClassMatch.index > 0) {
+      latexString = latexString.substring(docClassMatch.index).trim();
     }
     const endDocIndex = latexString.lastIndexOf('\\end{document}');
     if (endDocIndex !== -1) {
