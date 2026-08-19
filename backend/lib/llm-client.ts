@@ -1,5 +1,5 @@
 // ─── Multi-Provider LLM Client ─────────────────────────────
-// Provider chain: Groq (fast) → NVIDIA Kimi-K2.6 (quality) → OpenRouter (fallback)
+// Provider chain: NVIDIA (quality) → OpenRouter (free/fallback) → Groq (fast)
 // Same proven pattern as Chintu's answer/route.ts
 
 import Groq from "groq-sdk";
@@ -52,11 +52,7 @@ export function extractJSON(text: string): string {
   throw new Error("No JSON object found in LLM response");
 }
 
-function isVersatileModel(modelId?: string): boolean {
-  if (!modelId) return false;
-  const lower = modelId.toLowerCase();
-  return lower.includes("versatile") || lower.includes("ersatile");
-}
+// ponytail: isVersatileModel removed — only model that matched was deprecated llama-3.3-70b-versatile
 
 /**
  * Try Groq provider (primary — fast inference)
@@ -73,10 +69,10 @@ async function tryGroq(options: LLMCallOptions, forceModel?: string): Promise<LL
     .trim();
 
   const groq = new Groq({ apiKey, maxRetries: 3, timeout: 60000 });
-  const modelToUse = forceModel || "llama-3.3-70b-versatile";
+  const modelToUse = forceModel || "qwen/qwen3.6-27b";
   
   try {
-    const response = await groq.chat.completions.create({
+    const requestPayload: any = {
       model: modelToUse,
       messages: [
         { role: "system", content: options.systemPrompt },
@@ -85,7 +81,16 @@ async function tryGroq(options: LLMCallOptions, forceModel?: string): Promise<LL
       temperature: options.temperature ?? 0.3,
       max_tokens: options.maxTokens ?? 3500,
       ...(options.jsonMode !== false && { response_format: { type: "json_object" } }),
-    });
+    };
+
+    if (modelToUse === "openai/gpt-oss-120b") {
+      requestPayload.reasoning_format = "hidden";
+    }
+    if (modelToUse.includes("qwen")) {
+      requestPayload.reasoning_effort = "none";
+    }
+
+    const response = await groq.chat.completions.create(requestPayload);
 
     const msg = response.choices[0]?.message as any;
     let content = msg?.content || msg?.reasoning || msg?.reasoning_content || "";
@@ -108,13 +113,14 @@ async function tryGroq(options: LLMCallOptions, forceModel?: string): Promise<LL
         err.message.includes("limit") || 
         err.message.includes("large") || 
         err.message.includes("TPM") ||
-        err.message.includes("rate_limit_exceeded")
+        err.message.includes("rate_limit_exceeded") ||
+        err.message.includes("json_validate_failed")
       ));
 
-    // Fallback to Cerebras if Groq token/rate limit is hit
+    // Fallback to OpenRouter if Groq token/rate limit or json validation fails
     if (isRateOrSizeLimit) {
-      console.warn(`[LLM] Groq (${modelToUse}) token/rate limit hit (${err.message}). Falling back to Cerebras gpt-oss-120b for recovery...`);
-      return await tryCerebras(options, "gpt-oss-120b");
+      console.warn(`[LLM] Groq (${modelToUse}) issue (${err.message}). Falling back to OpenRouter...`);
+      return await tryOpenRouter(options, "nvidia/nemotron-3-ultra-550b-a55b:free");
     }
 
     throw err;
@@ -175,10 +181,6 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
 
     return { content, provider: "nvidia", model: modelToUse };
   } catch (err: any) {
-    if (isVersatileModel(modelToUse)) {
-      console.warn(`[LLM] NVIDIA model (${modelToUse}) failed or timed out (${err.message}). Falling back to Cerebras gpt-oss-120b...`);
-      return await tryCerebras(options, "gpt-oss-120b");
-    }
     throw err;
   }
 }
@@ -218,12 +220,8 @@ async function tryOpenRouter(options: LLMCallOptions, forceModel?: string): Prom
 
     return { content: response, provider: "openrouter", model: modelToUse };
   } catch (err: any) {
-    console.warn(`[LLM] OpenRouter model (${modelToUse}) failed or rate limited (${err.message}). Falling back to Cerebras gpt-oss-120b...`);
-    try {
-      return await tryCerebras(options, "gpt-oss-120b");
-    } catch {
-      return await tryGroq(options, "llama-3.3-70b-versatile");
-    }
+    console.warn(`[LLM] OpenRouter model (${modelToUse}) failed or rate limited (${err.message}). Falling back to Groq...`);
+    return await tryGroq(options, "qwen/qwen3.6-27b");
   }
 }
 
@@ -297,9 +295,7 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       console.error(`[LLM] Selected Model (${primary}) failed: ${message}`);
-      if (!isVersatileModel(primary)) {
-        throw err;
-      }
+      // Always fall through to fallback chain instead of throwing immediately
       errors.push(`Primary Model (${primary}): ${message}`);
     }
   }
@@ -334,9 +330,10 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
 
   // 2. Global fallbacks if no user selection or user-selected models failed
   const globalProviders = [
+    { name: "Groq (GPT-OSS 120B)", fn: () => tryGroq(options, "openai/gpt-oss-120b") },
     { name: "NVIDIA (Default Nemotron)", fn: () => tryNvidia(options, "nvidia/nemotron-3-ultra-550b-a55b") },
-    { name: "Groq", fn: () => tryGroq(options) },
-    { name: "Cerebras", fn: () => tryCerebras(options) },
+    { name: "OpenRouter (Nemotron Free)", fn: () => tryOpenRouter(options, "nvidia/nemotron-3-ultra-550b-a55b:free") },
+    { name: "Groq (Qwen)", fn: () => tryGroq(options, "qwen/qwen3.6-27b") },
   ];
 
   for (const provider of globalProviders) {
@@ -356,7 +353,7 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
 }
 
 /**
- * Call LLM prioritizing speed (Cerebras → Groq → NVIDIA) for large payload tasks (like full resume parsing) to prevent Vercel Serverless timeouts.
+ * Call LLM prioritizing speed (Groq → OpenRouter → NVIDIA) for large payload tasks (like full resume parsing) to prevent Vercel Serverless timeouts.
  * Always tries the user's Primary Model first if provided.
  */
 export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse> {
@@ -420,10 +417,10 @@ export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse>
   }
 
   // 2. Global fallbacks (Speed priority)
-
   const globalProviders = [
-    { name: "Cerebras", fn: () => tryCerebras(options) },
-    { name: "Groq", fn: () => tryGroq(options) },
+    { name: "Groq (GPT-OSS 120B)", fn: () => tryGroq(options, "openai/gpt-oss-120b") },
+    { name: "Groq (Qwen)", fn: () => tryGroq(options, "qwen/qwen3.6-27b") },
+    { name: "OpenRouter (Nemotron Free)", fn: () => tryOpenRouter(options, "nvidia/nemotron-3-ultra-550b-a55b:free") },
     { name: "NVIDIA (Fallback Nemotron)", fn: () => tryNvidia(options, "nvidia/nemotron-3-ultra-550b-a55b") },
   ];
 

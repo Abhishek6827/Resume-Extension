@@ -166,7 +166,7 @@ CRITICAL REMINDER: You will be penalized if you drop any experience bullet point
     const response = await callLLM({
       systemPrompt,
       userMessage: `Resume text:\n${rawText}`,
-      modelSelection: modelSelection || { primaryModel: "groq:llama-3.3-70b-versatile" },
+      modelSelection: modelSelection || { primaryModel: "groq:openai/gpt-oss-120b" },
     });
 
     const jsonStr = extractJSON(response.content);
@@ -578,14 +578,15 @@ export async function tailorResume(
   modelSelection?: ModelSelection
 ): Promise<TailoredResult> {
   try {
-    console.log(`[tailor] Starting modular/batched tailoring pipeline sequentially...`);
+    console.log(`[tailor] Starting modular/batched tailoring pipeline in parallel...`);
 
-    // Run tailoring steps sequentially (one-by-one) to prevent API rate limits, 
-    // context exhaustion, and ensure maximum precision/stability per request.
-    const tailoredSummaryObj = await tailorSummaryWithAI(resume.summary || "", jd, modelSelection);
-    const tailoredExperienceObj = await tailorExperienceWithAI(resume.experience || [], jd, modelSelection);
-    const tailoredProjectsObj = await tailorProjectsWithAI(resume.projects || [], jd, modelSelection);
-    const tailoredSkillsObj = await tailorSkillsWithAI(resume.skills || {}, jd, modelSelection);
+    // Run tailoring steps in parallel using Promise.all for maximum speed
+    const [tailoredSummaryObj, tailoredExperienceObj, tailoredProjectsObj, tailoredSkillsObj] = await Promise.all([
+      tailorSummaryWithAI(resume.summary || "", jd, modelSelection),
+      tailorExperienceWithAI(resume.experience || [], jd, modelSelection),
+      tailorProjectsWithAI(resume.projects || [], jd, modelSelection),
+      tailorSkillsWithAI(resume.skills || {}, jd, modelSelection),
+    ]);
 
     // Programmatically align and reconstruct the tailored resume using original skeleton to prevent structural deletions/shuffling
     const tailoredResume: ResumeData = {

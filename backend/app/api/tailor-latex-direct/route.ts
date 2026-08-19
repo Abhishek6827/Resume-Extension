@@ -8,14 +8,12 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 const AI_MODELS = [
-  { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)" },
-  { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron Lightning 30B (Thinking)" },
+  { id: "openrouter:nvidia/nemotron-3-ultra-550b-a55b:free", name: "Nemotron 550B (Quality)" },
+  { id: "openrouter:nvidia/nemotron-3.5-lightning:free", name: "Nemotron Lightning (Thinking)" },
   { id: "openrouter:openrouter/free", name: "Auto Free Model (OpenRouter)" },
+  { id: "groq:openai/gpt-oss-120b", name: "Groq GPT-OSS 120B (Fast)" },
+  { id: "groq:qwen/qwen3.6-27b", name: "Groq Qwen 3.6 27B (Fast)" },
   { id: "nvidia:z-ai/glm-5.2", name: "GLM-5.2 (Balanced)" },
-  { id: "cerebras:gpt-oss-120b", name: "Cerebras GPT-OSS 120B (Fast)" },
-  { id: "cerebras:gemma-4-31b", name: "Cerebras Gemma 4 31B (Ultra Fast)" },
-  { id: "groq:llama-3.3-70b-versatile", name: "Groq Llama-70B (Fast)" },
-  { id: "groq:qwen/qwen3.6-27b", name: "Groq Qwen 3.6 27B (Fast)" }
 ];
 
 export async function OPTIONS(request: NextRequest) {
