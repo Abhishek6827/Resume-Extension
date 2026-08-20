@@ -359,10 +359,16 @@ function findRelevantSkillBankItems(skillBank: any, jdData: any) {
   for (const proj of skillBank.projects || []) {
     const pName = (proj.name || "").toLowerCase();
     const pDesc = (proj.description || "").toLowerCase();
+    const pLang = (proj.primaryLanguage || "").toLowerCase();
+    const pSkills = (proj.extractedSkills || []).map((s: string) => String(s).toLowerCase());
+    const pTopics = (proj.topics || []).map((t: string) => String(t).toLowerCase());
 
     const isMatched =
       (pName.length > 2 && jdString.includes(pName)) ||
-      (pDesc.length > 2 && jdString.includes(pDesc));
+      (pDesc.length > 2 && jdString.includes(pDesc)) ||
+      (pLang.length > 2 && jdString.includes(pLang)) ||
+      pSkills.some((s: string) => s.length > 2 && jdString.includes(s)) ||
+      pTopics.some((t: string) => t.length > 2 && jdString.includes(t));
 
     if (isMatched) {
       matchedProjects.push(proj);
@@ -401,22 +407,33 @@ export async function POST(request: NextRequest) {
       selectedProjects = relevantProjects;
 
       const topSkills = selectedSkills.map((s: any) => `${s.name}${s.versionDetails ? ` (${s.versionDetails})` : ""} [Repo: ${s.sourceRepo}]`).join(", ");
-      const topProjects = selectedProjects.map((p: any) => `${p.name}: ${p.description}`).join("; ");
+      const topProjects = selectedProjects.map((p: any) => {
+        const stack = (p.extractedSkills || []).length > 0 ? ` [Stack: ${p.extractedSkills.join(", ")}]` : "";
+        return `${p.name}${stack}: ${p.description || "Full-stack project"}`;
+      }).join("; ");
 
       console.log(`[tailor-latex-direct] Smart JD Skill Lookup: Found ${matchCount} direct JD-matching skills out of ${skillBank.skills.length} total skills.`);
 
       skillBankInstruction = `
 
-MANDATORY GITHUB SKILL BANK CONSULTATION & INJECTION:
+MANDATORY GITHUB SKILL BANK CONSULTATION, INJECTION & PROJECT SWAPPING:
 The candidate has verified technical skills and real project achievements extracted directly from their GitHub codebase (prioritized by relevance to this Job Description):
 - VERIFIED TECHNICAL SKILLS: ${topSkills}
 - VERIFIED GITHUB PROJECTS: ${topProjects}
 
-STRICT INSTRUCTIONS FOR SKILL BANK INTEGRATION & PROJECT UPDATION:
-1. YOU MUST CONSULT THIS SKILL BANK FIRST. Whenever the Job Description requires a skill, tool, framework, or architecture (e.g. Java, Spring Boot, MongoDB, Docker, REST API, Microservices, TypeScript, Go), check if it exists in the candidate's Verified Skill Bank.
-2. FORCEFUL CONTEXTUAL WEAVING IN PROJECTS & WORK EXPERIENCE: Do NOT merely add relevant skills to the comma-separated Skills section. You MUST organically weave these JD-matching verified skills directly into the project descriptions and Work Experience bullet points by rewriting the technical implementation details!
-3. REFRAME PROJECT BULLETS: Even if an existing resume project was not originally described with a specific required skill, if that skill is in the candidate's Verified Skill Bank, you MUST update and reframe the project bullet points to incorporate that skill into the architectural workflow (e.g., instead of writing "Built backend services...", rewrite it as "Architected scalable backend services using Spring Boot and MongoDB composite indexes...").
-4. CONCRETE ACHIEVEMENTS: ATS algorithms score contextual usage higher than isolated keywords. Ensure every key verified skill required by the JD is embedded directly into a concrete technical achievement or architectural implementation in the project/experience bullet points.`;
+STRICT INSTRUCTIONS FOR SKILL BANK INTEGRATION & REPLACEMENT:
+1. AUTOMATIC SKILL INJECTION & PRUNING IN \\section*{Technical Skills}:
+   - Any JD-required technology verified in the candidate's GitHub Skill Bank (e.g., Django, Django REST Framework, FastAPI, PostgreSQL, Docker, AWS, etc.) MUST be injected into the appropriate category in \\section*{Technical Skills}.
+   - PRUNE IRRELEVANT SKILLS: To stay strictly within the 1-page character limit, DROP / REMOVE tools from the original LaTeX that have zero relevance to the target Job Description. Always prioritize JD-matching verified skills over unrelated tools.
+
+2. SMART PROJECT SWAPPING / REPLACEMENT (MANDATORY WHEN RELEVANT):
+   - Compare candidate's existing LaTeX projects against the target Job Description.
+   - If an existing project in the LaTeX resume has low relevance to the target JD, and the candidate has a high-relevance Verified GitHub Project (e.g. \`Kanban_WorkBoard\` with Django & React for a Python/Django/Full-Stack role), YOU MUST SWAP / REPLACE the least-relevant project in the resume with the matching GitHub project!
+   - Format the swapped project using the EXACT same LaTeX commands, macros, and syntax as the original template (e.g., \\project{Kanban WorkBoard}{...}{Django, Django REST Framework, React, PostgreSQL} or corresponding macro).
+   - Write 2-3 strong, quantifiable engineering bullet points highlighting core JD competencies (e.g., REST API endpoints, JWT auth, database queries, responsive UI).
+
+3. CONTEXTUAL REWRITING:
+   - For all retained projects and work experience, weave the verified JD-matching technologies and architectural concepts directly into the bullet points.`;
     }
     const mustHave = Array.isArray(jdData.mustHaveSkills) ? jdData.mustHaveSkills : [];
     const niceToHave = Array.isArray(jdData.niceToHaveSkills) ? jdData.niceToHaveSkills : [];
@@ -436,19 +453,21 @@ TARGET JD REQUIREMENTS CHECKLIST TO INJECT (100% COVERAGE MANDATORY):
 ${jdChecklistText}
 
 STRICT INSTRUCTIONS FOR COMPLETE COVERAGE & ELIMINATING AREAS FOR IMPROVEMENT:
-1. TECHNICAL SKILLS SECTION (100% INJECTION):
+1. TECHNICAL SKILLS SECTION (100% INJECTION & PRUNING):
    - You MUST ensure every single JD requirement listed in the checklist above is added to its respective category line in \\section*{Technical Skills}!
    - Category routing guidance:
      * DevOps & Tools: Docker, Kubernetes, Terraform, CloudFormation, AWS, CI/CD, Git
-     * Backend: GraphQL, REST APIs, Microservices, Spring Boot, Node.js, Express.js
-     * Databases: PostgreSQL, MySQL, MongoDB, Vector Databases (Pinecone, Qdrant, Weaviate)
+     * Backend: GraphQL, REST APIs, Microservices, Spring Boot, Node.js, Express.js, Django, Django REST Framework, FastAPI, Flask
+     * Databases: PostgreSQL, MySQL, MongoDB, Vector Databases (Pinecone, Qdrant, Weaviate), Redis
      * Auth & Security: SSO (SAML/OIDC), JWT, OAuth 2.0, RBAC
      * AI & LLM: Groq, Gemini, Vector DBs, Prompt Engineering, RAG
-     * Languages: Java, Python, TypeScript, JavaScript, SQL, Go
+     * Languages: Java, Python, TypeScript, JavaScript, SQL, Go, C++
    - Place these JD-matching keywords at the VERY BEGINNING of each category line.
+   - Drop / prune unrelated skills to make room within the character limit.
 
-2. CONTEXTUAL WEAVING IN PROJECTS & WORK EXPERIENCE:
+2. CONTEXTUAL WEAVING & PROJECT SWAPPING:
    - Update Project Tech Stack subtitles (e.g. \\project{Name}{Tech Stack}) to prominently feature these JD technologies.
+   - If an existing resume project has low relevance to the JD, SWAP it out for a matching Verified GitHub project (e.g., Kanban WorkBoard for Django/Python).
    - Rewrite bullet points in Work Experience and Projects to describe using these technologies in realistic architectural contexts (e.g., "Architected containerized microservices orchestrated via Kubernetes and deployed IaC modules using Terraform...", "Integrated GraphQL API endpoints and SSO authentication pipelines...", "Engineered vector search pipelines using Pinecone vector database...").
 
 CRITICAL INSTRUCTIONS:
@@ -458,7 +477,7 @@ CRITICAL INSTRUCTIONS:
    - You MUST rewrite the candidate's Professional Summary at the very top of the document to explicitly highlight the primary architectural scope, domain competencies, and scale required by the target Job Description!
    - For example, if the JD asks for "large-scale distributed systems", "data structures & algorithms", and "accessible technologies", your tailored summary MUST explicitly incorporate those competencies (e.g. "Full-stack software engineer with 3+ years of experience architecting large-scale distributed systems and accessible web applications using Java, Python, and TypeScript. Proven track record of optimizing algorithmic complexity, designing high-throughput microservices handling massive scale, and deploying containerized workloads on AWS with robust CI/CD pipelines.").
 3. THREE-PILLAR ATS INJECTION (TECH STACK + ARCHITECTURAL COMPETENCIES + OPERATIONAL WORKFLOWS):
-   - Pillar 1 (Hard Tools & Tech Stack): Prioritize matching tools from the candidate's Verified Skill Bank. Inject 100% of all required JD tools (e.g. Docker, AWS, Kubernetes, Redis, GraphQL, Terraform/IaC, SSO, Vector DBs, CI/CD, MongoDB) into Technical Skills, project headers, and work experience ecosystems.
+   - Pillar 1 (Hard Tools & Tech Stack): Prioritize matching tools from the candidate's Verified Skill Bank. Inject 100% of all required JD tools (e.g. Docker, AWS, Kubernetes, Redis, GraphQL, Terraform/IaC, SSO, Vector DBs, CI/CD, MongoDB, Django) into Technical Skills, project headers, and work experience ecosystems.
    - Pillar 2 (Core Domain & Architectural Competencies - MANDATORY): Top-tier JDs (like Google, Amazon, Microsoft) require high-level engineering concepts such as "Data Structures & Algorithms", "Large-Scale Distributed Systems", "Massive Scale / High Throughput", "Low Latency / Concurrency", "Accessible Technologies (WCAG/a11y)", "Fault Tolerance", or "Security/RBAC". You MUST identify ALL such architectural and domain requirements in the JD and WEAVE THEM DIRECTLY as concrete engineering actions and measurable outcomes inside the Work Experience and Project bullet points!
    - Pillar 3 (Operational Workflows & Responsibilities - MANDATORY): JDs explicitly list operational responsibilities such as "Debugging / Triaging System Issues", "Rigorous Testing / Testability", "Technical Documentation", "Design Reviews", "Code Reviews", and "Core Infrastructure / Developer Platforms". You MUST weave these specific operational workflow terms into at least 2-3 bullet points across Work Experience & Projects (e.g., "Led design reviews and code reviews to improve testability, documentation, and system efficiency...", "Triaged and debugged complex production issues across hardware, network, and service operations...").
    - Examples of weaving Pillar 2 & 3 domain competencies without artificial suffixes:
@@ -472,17 +491,18 @@ CRITICAL INSTRUCTIONS:
    - SHOW, DON'T TELL (GENUINE REWRITING REQUIRED): You MUST genuinely rewrite the core engineering action verbs and architectural workflow of the bullet point itself!
    - BAD (LAZY SUFFIX - FORBIDDEN): "Replaced scheduled polling with a webhook pipeline using RabbitMQ, reducing lag from 20 min to 3 min, demonstrating expertise in data structures and algorithms."
    - GOOD (GENUINE ARCHITECTURAL REWRITING - REQUIRED): "Engineered high-throughput webhook event pipelines using RabbitMQ and custom hash-map caching data structures, optimizing algorithmic complexity to cut failure detection latency from 20 min to 3 min."
-5. MANDATORY PROJECT TECH STACK & BULLET REWRITING (CRITICAL):
+5. MANDATORY PROJECT TECH STACK & BULLET REWRITING OR PROJECT SWAPPING (CRITICAL):
    - You MUST update BOTH the Project Tech Stack subtitles/headers (the tools listed next to or under each project name, e.g. in \\project{Name}{Sub}{Tech Stack} or \\textit{Tools}) AND the project bullet points!
-   - UPDATE TECH STACK SUBTITLES: Update the comma-separated tech stack list next to each Project title to prominently feature the primary JD-required programming languages and tools, WHILE RETAINING candidate's core technologies that support the project (e.g. retain Java, React, TypeScript, Stripe, WebRTC, AssemblyAI). Combine candidate's core stack + top JD skills (5-7 total per project header).
-   - REWRITE BULLET POINTS: Do NOT leave the Projects section unmodified! You MUST rewrite the project bullet points to incorporate the JD's required technologies and architectural workflows.
+   - SMART PROJECT SWAPPING: If an existing resume project has low relevance to the target JD, SWAP/REPLACE that project with the most relevant Verified GitHub Project (e.g. swap an unrelated app for Kanban_WorkBoard if the JD requires Django/Python). Maintain the exact same LaTeX syntax/macro format as the original template.
+   - UPDATE TECH STACK SUBTITLES: Update the comma-separated tech stack list next to each Project title to prominently feature the primary JD-required programming languages and tools, WHILE RETAINING candidate's core technologies that support the project. Combine candidate's core stack + top JD skills (5-7 total per project header).
+   - REWRITE BULLET POINTS: Rewrite the project bullet points to incorporate the JD's required technologies and architectural workflows.
 6. STRICT PURITY OF TECHNICAL SKILLS SECTION (TOOLS ONLY, NO SOFT SKILLS):
-   - The comma-separated "Technical Skills" section is reserved EXCLUSIVELY for specific programming languages, frameworks, libraries, databases, cloud platforms, and developer tools (e.g. Java, Python, TypeScript, React, Spring Boot, Docker, PostgreSQL, AWS, Git, gRPC, Redis, Kafka).
+   - The comma-separated "Technical Skills" section is reserved EXCLUSIVELY for specific programming languages, frameworks, libraries, databases, cloud platforms, and developer tools (e.g. Java, Python, TypeScript, React, Spring Boot, Django, Docker, PostgreSQL, AWS, Git, gRPC, Redis, Kafka).
    - NEVER put soft engineering concepts, responsibilities, or domain phrases (such as "Code Review", "Debugging", "Data Storage", "System Design", "UI Design", "Mobile Development", "Infrastructure", "Security", "Distributed Computing", "Information Retrieval") into the Technical Skills lists! Those concepts belong exclusively inside Work Experience and Project bullet points as actions and outcomes.
-6b. PRESERVE ALL ORIGINAL SKILL CATEGORIES & RETAIN CORE SKILLS:
-   - You MUST preserve ALL the original skill categories exactly as they were provided in the input LaTeX (e.g., if there are 8 categories like Payments & Billing, AI & LLM, Languages, Frontend, Backend, Databases, DevOps & Tools, Auth & Security, keep ALL 8 categories). 
-   - DO NOT condense, rename, merge, drop, or delete any category line from \\section*{Technical Skills}!
-   - Simply weave the new JD-required skills into the most appropriate existing categories, placing JD-matching skills FIRST in each line, while retaining candidate's core valid skills.
+6b. REPLACE IRRELEVANT SKILLS WITH JD SKILLS:
+   - You MUST preserve the standard skill categories (e.g. Languages, Frontend, Backend, Databases, DevOps & Tools, Auth & Security).
+   - PRUNE / DROP irrelevant tools from \\section*{Technical Skills} that have zero relevance to the target JD to make room for high-priority JD keywords and verified GitHub skills (e.g. prioritize Django, Python, Docker over unused tools).
+   - Place JD-matching skills FIRST in each line.
 6c. DEDUPLICATION RULE:
    - A skill MUST ONLY appear in ONE category. Do not list the same skill (e.g., Python, Java) across multiple categories. Pick the single most relevant category for it.
 6d. REORDER SKILLS FOR IMPACT:
@@ -495,7 +515,7 @@ CRITICAL INSTRUCTIONS:
    - AVOID FRONT-LOADING: When injecting required JD skills, do NOT dump all of them into the very first Work Experience entry or the very first Project!
    - DISTRIBUTE EQUITABLY: Spread the required keywords, technologies, and architectural concepts evenly across ALL your Work Experience entries and ALL your Project descriptions.
    - MATCH EACH SKILL TO THE MOST RELEVANT PROJECT: Review all available projects and roles before generating. For example, assign backend/database scaling to your SaaS platform project, assign NLP/AI/compute optimizations (like Python/C++) to your AI pipeline project, and assign real-time/networking skills to your websocket project. Every single project and role should showcase 2-3 distinct, relevant JD competencies rather than overloading one project with 10 skills!
-9. DO NOT add or remove bullet points. Keep the exact same number of items.
+9. MAINTAIN CLEAN STRUCTURE: Keep the standard resume density (typically 2-3 projects and 3-4 bullets per role/project). If swapping a project with a GitHub project, keep the same number of project items as the original template.
 10. **STRICT 1-PAGE LENGTH CONSTRAINT (PREVENT OVERFLOW - TARGET UNDER ${latexLength} CHARACTERS)**:
     - The original input document has exactly ${latexLength} characters.
     - Your tailored LaTeX MUST be UNDER OR EQUAL to ${latexLength} characters (Target budget: ~${Math.round(latexLength * 0.93)} to ${Math.round(latexLength * 0.98)} characters).
