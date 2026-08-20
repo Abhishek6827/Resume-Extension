@@ -20,6 +20,178 @@ interface TreeItem {
   url?: string;
 }
 
+interface TechPattern {
+  name: string;
+  pattern: RegExp;
+  extraSkills?: string[];
+}
+
+const TECH_PATTERNS: TechPattern[] = [
+  { name: "Django REST Framework", pattern: /\b(django[\s-_]*rest[\s-_]*framework|drf)\b/i, extraSkills: ["Django", "REST API"] },
+  { name: "Django", pattern: /\bdjango\b/i, extraSkills: ["Python"] },
+  { name: "FastAPI", pattern: /\bfastapi\b/i, extraSkills: ["Python", "REST API"] },
+  { name: "Flask", pattern: /\bflask\b/i, extraSkills: ["Python"] },
+  { name: "Next.js", pattern: /\b(next\.js|nextjs)\b/i, extraSkills: ["React"] },
+  { name: "React Native", pattern: /\breact[\s-_]*native\b/i, extraSkills: ["React", "Mobile App"] },
+  { name: "React", pattern: /\b(react(\.js|js)?)\b/i },
+  { name: "Vue.js", pattern: /\b(vue(\.js|js)?)\b/i },
+  { name: "Angular", pattern: /\bangular\b/i },
+  { name: "Spring Boot", pattern: /\bspring[\s-_]*boot\b/i, extraSkills: ["Java", "REST API", "Microservices"] },
+  { name: "Spring", pattern: /\bspring([\s-_]*framework)?\b/i, extraSkills: ["Java"] },
+  { name: "Express.js", pattern: /\b(express(\.js|js)?)\b/i, extraSkills: ["Node.js", "REST API"] },
+  { name: "Node.js", pattern: /\b(node\.js|nodejs)\b/i },
+  { name: "Tailwind CSS", pattern: /\btailwind([\s-_]*css)?\b/i },
+  { name: "TypeScript", pattern: /\b(typescript|ts)\b/i },
+  { name: "JavaScript", pattern: /\b(javascript|js)\b/i },
+  { name: "Python", pattern: /\bpython\b/i },
+  { name: "Java", pattern: /\bjava\b/i },
+  { name: "Go", pattern: /\b(golang|go[\s-_]*lang)\b/i },
+  { name: "Rust", pattern: /\brust(lang)?\b/i },
+  { name: "PostgreSQL", pattern: /\b(postgres|postgresql)\b/i },
+  { name: "MongoDB", pattern: /\b(mongodb|mongo|mongoose)\b/i },
+  { name: "Redis", pattern: /\bredis\b/i },
+  { name: "MySQL", pattern: /\bmysql\b/i },
+  { name: "SQLite", pattern: /\bsqlite(3)?\b/i },
+  { name: "Prisma ORM", pattern: /\bprisma\b/i },
+  { name: "Docker", pattern: /\bdocker\b/i },
+  { name: "Kubernetes", pattern: /\b(kubernetes|k8s)\b/i },
+  { name: "AWS", pattern: /\b(aws|amazon[\s-_]*web[\s-_]*services)\b/i },
+  { name: "Azure", pattern: /\bazure\b/i },
+  { name: "GCP", pattern: /\b(gcp|google[\s-_]*cloud)\b/i },
+  { name: "GraphQL", pattern: /\bgraphql\b/i },
+  { name: "REST API", pattern: /\b(rest(\s*api|ful))\b/i },
+  { name: "Microservices", pattern: /\bmicroservices?\b/i },
+  { name: "Kafka", pattern: /\bkafka\b/i },
+  { name: "Vite", pattern: /\bvite\b/i },
+  { name: "Redux", pattern: /\bredux\b/i },
+  { name: "Electron", pattern: /\belectron\b/i },
+  { name: "Capacitor", pattern: /\bcapacitor\b/i },
+  { name: "Firebase", pattern: /\bfirebase\b/i },
+  { name: "Supabase", pattern: /\bsupabase\b/i },
+  { name: "TensorFlow", pattern: /\btensorflow\b/i, extraSkills: ["Python"] },
+  { name: "PyTorch", pattern: /\b(pytorch|torch)\b/i, extraSkills: ["Python"] },
+  { name: "Pandas", pattern: /\bpandas\b/i, extraSkills: ["Python"] },
+  { name: "Scikit-Learn", pattern: /\b(scikit-learn|sklearn)\b/i, extraSkills: ["Python"] },
+  { name: "CI/CD", pattern: /\b(ci[\s/]*cd|github[\s-_]*actions)\b/i },
+];
+
+const NOISE_SKILLS = new Set([
+  "fs.stat", "procfile", "clsx", "class-variance-authority", "tailwind-merge", "tslib",
+  "date-fns", "dayjs", "moment", "cors", "dotenv", "resolvers", "hookform/resolvers",
+  "react-hook-form", "react-dialog", "react-accordion", "react-tabs", "react-icons",
+  "cheerio", "file-opener", "common", "jest-dom", "user-event", "web-vitals",
+  "cookie-parser", "body-parser", "cross-env", "nodemon", "concurrently", "rimraf",
+  "path", "fs", "os", "crypto", "buffer", "stream", "util", "events", "url", "http", "https"
+]);
+
+const NPM_MAPPINGS: Record<string, { name: string; extra?: string[] }> = {
+  "react": { name: "React" },
+  "react-dom": { name: "React" },
+  "react-native": { name: "React Native", extra: ["React", "Mobile App"] },
+  "next": { name: "Next.js", extra: ["React"] },
+  "express": { name: "Express.js", extra: ["Node.js", "REST API"] },
+  "tailwindcss": { name: "Tailwind CSS" },
+  "typescript": { name: "TypeScript" },
+  "prisma": { name: "Prisma ORM" },
+  "@prisma/client": { name: "Prisma ORM" },
+  "mongoose": { name: "MongoDB" },
+  "mongodb": { name: "MongoDB" },
+  "pg": { name: "PostgreSQL" },
+  "postgres": { name: "PostgreSQL" },
+  "redis": { name: "Redis" },
+  "ioredis": { name: "Redis" },
+  "firebase": { name: "Firebase" },
+  "firebase-admin": { name: "Firebase" },
+  "@supabase/supabase-js": { name: "Supabase" },
+  "graphql": { name: "GraphQL" },
+  "@apollo/client": { name: "GraphQL" },
+  "apollo-server": { name: "GraphQL", extra: ["REST API"] },
+  "socket.io": { name: "Socket.io" },
+  "socket.io-client": { name: "Socket.io" },
+  "@reduxjs/toolkit": { name: "Redux" },
+  "redux": { name: "Redux" },
+  "react-redux": { name: "Redux", extra: ["React"] },
+  "zustand": { name: "Zustand" },
+  "@tanstack/react-query": { name: "React Query", extra: ["React"] },
+  "react-query": { name: "React Query", extra: ["React"] },
+  "framer-motion": { name: "Framer Motion" },
+  "axios": { name: "Axios", extra: ["REST API"] },
+  "vite": { name: "Vite" },
+  "vue": { name: "Vue.js" },
+  "@angular/core": { name: "Angular" },
+  "electron": { name: "Electron" },
+  "@capacitor/core": { name: "Capacitor" },
+  "jest": { name: "Jest" },
+  "cypress": { name: "Cypress" },
+  "lucide-react": { name: "Lucide Icons" },
+  "openai": { name: "OpenAI API", extra: ["AI Integration"] },
+  "@google/generative-ai": { name: "Google Gemini AI", extra: ["AI Integration"] },
+  "groq-sdk": { name: "Groq SDK", extra: ["AI Integration"] },
+};
+
+const PYTHON_MAPPINGS: Record<string, { name: string; extra?: string[] }> = {
+  "django": { name: "Django", extra: ["Python"] },
+  "djangorestframework": { name: "Django REST Framework", extra: ["Django", "Python", "REST API"] },
+  "djangorestframework-simplejwt": { name: "Django REST Framework", extra: ["Django", "REST API"] },
+  "django-cors-headers": { name: "Django" },
+  "django-filter": { name: "Django" },
+  "django-environ": { name: "Django" },
+  "django-crispy-forms": { name: "Django" },
+  "flask": { name: "Flask", extra: ["Python"] },
+  "flask-cors": { name: "Flask" },
+  "flask-sqlalchemy": { name: "Flask", extra: ["SQLAlchemy"] },
+  "flask-restful": { name: "Flask", extra: ["REST API"] },
+  "fastapi": { name: "FastAPI", extra: ["Python", "REST API"] },
+  "uvicorn": { name: "Uvicorn" },
+  "gunicorn": { name: "Gunicorn" },
+  "celery": { name: "Celery" },
+  "sqlalchemy": { name: "SQLAlchemy" },
+  "psycopg2": { name: "PostgreSQL" },
+  "psycopg2-binary": { name: "PostgreSQL" },
+  "asyncpg": { name: "PostgreSQL" },
+  "pymongo": { name: "MongoDB" },
+  "djongo": { name: "MongoDB", extra: ["Django"] },
+  "django-mongodb-engine": { name: "MongoDB", extra: ["Django"] },
+  "motor": { name: "MongoDB" },
+  "redis": { name: "Redis" },
+  "pytest": { name: "Pytest" },
+  "pandas": { name: "Pandas", extra: ["Python"] },
+  "numpy": { name: "NumPy", extra: ["Python"] },
+  "scikit-learn": { name: "Scikit-Learn", extra: ["Python"] },
+  "sklearn": { name: "Scikit-Learn", extra: ["Python"] },
+  "tensorflow": { name: "TensorFlow", extra: ["Python"] },
+  "keras": { name: "TensorFlow", extra: ["Python"] },
+  "torch": { name: "PyTorch", extra: ["Python"] },
+  "pytorch": { name: "PyTorch", extra: ["Python"] },
+  "boto3": { name: "AWS", extra: ["Python"] },
+  "requests": { name: "REST API", extra: ["Python"] },
+};
+
+function prioritizeSkills(skills: string[]): string[] {
+  const getWeight = (skill: string): number => {
+    const cat = categorizeSkill(skill);
+    const lower = skill.toLowerCase();
+
+    // Low priority markup / generic styling
+    if (lower === "html" || lower === "css" || lower === "scss" || lower === "sass" || lower === "tex") return 50;
+    if (lower === "shell" || lower === "bash") return 45;
+
+    // Frameworks & Major Backends get top priority
+    if (cat === "Frameworks") return 10;
+    if (cat === "Databases") return 15;
+    if (cat === "Languages") return 20;
+    if (cat === "ToolsAndCloud") return 25;
+    return 30;
+  };
+
+  return Array.from(new Set(skills)).sort((a, b) => {
+    const weightA = getWeight(a);
+    const weightB = getWeight(b);
+    if (weightA !== weightB) return weightA - weightB;
+    return a.localeCompare(b);
+  });
+}
+
 export async function scanGithubProfile(options: {
   token?: string;
   username?: string;
@@ -70,13 +242,18 @@ export async function scanGithubProfile(options: {
   };
 
   const addSkill = (name: string, sourceRepo: string, evidence: string, versionDetails?: string) => {
-    const category = categorizeSkill(name);
-    categorizedSkills[category].add(name);
+    const trimmed = name.trim();
+    if (!trimmed || NOISE_SKILLS.has(trimmed.toLowerCase())) return;
 
-    const existing = extractedSkills.find(s => s.name.toLowerCase() === name.toLowerCase() && s.sourceRepo === sourceRepo);
+    const category = categorizeSkill(trimmed);
+    categorizedSkills[category].add(trimmed);
+
+    const existing = extractedSkills.find(
+      s => s.name.toLowerCase() === trimmed.toLowerCase() && s.sourceRepo === sourceRepo
+    );
     if (!existing) {
       extractedSkills.push({
-        name,
+        name: trimmed,
         category,
         versionDetails,
         sourceRepo,
@@ -86,43 +263,61 @@ export async function scanGithubProfile(options: {
     }
   };
 
-  // Always add Git since profile is hosted on GitHub
+  // Always add Git / GitHub
   addSkill("Git", "GitHub Account", "Candidate has active GitHub profile and repositories");
   addSkill("GitHub", "GitHub Account", "Candidate uses GitHub for version control and CI/CD");
 
-  // Process all repositories (up to 30 most active)
+  // Process up to 30 most active repos
   const targetRepos = reposData.slice(0, 30);
 
   for (const repo of targetRepos) {
     const repoSkills: string[] = [];
 
-    // A. Fetch All Languages used in this repository via GitHub Languages API
+    const addRepoSkill = (name: string, evidence: string, versionDetails?: string) => {
+      const trimmed = name.trim();
+      if (!trimmed || NOISE_SKILLS.has(trimmed.toLowerCase())) return;
+
+      addSkill(trimmed, repo.name, evidence, versionDetails);
+      if (!repoSkills.some(s => s.toLowerCase() === trimmed.toLowerCase())) {
+        repoSkills.push(trimmed);
+      }
+    };
+
+    // A. Match Tech Keywords from Repo Name & Description & Topics
+    const textToMatch = `${repo.name} ${repo.description || ""} ${(repo.topics || []).join(" ")}`;
+    for (const tech of TECH_PATTERNS) {
+      if (tech.pattern.test(textToMatch)) {
+        addRepoSkill(tech.name, `Detected in repository name/description/topics for ${repo.name}`);
+        if (tech.extraSkills) {
+          tech.extraSkills.forEach(extra => addRepoSkill(extra, `Inferred from ${tech.name} on ${repo.name}`));
+        }
+      }
+    }
+
+    // B. Fetch All Languages via GitHub Languages API
     try {
       const langUrl = `https://api.github.com/repos/${repo.full_name}/languages`;
       const langRes = await fetch(langUrl, { headers });
       if (langRes.ok) {
         const langData: Record<string, number> = await langRes.json();
         for (const langName of Object.keys(langData)) {
-          addSkill(langName, repo.name, `Detected in repository languages breakdown for ${repo.name}`);
-          repoSkills.push(langName);
+          addRepoSkill(langName, `Detected in repository languages breakdown for ${repo.name}`);
         }
       }
     } catch {
       if (repo.language) {
-        addSkill(repo.language, repo.name, `Primary language for ${repo.name}`);
-        repoSkills.push(repo.language);
+        addRepoSkill(repo.language, `Primary language for ${repo.name}`);
       }
     }
 
-    // B. Topics / Tags
+    // C. Explicit Topics
     if (repo.topics && repo.topics.length > 0) {
       repo.topics.forEach((t) => {
-        addSkill(t, repo.name, `GitHub topic tag on ${repo.name}`);
-        repoSkills.push(t);
+        addRepoSkill(t, `GitHub topic tag on ${repo.name}`);
       });
     }
 
-    // C. Fetch Recursive Git Tree to discover nested files
+    // D. Fetch Recursive Git Tree to discover nested files
     let treeItems: TreeItem[] = [];
     try {
       const defaultBranch = repo.default_branch || "main";
@@ -133,62 +328,75 @@ export async function scanGithubProfile(options: {
         treeItems = treeData.tree || [];
       }
     } catch {
-      // Fallback if tree fails
+      // Fallback
     }
 
-    // D. Scan File Extensions and Paths across Tree
-    let hasJavaFiles = false;
-    let hasGoFiles = false;
-    let hasPythonFiles = false;
-    let hasDockerFiles = false;
-    let hasMongoMention = false;
-
+    // E. Scan File Extensions and Signatures across Tree
     const manifestPaths: string[] = [];
 
     for (const item of treeItems) {
       const lowerPath = item.path.toLowerCase();
 
-      if (lowerPath.endsWith(".java")) hasJavaFiles = true;
-      if (lowerPath.endsWith(".go") || lowerPath.endsWith("go.mod")) hasGoFiles = true;
-      if (lowerPath.endsWith(".py")) hasPythonFiles = true;
-      if (lowerPath.includes("dockerfile") || lowerPath.includes("docker-compose")) hasDockerFiles = true;
-      if (lowerPath.includes("mongo") || lowerPath.includes("mongodb")) hasMongoMention = true;
+      // Framework Signatures
+      if (lowerPath.endsWith("manage.py") || lowerPath.endsWith("wsgi.py") || lowerPath.endsWith("asgi.py")) {
+        addRepoSkill("Django", `Django signature file (${item.path}) detected in repository`);
+        addRepoSkill("Python", `Python signature file (${item.path}) detected in repository`);
+        addRepoSkill("REST API", `Django API backend detected in repository`);
+      }
+      if (lowerPath.includes("next.config.")) {
+        addRepoSkill("Next.js", `Next.js config (${item.path}) detected`);
+        addRepoSkill("React", `React framework detected`);
+      }
+      if (lowerPath.includes("vite.config.")) {
+        addRepoSkill("Vite", `Vite build config (${item.path}) detected`);
+      }
+      if (lowerPath.includes("tailwind.config.")) {
+        addRepoSkill("Tailwind CSS", `Tailwind CSS config (${item.path}) detected`);
+      }
+      if (lowerPath.endsWith("tsconfig.json")) {
+        addRepoSkill("TypeScript", `TypeScript config (${item.path}) detected`);
+      }
+      if (lowerPath.endsWith(".java")) {
+        addRepoSkill("Java", `Source .java files detected in repository tree`);
+      }
+      if (lowerPath.endsWith(".go") || lowerPath.endsWith("go.mod")) {
+        addRepoSkill("Go", `Source .go / go.mod files detected in repository tree`);
+      }
+      if (lowerPath.endsWith(".py")) {
+        addRepoSkill("Python", `Source .py files detected in repository tree`);
+      }
+      if (lowerPath.endsWith("cargo.toml")) {
+        addRepoSkill("Rust", `Cargo.toml detected in repository tree`);
+      }
+      if (lowerPath.includes("dockerfile") || lowerPath.includes("docker-compose")) {
+        addRepoSkill("Docker", `Dockerfile / docker-compose detected in repo tree`);
+      }
+      if (lowerPath.includes("mongo") || lowerPath.includes("mongodb")) {
+        addRepoSkill("MongoDB", `MongoDB references / files detected in codebase`);
+      }
+      if (lowerPath.includes("capacitor.config.")) {
+        addRepoSkill("Capacitor", `Capacitor mobile config detected`);
+        addRepoSkill("Mobile App", `Capacitor mobile build detected`);
+      }
 
-      // Collect manifest paths (package.json, pom.xml, build.gradle, requirements.txt)
+      // Collect manifest paths
       if (
         lowerPath.endsWith("package.json") ||
         lowerPath.endsWith("pom.xml") ||
         lowerPath.endsWith("build.gradle") ||
-        lowerPath.endsWith("requirements.txt")
+        lowerPath.endsWith("build.gradle.kts") ||
+        lowerPath.endsWith("requirements.txt") ||
+        lowerPath.endsWith("pipfile") ||
+        lowerPath.endsWith("pyproject.toml") ||
+        lowerPath.endsWith("setup.py") ||
+        lowerPath.includes("requirements/")
       ) {
         manifestPaths.push(item.path);
       }
     }
 
-    if (hasJavaFiles) {
-      addSkill("Java", repo.name, `Source .java files detected in repository tree`);
-      repoSkills.push("Java");
-    }
-    if (hasGoFiles) {
-      addSkill("Go", repo.name, `Source .go / go.mod files detected in repository tree`);
-      addSkill("Golang", repo.name, `Source .go files detected in repository tree`);
-      repoSkills.push("Go");
-    }
-    if (hasPythonFiles) {
-      addSkill("Python", repo.name, `Source .py files detected in repository tree`);
-      repoSkills.push("Python");
-    }
-    if (hasDockerFiles) {
-      addSkill("Docker", repo.name, `Dockerfile / docker-compose detected in repo tree`);
-      repoSkills.push("Docker");
-    }
-    if (hasMongoMention) {
-      addSkill("MongoDB", repo.name, `MongoDB references / files detected in codebase`);
-      repoSkills.push("MongoDB");
-    }
-
-    // E. Parse discovered manifest files (root or nested)
-    const processedManifests = manifestPaths.slice(0, 5); // top 5 manifests per repo
+    // F. Parse discovered manifest files
+    const processedManifests = manifestPaths.slice(0, 6);
     for (const mPath of processedManifests) {
       try {
         const fileUrl = `https://raw.githubusercontent.com/${repo.full_name}/${repo.default_branch || 'main'}/${mPath}`;
@@ -196,8 +404,9 @@ export async function scanGithubProfile(options: {
         if (!fileRes.ok) continue;
 
         const contentText = await fileRes.text();
+        const lowerMPath = mPath.toLowerCase();
 
-        if (mPath.endsWith("package.json")) {
+        if (lowerMPath.endsWith("package.json")) {
           try {
             const pkgJson = JSON.parse(contentText);
             const allDeps = { ...pkgJson.dependencies, ...pkgJson.devDependencies };
@@ -205,57 +414,59 @@ export async function scanGithubProfile(options: {
               const cleanVersion = String(depVersion).replace(/[\^~>=]/g, "").trim();
               const lowerDep = depName.toLowerCase();
 
-              if (lowerDep === "react") addSkill("React", repo.name, `Found in ${mPath}`, cleanVersion);
-              else if (lowerDep === "next" || lowerDep.includes("next")) addSkill("Next.js", repo.name, `Found in ${mPath}`, cleanVersion);
-              else if (lowerDep === "express") {
-                addSkill("Express.js", repo.name, `Found in ${mPath}`, cleanVersion);
-                addSkill("REST API", repo.name, `Express server found in ${mPath}`);
-              }
-              else if (lowerDep === "tailwindcss") addSkill("Tailwind CSS", repo.name, `Found in ${mPath}`, cleanVersion);
-              else if (lowerDep === "typescript") addSkill("TypeScript", repo.name, `Found in ${mPath}`, cleanVersion);
-              else if (lowerDep === "prisma" || lowerDep === "@prisma/client") addSkill("Prisma ORM", repo.name, `Found in ${mPath}`, cleanVersion);
-              else if (lowerDep === "mongoose" || lowerDep === "mongodb") addSkill("MongoDB", repo.name, `Found in ${mPath}`, cleanVersion);
-              else if (lowerDep === "pg" || lowerDep === "postgres") addSkill("PostgreSQL", repo.name, `Found in ${mPath}`, cleanVersion);
-              else if (lowerDep === "redis" || lowerDep === "ioredis") addSkill("Redis", repo.name, `Found in ${mPath}`, cleanVersion);
-              else if (lowerDep.includes("docker")) addSkill("Docker", repo.name, `Found in ${mPath}`, cleanVersion);
-              else if (lowerDep.includes("aws") || lowerDep.includes("@aws-sdk")) addSkill("AWS", repo.name, `Found in ${mPath}`, cleanVersion);
-              else {
+              if (NPM_MAPPINGS[lowerDep]) {
+                const mapInfo = NPM_MAPPINGS[lowerDep];
+                addRepoSkill(mapInfo.name, `Found in ${mPath}`, cleanVersion);
+                if (mapInfo.extra) {
+                  mapInfo.extra.forEach(ext => addRepoSkill(ext, `Inferred from ${mapInfo.name} in ${mPath}`));
+                }
+              } else if (!NOISE_SKILLS.has(lowerDep) && !lowerDep.startsWith("@types/") && !lowerDep.startsWith("eslint")) {
                 const formatted = depName.replace(/^@[^/]+\//, "").split("/")[0];
-                if (formatted.length > 2) {
-                  addSkill(formatted, repo.name, `Dependency in ${mPath}`, cleanVersion);
-                  repoSkills.push(formatted);
+                if (formatted.length > 2 && !NOISE_SKILLS.has(formatted.toLowerCase())) {
+                  addRepoSkill(formatted, `Dependency in ${mPath}`, cleanVersion);
                 }
               }
             }
           } catch {}
-        } else if (mPath.endsWith("pom.xml") || mPath.endsWith("build.gradle")) {
-          addSkill("Java", repo.name, `Build manifest ${mPath} detected in repo`);
-          repoSkills.push("Java");
+        } else if (lowerMPath.endsWith("pom.xml") || lowerMPath.endsWith("build.gradle") || lowerMPath.endsWith("build.gradle.kts")) {
+          addRepoSkill("Java", `Build manifest ${mPath} detected in repo`);
 
           if (contentText.includes("spring-boot") || contentText.includes("springframework")) {
-            addSkill("Spring Boot", repo.name, `Detected spring framework in ${mPath}`);
-            addSkill("REST API", repo.name, `Spring REST Web Service in ${mPath}`);
-            addSkill("Microservices", repo.name, `Spring Boot microservice in ${mPath}`);
-            repoSkills.push("Spring Boot");
+            addRepoSkill("Spring Boot", `Detected spring framework in ${mPath}`);
+            addRepoSkill("REST API", `Spring REST Web Service in ${mPath}`);
+            addRepoSkill("Microservices", `Spring Boot microservice in ${mPath}`);
           }
           if (contentText.includes("mongodb") || contentText.includes("spring-boot-starter-data-mongodb")) {
-            addSkill("MongoDB", repo.name, `Detected Spring Data MongoDB in ${mPath}`);
-            repoSkills.push("MongoDB");
+            addRepoSkill("MongoDB", `Detected Spring Data MongoDB in ${mPath}`);
           }
-        } else if (mPath.endsWith("requirements.txt")) {
+          if (contentText.includes("postgresql") || contentText.includes("postgres")) {
+            addRepoSkill("PostgreSQL", `PostgreSQL driver found in ${mPath}`);
+          }
+        } else if (
+          lowerMPath.endsWith("requirements.txt") ||
+          lowerMPath.endsWith("pipfile") ||
+          lowerMPath.endsWith("pyproject.toml") ||
+          lowerMPath.endsWith("setup.py") ||
+          lowerMPath.includes("requirements/")
+        ) {
+          addRepoSkill("Python", `Python manifest ${mPath} detected in repo`);
           const lines = contentText.split("\n");
           for (const line of lines) {
             const trimmed = line.trim();
             if (trimmed && !trimmed.startsWith("#")) {
-              const parts = trimmed.split(/==|>=|<=|~/);
-              const libName = parts[0].trim();
-              const version = parts[1]?.trim();
-              if (libName) {
-                if (libName.toLowerCase() === "pymongo" || libName.toLowerCase() === "django-mongodb-engine") {
-                  addSkill("MongoDB", repo.name, `Found in ${mPath}`, version);
+              const parts = trimmed.split(/==|>=|<=|~|=|;/);
+              const rawLib = parts[0].replace(/[\[\],\'\"]/g, "").trim().toLowerCase();
+              const version = parts[1]?.replace(/[\[\],\'\"]/g, "").trim();
+              if (rawLib) {
+                if (PYTHON_MAPPINGS[rawLib]) {
+                  const mapInfo = PYTHON_MAPPINGS[rawLib];
+                  addRepoSkill(mapInfo.name, `Python library in ${mPath}`, version);
+                  if (mapInfo.extra) {
+                    mapInfo.extra.forEach(ext => addRepoSkill(ext, `Inferred from ${mapInfo.name} in ${mPath}`));
+                  }
+                } else if (!NOISE_SKILLS.has(rawLib) && rawLib.length > 2) {
+                  addRepoSkill(rawLib, `Python library in ${mPath}`, version);
                 }
-                addSkill(libName, repo.name, `Python library in ${mPath}`, version);
-                repoSkills.push(libName);
               }
             }
           }
@@ -263,37 +474,33 @@ export async function scanGithubProfile(options: {
       } catch {}
     }
 
-    // F. Parse README.md
+    // G. Parse README.md
     let readmeText = "";
     try {
       const readmeUrl = `https://raw.githubusercontent.com/${repo.full_name}/${repo.default_branch || 'main'}/README.md`;
       const readmeRes = await fetch(readmeUrl, { headers });
       if (readmeRes.ok) {
         readmeText = await readmeRes.text();
-        const lowerReadme = readmeText.toLowerCase();
-
-        const techKeywords = [
-          "Java", "Spring Boot", "MongoDB", "Mongo", "Docker", "Kubernetes",
-          "GraphQL", "REST API", "RESTful", "CI/CD", "Kafka", "Microservices",
-          "TensorFlow", "PyTorch", "AWS", "Azure", "GCP", "PostgreSQL", "Redis", "Go", "Golang"
-        ];
-        
-        techKeywords.forEach(tech => {
-          if (lowerReadme.includes(tech.toLowerCase())) {
-            const targetName = tech === "Mongo" ? "MongoDB" : (tech === "Golang" ? "Go" : tech);
-            addSkill(targetName, repo.name, `Mentioned in README.md`);
-            repoSkills.push(targetName);
+        for (const tech of TECH_PATTERNS) {
+          if (tech.pattern.test(readmeText)) {
+            addRepoSkill(tech.name, `Mentioned in README.md`);
+            if (tech.extraSkills) {
+              tech.extraSkills.forEach(extra => addRepoSkill(extra, `Inferred from ${tech.name} in README.md`));
+            }
           }
-        });
+        }
       }
     } catch {}
+
+    // Sort and prioritize skills for this repo
+    const prioritizedSkills = prioritizeSkills(repoSkills);
 
     projects.push({
       name: repo.name,
       repoUrl: repo.html_url,
       description: repo.description || (readmeText ? readmeText.slice(0, 150) + "..." : "GitHub Project"),
       topics: repo.topics || [],
-      extractedSkills: Array.from(new Set(repoSkills)),
+      extractedSkills: prioritizedSkills,
       primaryLanguage: repo.language || "N/A",
       stars: repo.stargazers_count,
       updatedAt: repo.updated_at

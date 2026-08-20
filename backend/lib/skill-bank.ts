@@ -48,19 +48,42 @@ export interface JDMatchResult {
   Categorizes a skill string into one of the 5 main categories.
  */
 export function categorizeSkill(skillName: string): SkillItem["category"] {
-  const lower = skillName.toLowerCase();
+  const lower = skillName.toLowerCase().trim();
 
-  const languages = ["typescript", "javascript", "python", "java", "c++", "cpp", "c#", "c", "go", "golang", "rust", "ruby", "php", "swift", "kotlin", "scala", "html", "css", "sql", "r", "shell", "bash"];
-  if (languages.some(l => lower.includes(l))) return "Languages";
+  // 1. Frameworks & Libraries
+  const frameworks = [
+    "django rest framework", "django", "drf", "fastapi", "flask", "spring boot", "spring",
+    "react native", "react", "next.js", "nextjs", "vue", "angular", "express.js", "express",
+    "node.js", "nodejs", "nest.js", "nestjs", "laravel", "tailwind css", "tailwind", "tailwindcss",
+    "bootstrap", "flutter", "tensorflow", "pytorch", "keras", "scikit-learn", "redux", "graphql", "apollo",
+    "framer motion", "zustand", "react query", "vite", "webpack"
+  ];
+  if (frameworks.some(f => lower === f || lower.includes(f))) return "Frameworks";
 
-  const databases = ["postgres", "postgresql", "mysql", "mongodb", "mongo", "redis", "dynamodb", "sqlite", "oracle", "elasticsearch", "cassandra", "supabase", "firebase", "prisma", "sequelize"];
-  if (databases.some(d => lower.includes(d))) return "Databases";
+  // 2. Databases & ORMs
+  const databases = [
+    "postgres", "postgresql", "mysql", "mongodb", "mongo", "redis", "dynamodb",
+    "sqlite", "sqlite3", "oracle", "elasticsearch", "cassandra", "supabase", "firebase", "prisma", "prisma orm", "sequelize", "sqlalchemy"
+  ];
+  if (databases.some(d => lower === d || lower.includes(d))) return "Databases";
 
-  const frameworks = ["react", "next.js", "nextjs", "vue", "angular", "express", "node.js", "nodejs", "spring", "spring boot", "django", "flask", "fastapi", "nest.js", "nestjs", "laravel", "tailwind", "bootstrap", "flutter", "react native", "tensorflow", "pytorch", "keras", "scikit-learn"];
-  if (frameworks.some(f => lower.includes(f))) return "Frameworks";
+  // 3. Tools, Cloud & DevOps
+  const tools = [
+    "docker", "kubernetes", "k8s", "aws", "amazon web services", "azure", "gcp", "google cloud",
+    "git", "github", "gitlab", "jenkins", "github actions", "ci/cd", "terraform", "ansible",
+    "nginx", "babel", "rest api", "restful", "kafka", "rabbitmq", "linux", "electron", "capacitor",
+    "mobile app", "jest", "cypress", "ai integration"
+  ];
+  if (tools.some(t => lower === t || lower.includes(t))) return "ToolsAndCloud";
 
-  const tools = ["docker", "kubernetes", "k8s", "aws", "amazon web services", "azure", "gcp", "google cloud", "git", "github", "gitlab", "jenkins", "github actions", "ci/cd", "terraform", "ansible", "nginx", "webpack", "vite", "babel", "graphql", "rest api", "kafka", "rabbitmq", "linux"];
-  if (tools.some(t => lower.includes(t))) return "ToolsAndCloud";
+  // 4. Languages
+  const multiCharLanguages = [
+    "typescript", "javascript", "python", "java", "golang",
+    "rust", "ruby", "php", "swift", "kotlin", "scala", "html", "css", "scss", "sass", "sql", "shell", "bash"
+  ];
+  if (multiCharLanguages.some(l => lower === l || lower.includes(l))) return "Languages";
+
+  if (["c", "c++", "cpp", "c#", "r", "go", "tex"].includes(lower)) return "Languages";
 
   return "Methodologies";
 }
@@ -88,7 +111,6 @@ export function sanitizeMissingKeywords(
     if (matchedSet.has(kwLower)) return false;
 
     // Extract base technology name by removing version numbers/suffixes
-    // e.g., "Java 8" -> "java", "Java 17" -> "java", "Java 8/17/21" -> "java", "Python 3.8" -> "python"
     const baseTech = kwLower
       .replace(/(\s*v?\d+(\.\d+)*(\/\d+)*\+?)+/g, "")
       .replace(/\s*(8|11|17|21|3|4|5|16|17|18|19|20|21)\b/g, "")
@@ -135,7 +157,9 @@ export function matchSkillBankWithJD(skillBank: SkillBank, jdText: string | any)
       lowerJd.includes(skillLower) ||
       (skillLower === "golang" && lowerJd.includes("go")) ||
       (skillLower === "mongo" && lowerJd.includes("mongodb")) ||
-      (skillLower === "github" && lowerJd.includes("git"));
+      (skillLower === "github" && lowerJd.includes("git")) ||
+      (skillLower === "django" && (lowerJd.includes("django") || lowerJd.includes("drf"))) ||
+      (skillLower === "django rest framework" && (lowerJd.includes("django") || lowerJd.includes("drf") || lowerJd.includes("rest framework")));
 
     if (matchesJd) {
       const normalizedKey = item.name.toLowerCase();
@@ -154,18 +178,27 @@ export function matchSkillBankWithJD(skillBank: SkillBank, jdText: string | any)
 
   // Common tech keywords to evaluate missing gaps
   const commonTechList = [
+    { name: "Django", aliases: ["django", "drf", "django rest framework"] },
+    { name: "Django REST Framework", aliases: ["django rest framework", "drf", "djangorestframework"] },
+    { name: "FastAPI", aliases: ["fastapi"] },
+    { name: "Flask", aliases: ["flask"] },
+    { name: "React", aliases: ["react", "react.js", "reactjs"] },
+    { name: "Next.js", aliases: ["next.js", "nextjs", "next"] },
+    { name: "Tailwind CSS", aliases: ["tailwind css", "tailwind", "tailwindcss"] },
     { name: "Java", aliases: ["java"] },
+    { name: "Spring Boot", aliases: ["spring boot", "spring-boot", "spring"] },
     { name: "Go", aliases: ["go", "golang"] },
     { name: "MongoDB", aliases: ["mongodb", "mongo", "mongoose"] },
-    { name: "REST API", aliases: ["rest api", "restful", "express", "spring"] },
+    { name: "PostgreSQL", aliases: ["postgresql", "postgres"] },
+    { name: "Redis", aliases: ["redis", "ioredis"] },
+    { name: "REST API", aliases: ["rest api", "restful", "express", "spring", "fastapi"] },
+    { name: "GraphQL", aliases: ["graphql", "apollo"] },
     { name: "Git", aliases: ["git", "github", "gitlab"] },
     { name: "Microservices", aliases: ["microservices", "microservice", "spring boot", "docker"] },
     { name: "TypeScript", aliases: ["typescript", "ts"] },
     { name: "JavaScript", aliases: ["javascript", "js"] },
     { name: "Python", aliases: ["python", "py"] },
-    { name: "React", aliases: ["react"] },
     { name: "Node.js", aliases: ["node.js", "nodejs", "node"] },
-    { name: "PostgreSQL", aliases: ["postgresql", "postgres"] },
     { name: "Docker", aliases: ["docker"] },
     { name: "Kubernetes", aliases: ["kubernetes", "k8s"] },
     { name: "AWS", aliases: ["aws", "amazon web services"] }
