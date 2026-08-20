@@ -71,6 +71,11 @@ function cleanLatexResponse(rawText: string): string {
   cleaned = cleaned.replace(/[ \t]+$/gm, '');
   cleaned = cleaned.replace(/[ \t]+\\\\/g, '\\\\');
 
+  // 7. Strip unintended blank lines inside itemize environments that add paragraph break spacing
+  cleaned = cleaned.replace(/(\\begin\{itemize\})\n\s*\n+/g, '$1\n');
+  cleaned = cleaned.replace(/(\\item[^\n]*)\n\s*\n+(\s*\\item)/g, '$1\n$2');
+  cleaned = cleaned.replace(/\n\s*\n+(\\end\{itemize\})/g, '\n$1');
+
   return cleaned.trim();
 }
 
@@ -237,7 +242,7 @@ async function tailorForModel(
       break;
     }
 
-    currentSystemPrompt = systemPrompt + `\n\nWARNING: Your previous response was ${tailoredLatex.length} characters long, which EXCEEDS the absolute maximum limit of ${latexLength} characters. You MUST shorten your response by at least ${tailoredLatex.length - latexLength} characters. Be extremely concise.`;
+    currentSystemPrompt = systemPrompt + `\n\nWARNING: Your previous response was ${tailoredLatex.length} characters long, which EXCEEDS the limit. You MUST shorten your response to ~${Math.round(latexLength * 0.90)} characters. Keep each skill category strictly 1 line (max 5 tools) and keep all bullets concise (max 85-90 chars) so the resume fits on 1 page without spilling.`;
     attempt++;
   }
 
@@ -516,11 +521,15 @@ CRITICAL INSTRUCTIONS:
    - DISTRIBUTE EQUITABLY: Spread the required keywords, technologies, and architectural concepts evenly across ALL your Work Experience entries and ALL your Project descriptions.
    - MATCH EACH SKILL TO THE MOST RELEVANT PROJECT: Review all available projects and roles before generating. For example, assign backend/database scaling to your SaaS platform project, assign NLP/AI/compute optimizations (like Python/C++) to your AI pipeline project, and assign real-time/networking skills to your websocket project. Every single project and role should showcase 2-3 distinct, relevant JD competencies rather than overloading one project with 10 skills!
 9. MAINTAIN CLEAN STRUCTURE: Keep the standard resume density (typically 2-3 projects and 3-4 bullets per role/project). If swapping a project with a GitHub project, keep the same number of project items as the original template.
-10. **STRICT 1-PAGE LENGTH CONSTRAINT (PREVENT OVERFLOW - TARGET UNDER ${latexLength} CHARACTERS)**:
-    - The original input document has exactly ${latexLength} characters.
-    - Your tailored LaTeX MUST be UNDER OR EQUAL to ${latexLength} characters (Target budget: ~${Math.round(latexLength * 0.93)} to ${Math.round(latexLength * 0.98)} characters).
-    - To inject new JD keywords without increasing overall document length, you MUST actively tighten existing bullet points by removing filler words and passive phrasing (e.g., shorten "Responsible for developing and deploying..." to "Architected and deployed...").
-    - NEVER add extra \\vspace, \\newline, \\\\, or blank lines. Guarantee an output length <= ${latexLength} characters!
+10. **STRICT 1-PAGE GUARANTEE (CRITICAL: VISUAL LINE BUDGET & COMPACTNESS)**:
+    - The original input document has exactly ${latexLength} characters and fits on EXACTLY 1 PAGE.
+    - LaTeX vertical height is governed by VISUAL LINE WRAPPING. To guarantee the document NEVER overflows onto a 2nd page:
+      a) **SKILLS MUST BE 1 LINE PER CATEGORY**: Each category line in \\section*{Technical Skills} MUST fit on EXACTLY ONE physical line (max 4-6 high-priority tools per line). NEVER let a skill line wrap to a 2nd line! Prune out less relevant tools so that all 8 categories take exactly 8 physical lines.
+      b) **PROJECT HEADERS MUST BE 1 LINE**: Project tech stack subtitles (e.g. \\project{Name}{Sub}{Tech Stack}) must contain at most 4-5 core tools so the header never wraps onto a 2nd line.
+      c) **COMPACT PUNCHY BULLETS**: Every bullet point must be tightly written (max 80-95 characters for single-line bullets). If a bullet in the original resume was 1 line, your tailored bullet MUST be strictly 1 line! Never expand 1-line bullets into 2 lines.
+      d) **SUMMARY BUDGET**: Keep the professional summary strictly to 3 compact lines (~55-70 words).
+      e) **TARGET BUDGET**: Produce a tailored LaTeX of ~${Math.round(latexLength * 0.88)} to ${Math.round(latexLength * 0.92)} characters (Target: ~${Math.round(latexLength * 0.90)} characters).
+    - ZERO SPACING / PREAMBLE ALTERATION: DO NOT insert extra \\vspace, do NOT add blank lines between items, do NOT insert extra newlines, do NOT alter preamble, line spreads, margins, or fonts. ONLY update textual content.
 11. DO NOT use raw '<' or '>' symbols (e.g. "< 3 min", "> 90 ms") or naked math commands in plain text. Always write plain English words like "under 3 min", "over 90 ms", "to". Raw '<' renders as Spanish inverted exclamation mark '¡' in LaTeX! ALWAYS escape '%' signs as '\%' (e.g., "25\%" instead of "25%"), otherwise LaTeX will treat it as a comment and truncate the line!
 12. NEVER use \\newcommand for commands that already exist in standard LaTeX (such as \\section, \\subsection, \\item, \\textbf). Leave existing section definitions untouched or use \\renewcommand.
 13. Return ONLY the raw tailored LaTeX string. Do NOT wrap it in markdown code blocks (\`\`\`latex ... \`\`\`). Do NOT include any explanations or prose before or after. Start immediately with the first LaTeX character and end with the last LaTeX character.
@@ -580,7 +589,7 @@ ${latex}`;
               }
 
               const excess = latexResult.length - latexLength;
-              currentSystemPrompt = systemPrompt + `\n\nCRITICAL LENGTH VIOLATION (ATTEMPT ${attempt + 1}/${maxAttempts}): Your generated LaTeX was ${latexResult.length} characters long, which EXCEEDS the ${latexLength} limit by ${excess} characters. You MUST actively tighten and shorten bullet points across all sections to produce a final document of ~${Math.round(latexLength * 0.95)} characters. Be extremely concise.`;
+              currentSystemPrompt = systemPrompt + `\n\nCRITICAL LENGTH VIOLATION (ATTEMPT ${attempt + 1}/${maxAttempts}): Your generated LaTeX was ${latexResult.length} characters long, which EXCEEDS the limit by ${excess} characters. You MUST shorten your response to ~${Math.round(latexLength * 0.90)} characters. Keep each skill category strictly 1 line (max 5 tools) and keep all bullets concise (max 85-90 chars) so the resume fits on 1 page without spilling.`;
               attempt++;
             }
             tailoredLatex = latexResult;
