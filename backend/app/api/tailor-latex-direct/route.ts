@@ -227,6 +227,7 @@ async function tailorForModel(
   let attempt = 0;
   const maxAttempts = 3;
   let currentSystemPrompt = systemPrompt;
+  const maxAllowedBudget = Math.round(latexLength * 0.90);
 
   while (attempt < maxAttempts) {
     const response = await callLLM({
@@ -238,11 +239,17 @@ async function tailorForModel(
 
     tailoredLatex = cleanLatexResponse(response.content);
 
-    if (tailoredLatex.length <= latexLength) {
+    if (tailoredLatex.length <= maxAllowedBudget) {
       break;
     }
 
-    currentSystemPrompt = systemPrompt + `\n\nWARNING: Your previous response was ${tailoredLatex.length} characters long, which EXCEEDS the limit. You MUST shorten your response to ~${Math.round(latexLength * 0.90)} characters. Keep each skill category strictly 1 line (max 5 tools) and keep all bullets concise (max 85-90 chars) so the resume fits on 1 page without spilling.`;
+    const excess = tailoredLatex.length - maxAllowedBudget;
+    currentSystemPrompt = systemPrompt + `\n\nCRITICAL 1-PAGE OVERFLOW WARNING (ATTEMPT ${attempt + 1}/${maxAttempts}): Your generated LaTeX was ${tailoredLatex.length} characters long, which is ${excess} characters over the strict 1-page budget (${maxAllowedBudget} chars). To ensure the resume fits on EXACTLY 1 page without spilling onto page 2:
+1. Keep the EXACT same skill category headers and count as the original template (do NOT create new category rows).
+2. Limit each skill line to max 4-5 core tools (max 50-60 chars per line).
+3. Limit project tech stack subtitles to max 3-4 tools (max 35 chars) so headers never wrap.
+4. Keep all single-line bullets under 85 characters.
+You MUST shorten your response to ~${Math.round(latexLength * 0.86)} characters.`;
     attempt++;
   }
 
@@ -447,7 +454,6 @@ STRICT INSTRUCTIONS FOR SKILL BANK INTEGRATION & REPLACEMENT:
     const jdChecklistText = allJdRequirements.length > 0
       ? allJdRequirements.map((req: string) => `- ${req}`).join("\n")
       : "- See structured JD requirements summary below";
-
     const systemPrompt = `You are an expert ATS specialist and LaTeX editor. 
 Your task is to take a raw LaTeX resume and rewrite its Professional Summary, Work Experience & Project tech-stack subtitles, and bullet points to perfectly align with the target Job Description by consulting the candidate's Verified GitHub Skill Bank.
 
@@ -458,17 +464,12 @@ TARGET JD REQUIREMENTS CHECKLIST TO INJECT (100% COVERAGE MANDATORY):
 ${jdChecklistText}
 
 STRICT INSTRUCTIONS FOR COMPLETE COVERAGE & ELIMINATING AREAS FOR IMPROVEMENT:
-1. TECHNICAL SKILLS SECTION (100% INJECTION & PRUNING):
-   - You MUST ensure every single JD requirement listed in the checklist above is added to its respective category line in \\section*{Technical Skills}!
-   - Category routing guidance:
-     * DevOps & Tools: Docker, Kubernetes, Terraform, CloudFormation, AWS, CI/CD, Git
-     * Backend: GraphQL, REST APIs, Microservices, Spring Boot, Node.js, Express.js, Django, Django REST Framework, FastAPI, Flask
-     * Databases: PostgreSQL, MySQL, MongoDB, Vector Databases (Pinecone, Qdrant, Weaviate), Redis
-     * Auth & Security: SSO (SAML/OIDC), JWT, OAuth 2.0, RBAC
-     * AI & LLM: Groq, Gemini, Vector DBs, Prompt Engineering, RAG
-     * Languages: Java, Python, TypeScript, JavaScript, SQL, Go, C++
-   - Place these JD-matching keywords at the VERY BEGINNING of each category line.
-   - Drop / prune unrelated skills to make room within the character limit.
+1. TECHNICAL SKILLS SECTION (100% INJECTION & PRUNING - PRESERVE EXACT ORIGINAL CATEGORIES):
+   - PRESERVE ORIGINAL CATEGORIES: You MUST use ONLY the exact skill category headers present in the candidate's original LaTeX resume (e.g. Languages, Frontend, Backend, Databases, Tools). DO NOT create new category rows (e.g. do NOT invent new separate rows for 'AI & LLM', 'Auth & Security', 'Payments & Billing' if they were not in the original resume).
+   - Distribute all required JD keywords and verified GitHub skills into the candidate's existing categories.
+   - Place JD-matching keywords at the VERY BEGINNING of each category line.
+   - Prune/drop irrelevant existing skills so each category line contains AT MOST 4-5 high-priority tools (MAX 50-60 CHARACTERS PER LINE). NEVER let a skill line wrap to 2 physical lines!
+   - NEVER repeat sub-tools or synonyms on the same line (e.g., do NOT write "AWS, CloudWatch, CloudWatch Logs, CloudWatch dashboards, CloudWatch alerting, SNS" — simply write "AWS (CloudWatch, SNS), Docker, Git, CI/CD").
 
 2. CONTEXTUAL WEAVING & PROJECT SWAPPING:
    - Update Project Tech Stack subtitles (e.g. \\project{Name}{Tech Stack}) to prominently feature these JD technologies.
@@ -496,16 +497,16 @@ CRITICAL INSTRUCTIONS:
    - SHOW, DON'T TELL (GENUINE REWRITING REQUIRED): You MUST genuinely rewrite the core engineering action verbs and architectural workflow of the bullet point itself!
    - BAD (LAZY SUFFIX - FORBIDDEN): "Replaced scheduled polling with a webhook pipeline using RabbitMQ, reducing lag from 20 min to 3 min, demonstrating expertise in data structures and algorithms."
    - GOOD (GENUINE ARCHITECTURAL REWRITING - REQUIRED): "Engineered high-throughput webhook event pipelines using RabbitMQ and custom hash-map caching data structures, optimizing algorithmic complexity to cut failure detection latency from 20 min to 3 min."
-5. MANDATORY PROJECT TECH STACK & BULLET REWRITING OR PROJECT SWAPPING (CRITICAL):
+5. MANDATORY PROJECT TECH STACK & BULLET REWRITING OR PROJECT SWAPPING (ANTI-LINE-WRAP):
    - You MUST update BOTH the Project Tech Stack subtitles/headers (the tools listed next to or under each project name, e.g. in \\project{Name}{Sub}{Tech Stack} or \\textit{Tools}) AND the project bullet points!
    - SMART PROJECT SWAPPING: If an existing resume project has low relevance to the target JD, SWAP/REPLACE that project with the most relevant Verified GitHub Project (e.g. swap an unrelated app for Kanban_WorkBoard if the JD requires Django/Python). Maintain the exact same LaTeX syntax/macro format as the original template.
-   - UPDATE TECH STACK SUBTITLES: Update the comma-separated tech stack list next to each Project title to prominently feature the primary JD-required programming languages and tools, WHILE RETAINING candidate's core technologies that support the project. Combine candidate's core stack + top JD skills (5-7 total per project header).
-   - REWRITE BULLET POINTS: Rewrite the project bullet points to incorporate the JD's required technologies and architectural workflows.
+   - UPDATE TECH STACK SUBTITLES (MAX 3-4 TOOLS): In \\project{Name}{Tech Stack} or \\role{...}{...}{...}, list AT MOST 3-4 primary technologies (max 35-40 characters total for the tech stack portion). NEVER list 7-8 tools on one header line, because it will horizontally collide with the title and wrap across 2 physical lines, ruining the 1-page layout!
+   - REWRITE BULLET POINTS: Rewrite the project bullet points to incorporate the JD's required technologies and architectural workflows cleanly.
 6. STRICT PURITY OF TECHNICAL SKILLS SECTION (TOOLS ONLY, NO SOFT SKILLS):
    - The comma-separated "Technical Skills" section is reserved EXCLUSIVELY for specific programming languages, frameworks, libraries, databases, cloud platforms, and developer tools (e.g. Java, Python, TypeScript, React, Spring Boot, Django, Docker, PostgreSQL, AWS, Git, gRPC, Redis, Kafka).
    - NEVER put soft engineering concepts, responsibilities, or domain phrases (such as "Code Review", "Debugging", "Data Storage", "System Design", "UI Design", "Mobile Development", "Infrastructure", "Security", "Distributed Computing", "Information Retrieval") into the Technical Skills lists! Those concepts belong exclusively inside Work Experience and Project bullet points as actions and outcomes.
 6b. REPLACE IRRELEVANT SKILLS WITH JD SKILLS:
-   - You MUST preserve the standard skill categories (e.g. Languages, Frontend, Backend, Databases, DevOps & Tools, Auth & Security).
+   - Preserve candidate's exact existing skill categories (Languages, Frontend, Backend, Databases, Tools).
    - PRUNE / DROP irrelevant tools from \\section*{Technical Skills} that have zero relevance to the target JD to make room for high-priority JD keywords and verified GitHub skills (e.g. prioritize Django, Python, Docker over unused tools).
    - Place JD-matching skills FIRST in each line.
 6c. DEDUPLICATION RULE:
@@ -523,14 +524,16 @@ CRITICAL INSTRUCTIONS:
 9. MAINTAIN CLEAN STRUCTURE: Keep the standard resume density (typically 2-3 projects and 3-4 bullets per role/project). If swapping a project with a GitHub project, keep the same number of project items as the original template.
 10. **STRICT 1-PAGE GUARANTEE (CRITICAL: VISUAL LINE BUDGET & COMPACTNESS)**:
     - The original input document has exactly ${latexLength} characters and fits on EXACTLY 1 PAGE.
-    - LaTeX vertical height is governed by VISUAL LINE WRAPPING. To guarantee the document NEVER overflows onto a 2nd page:
-      a) **SKILLS MUST BE 1 LINE PER CATEGORY**: Each category line in \\section*{Technical Skills} MUST fit on EXACTLY ONE physical line (max 4-6 high-priority tools per line). NEVER let a skill line wrap to a 2nd line! Prune out less relevant tools so that all 8 categories take exactly 8 physical lines.
-      b) **PROJECT HEADERS MUST BE 1 LINE**: Project tech stack subtitles (e.g. \\project{Name}{Sub}{Tech Stack}) must contain at most 4-5 core tools so the header never wraps onto a 2nd line.
-      c) **COMPACT PUNCHY BULLETS**: Every bullet point must be tightly written (max 80-95 characters for single-line bullets). If a bullet in the original resume was 1 line, your tailored bullet MUST be strictly 1 line! Never expand 1-line bullets into 2 lines.
-      d) **SUMMARY BUDGET**: Keep the professional summary strictly to 3 compact lines (~55-70 words).
-      e) **TARGET BUDGET**: Produce a tailored LaTeX of ~${Math.round(latexLength * 0.88)} to ${Math.round(latexLength * 0.92)} characters (Target: ~${Math.round(latexLength * 0.90)} characters).
+    - LaTeX vertical height is strictly governed by VISUAL LINE WRAPPING. To guarantee the document NEVER overflows onto a 2nd page:
+      a) **SKILLS MUST BE 1 LINE PER CATEGORY**: Keep the EXACT same number of category lines as the original template (e.g. 4-5 lines max). Each line must contain max 4-5 tools (max 50-60 characters total) so it NEVER wraps onto a 2nd line!
+      b) **PROJECT HEADERS MUST BE 1 LINE**: Tech stack subtitles (e.g. \\project{Name}{Tech Stack}) must contain at most 3-4 core tools (max 35-40 chars) so the header fits on 1 physical line without wrapping.
+      c) **COMPACT PUNCHY BULLETS (STRICT LINE BUDGET)**:
+         * Single-line bullets: MUST be 70-85 characters max. Never expand a 1-line bullet into 2 lines!
+         * Two-line bullets: MUST be 140-160 characters max. Never expand a 2-line bullet into 3 lines!
+      d) **SUMMARY BUDGET**: Keep the professional summary strictly to 3 compact lines (~50-65 words).
+      e) **TARGET CHARACTER BUDGET**: Produce a tailored LaTeX of ~${Math.round(latexLength * 0.85)} to ${Math.round(latexLength * 0.89)} characters (Target: ~${Math.round(latexLength * 0.88)} characters). Outputting more than ${Math.round(latexLength * 0.90)} characters will cause page overflow!
     - ZERO SPACING / PREAMBLE ALTERATION: DO NOT insert extra \\vspace, do NOT add blank lines between items, do NOT insert extra newlines, do NOT alter preamble, line spreads, margins, or fonts. ONLY update textual content.
-11. DO NOT use raw '<' or '>' symbols (e.g. "< 3 min", "> 90 ms") or naked math commands in plain text. Always write plain English words like "under 3 min", "over 90 ms", "to". Raw '<' renders as Spanish inverted exclamation mark '¡' in LaTeX! ALWAYS escape '%' signs as '\%' (e.g., "25\%" instead of "25%"), otherwise LaTeX will treat it as a comment and truncate the line!
+11. DO NOT use raw '<' or '>' symbols (e.g. "< 3 min", "> 90 ms") or naked math commands in plain text. Always write plain English words like "under 3 min", "over 90 ms", "to". Raw '<' renders as Spanish inverted exclamation mark '¡' in LaTeX! ALWAYS escape '%' signs as '\\%' (e.g., "25\\%" instead of "25%"), otherwise LaTeX will treat it as a comment and truncate the line!
 12. NEVER use \\newcommand for commands that already exist in standard LaTeX (such as \\section, \\subsection, \\item, \\textbf). Leave existing section definitions untouched or use \\renewcommand.
 13. Return ONLY the raw tailored LaTeX string. Do NOT wrap it in markdown code blocks (\`\`\`latex ... \`\`\`). Do NOT include any explanations or prose before or after. Start immediately with the first LaTeX character and end with the last LaTeX character.
 14. NEVER use placeholders, ellipses (...), or comments like "(unchanged)" or "(rest of document remains same)". You MUST output the full, complete, compilable LaTeX document from \\documentclass to \\end{document} without missing or skipping any section.
@@ -572,6 +575,7 @@ ${latex}`;
             let attempt = 0;
             const maxAttempts = 3;
             let currentSystemPrompt = systemPrompt;
+            const maxAllowedBudget = Math.round(latexLength * 0.90);
 
             let latexResult = "";
             while (attempt < maxAttempts) {
@@ -584,12 +588,17 @@ ${latex}`;
 
               latexResult = cleanLatexResponse(response.content);
 
-              if (latexResult.length <= latexLength) {
+              if (latexResult.length <= maxAllowedBudget) {
                 break;
               }
 
-              const excess = latexResult.length - latexLength;
-              currentSystemPrompt = systemPrompt + `\n\nCRITICAL LENGTH VIOLATION (ATTEMPT ${attempt + 1}/${maxAttempts}): Your generated LaTeX was ${latexResult.length} characters long, which EXCEEDS the limit by ${excess} characters. You MUST shorten your response to ~${Math.round(latexLength * 0.90)} characters. Keep each skill category strictly 1 line (max 5 tools) and keep all bullets concise (max 85-90 chars) so the resume fits on 1 page without spilling.`;
+              const excess = latexResult.length - maxAllowedBudget;
+              currentSystemPrompt = systemPrompt + `\n\nCRITICAL 1-PAGE OVERFLOW WARNING (ATTEMPT ${attempt + 1}/${maxAttempts}): Your generated LaTeX was ${latexResult.length} characters long, which is ${excess} characters over the strict 1-page budget (${maxAllowedBudget} chars). To ensure the resume fits on EXACTLY 1 page without spilling onto page 2:
+1. Keep the EXACT same skill category headers and count as the original template (do NOT create new category rows).
+2. Limit each skill line to max 4-5 core tools (max 50-60 chars per line).
+3. Limit project tech stack subtitles to max 3-4 tools (max 35 chars) so headers never wrap.
+4. Keep all single-line bullets under 85 characters.
+You MUST shorten your response to ~${Math.round(latexLength * 0.86)} characters.`;
               attempt++;
             }
             tailoredLatex = latexResult;

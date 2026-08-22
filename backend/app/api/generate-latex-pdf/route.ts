@@ -56,13 +56,21 @@ export async function POST(request: NextRequest) {
       .replace(/>(?=\s*\d|\s*min|\s*ms|\s*\$)/gi, 'over ')
       .replace(/(\d+)\s*%(?!\w)/g, '$1\\%');
 
-    // Compress LaTeX to avoid 414 Request-URI Too Large (Nginx 8KB limit)
-    // Remove actual comments (avoiding escaped \%) and compress multiple spaces/newlines
-    const compressedLatex = latexString
-      .replace(/(?<!\\)%.*$/gm, "") // Remove comments (only unescaped %)
-      .replace(/\n\s*\n/g, "\n") // Remove empty lines
-      .replace(/([\{\}\\])\s+/g, "$1") // Remove spaces after brackets/commands where safe
-      .replace(/\s+([\{\}\\])/g, " $1") 
+    // Automatically inject microtype for compact typography & tight line-breaking without spillover
+    if (!latexString.includes("microtype") && latexString.includes("\\documentclass")) {
+      latexString = latexString.replace(
+        /(\\documentclass(?:\[[^\]]*\])?\{[^}]+\})/,
+        "$1\n\\usepackage{microtype}"
+      );
+    }
+
+    // Strip standalone comments and clean up excessive empty lines
+    latexString = latexString
+      .replace(/^\s*%.*$/gm, "")
+      .replace(/(\\begin\{itemize\})\n\s*\n+/g, '$1\n')
+      .replace(/(\\item[^\n]*)\n\s*\n+(\s*\\item)/g, '$1\n$2')
+      .replace(/\n\s*\n+(\\end\{itemize\})/g, '\n$1')
+      .replace(/\n{3,}/g, '\n\n')
       .trim();
 
     // 2. Compile via texlive.net using POST (multipart/form-data)
