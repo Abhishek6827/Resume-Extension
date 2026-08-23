@@ -8,8 +8,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 const AI_MODELS = [
-  { id: "nvidia:z-ai/glm-5.2", name: "GLM-5.2 (Balanced)" },
   { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron Lightning (Fast)" },
+  { id: "nvidia:nvidia/nemotron-3-super-120b-a12b", name: "Nemotron 120B (Balanced)" },
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)" },
 ];
 

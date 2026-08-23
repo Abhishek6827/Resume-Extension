@@ -1,8 +1,8 @@
 // ─── Multi-Provider LLM Client ─────────────────────────────
 // Supported providers:
 // NVIDIA NIM:
-//   - z-ai/glm-5.2 (Balanced / Top ATS Accuracy)
 //   - nvidia/nemotron-3.5-lightning-30b-a3b (Fast / Thinking)
+//   - nvidia/nemotron-3-super-120b-a12b (Balanced / 120B)
 //   - nvidia/nemotron-3-ultra-550b-a55b (Quality / 550B)
 // Groq:
 //   - qwen/qwen3.6-27b (Fast / Cover Letter)
@@ -69,7 +69,7 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
   const apiKey = process.env.NVIDIA_API_KEY;
   if (!apiKey) throw new Error("NVIDIA_API_KEY not set");
 
-  const modelToUse = forceModel || "z-ai/glm-5.2";
+  const modelToUse = forceModel || "nvidia/nemotron-3.5-lightning-30b-a3b";
 
   const nvidia = new OpenAI({
     baseURL: "https://integrate.api.nvidia.com/v1",
@@ -101,11 +101,9 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
       requestOptions.temperature = 0.2;
       requestOptions.max_tokens = 16384;
       requestOptions.chat_template_kwargs = { enable_thinking: false };
-    } else if (modelToUse === "z-ai/glm-5.2" || modelToUse.includes("glm")) {
-      requestOptions.temperature = 1;
-      requestOptions.top_p = 1;
+    } else if (modelToUse === "nvidia/nemotron-3-super-120b-a12b" || modelToUse.includes("120b")) {
+      requestOptions.temperature = 0.2;
       requestOptions.max_tokens = 16384;
-      requestOptions.seed = 42;
     } else if (modelToUse === "nvidia/nemotron-3-ultra-550b-a55b" || modelToUse.includes("550b")) {
       requestOptions.temperature = 0.2;
       requestOptions.top_p = 0.95;
@@ -217,25 +215,120 @@ async function tryProvider(options: LLMCallOptions, modelId: string): Promise<LL
 }
 
 /**
- * Call LLM — uses the specified primary model only, no fallbacks.
- * Defaults to NVIDIA GLM-5.2 when no model is specified.
+ * Call LLM with automatic fallback chain.
  */
 export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
-  const model = options.modelSelection?.primaryModel || "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b";
-  console.log(`[LLM] Trying ${model}...`);
-  const result = await tryProvider(options, model);
-  console.log(`[LLM] Success with ${model}`);
-  return result;
+  const errors: string[] = [];
+  const primary = options.modelSelection?.primaryModel;
+
+  // 1. Try Primary Model if specified
+  if (primary) {
+    try {
+      console.log(`[LLM] Trying Primary Model (${primary})...`);
+      const result = await tryProvider(options, primary);
+      console.log(`[LLM] Success with Primary Model (${primary})`);
+      return result;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[LLM] Selected Model (${primary}) failed: ${message}`);
+      if (!options.modelSelection?.fallbackModel && primary.startsWith("groq:")) {
+        throw err;
+      }
+      errors.push(`Primary Model (${primary}): ${message}`);
+    }
+  }
+
+  // 1.5 Try Fallback Model if specified
+  if (options.modelSelection?.fallbackModel) {
+    const fallback = options.modelSelection.fallbackModel;
+    try {
+      console.log(`[LLM] Trying Fallback Model (${fallback})...`);
+      const result = await tryProvider(options, fallback);
+      console.log(`[LLM] Success with Fallback Model (${fallback})`);
+      return result;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[LLM] Fallback Model (${fallback}) failed: ${message}`);
+      errors.push(`Fallback Model (${fallback}): ${message}`);
+    }
+  }
+
+  // 2. Fallbacks for resume tailoring (NVIDIA models)
+  const globalProviders = [
+    { name: "NVIDIA (Nemotron Lightning)", modelId: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b" },
+    { name: "NVIDIA (Nemotron 120B)", modelId: "nvidia:nvidia/nemotron-3-super-120b-a12b" },
+    { name: "NVIDIA (Nemotron 550B)", modelId: "nvidia:nvidia/nemotron-3-ultra-550b-a55b" },
+  ];
+
+  for (const provider of globalProviders) {
+    try {
+      console.log(`[LLM] Fallback trying ${provider.name}...`);
+      const result = await tryProvider(options, provider.modelId);
+      console.log(`[LLM] Success with ${provider.name}`);
+      return result;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[LLM] ${provider.name} failed: ${message}`);
+      errors.push(`${provider.name}: ${message}`);
+    }
+  }
+
+  throw new Error(`All LLM providers failed:\n${errors.join("\n")}`);
 }
 
 /**
- * Call LLM prioritizing speed — uses the specified primary model only, no fallbacks.
- * Defaults to NVIDIA Nemotron Lightning when no model is specified.
+ * Call LLM prioritizing speed with automatic fallback chain.
  */
 export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse> {
-  const model = options.modelSelection?.primaryModel || "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b";
-  console.log(`[LLM Fast] Trying ${model}...`);
-  const result = await tryProvider(options, model);
-  console.log(`[LLM Fast] Success with ${model}`);
-  return result;
+  const errors: string[] = [];
+  const primary = options.modelSelection?.primaryModel;
+
+  if (primary) {
+    try {
+      console.log(`[LLM Fast] Trying Primary Model (${primary})...`);
+      const result = await tryProvider(options, primary);
+      console.log(`[LLM Fast] Success with Primary Model (${primary})`);
+      return result;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[LLM Fast] Selected Model (${primary}) failed: ${message}`);
+      errors.push(`Primary Model (${primary}): ${message}`);
+    }
+  }
+
+  if (options.modelSelection?.fallbackModel) {
+    const fallback = options.modelSelection.fallbackModel;
+    try {
+      console.log(`[LLM Fast] Trying Fallback Model (${fallback})...`);
+      const result = await tryProvider(options, fallback);
+      console.log(`[LLM Fast] Success with Fallback Model (${fallback})`);
+      return result;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[LLM Fast] Fallback Model (${fallback}) failed: ${message}`);
+      errors.push(`Fallback Model (${fallback}): ${message}`);
+    }
+  }
+
+  const globalProviders = [
+    { name: "NVIDIA (Nemotron Lightning)", modelId: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b" },
+    { name: "NVIDIA (Nemotron 120B)", modelId: "nvidia:nvidia/nemotron-3-super-120b-a12b" },
+    { name: "NVIDIA (Nemotron 550B)", modelId: "nvidia:nvidia/nemotron-3-ultra-550b-a55b" },
+  ];
+
+  for (const provider of globalProviders) {
+    try {
+      console.log(`[LLM Fast] Fallback trying ${provider.name}...`);
+      const result = await tryProvider(options, provider.modelId);
+      console.log(`[LLM Fast] Success with ${provider.name}`);
+      return result;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[LLM Fast] ${provider.name} failed: ${message}`);
+      errors.push(`${provider.name}: ${message}`);
+    }
+  }
+
+  throw new Error(`All Fast LLM providers failed:\n${errors.join("\n")}`);
 }
+

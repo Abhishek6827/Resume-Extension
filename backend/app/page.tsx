@@ -6,15 +6,18 @@ import type { SkillBank } from "../lib/skill-bank";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
-const AI_MODELS = [
-  { id: "nvidia:z-ai/glm-5.2", name: "GLM-5.2 (Balanced)", shortName: "NVIDIA GLM-5.2", icon: "https://www.google.com/s2/favicons?domain=zhipuai.cn&sz=128" },
+const RESUME_MODELS = [
   { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron Lightning (Fast)", shortName: "Nemotron Lightning", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
+  { id: "nvidia:nvidia/nemotron-3-super-120b-a12b", name: "Nemotron 120B (Balanced)", shortName: "Nemotron 120B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)", shortName: "Nemotron 550B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
+];
+
+const COVER_LETTER_MODELS = [
   { id: "groq:qwen/qwen3.6-27b", name: "Qwen 3.6 27B (Groq)", shortName: "Groq Qwen 3.6", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" },
   { id: "groq:openai/gpt-oss-120b", name: "GPT-OSS 120B (Groq)", shortName: "Groq GPT-OSS", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" },
 ];
 
-const COVER_LETTER_MODELS = AI_MODELS.filter(m => m.id.startsWith("groq:"));
+const ALL_MODELS = [...RESUME_MODELS, ...COVER_LETTER_MODELS];
 
 function extractCandidateNameFromLatex(latex: string): string {
   if (!latex) return "";
@@ -741,8 +744,7 @@ const ParallelPipelineVisualizer = ({
             "groq:openai/gpt-oss-120b": 0.5,
             "groq:qwen/qwen3.6-27b": 0.45,
             "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b": 0.35,
-            "nvidia:z-ai/glm-5.2": 0.15,
-            "openrouter:openrouter/free": 0.2,
+            "nvidia:nvidia/nemotron-3-super-120b-a12b": 0.25,
             "nvidia:nvidia/nemotron-3-ultra-550b-a55b": 0.1,
           };
           const increment = incrementRates[modelId] || 0.15;
@@ -1273,7 +1275,7 @@ export default function Home() {
   
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const [primaryModel, setPrimaryModel] = useState(AI_MODELS[0].id);
+  const [primaryModel, setPrimaryModel] = useState(RESUME_MODELS[0].id);
 
   // Multi-model states
   const [isAutoRun, setIsAutoRun] = useState(true);
@@ -1311,7 +1313,7 @@ export default function Home() {
     if (savedLatex) setLatexText(savedLatex);
 
     const savedModel = localStorage.getItem("primaryModel");
-    if (savedModel) setPrimaryModel(savedModel);
+    if (savedModel && RESUME_MODELS.some(m => m.id === savedModel)) setPrimaryModel(savedModel);
 
     const savedAutoRun = localStorage.getItem("isAutoRun");
     if (savedAutoRun !== null) setIsAutoRun(savedAutoRun === "true");
@@ -1710,8 +1712,8 @@ export default function Home() {
       setTailoredResumes([]);
       setSelectedResultIndex(0);
 
-      const initialProgress = AI_MODELS.reduce((acc, m) => ({ ...acc, [m.id]: 0 }), {});
-      const initialPhases = AI_MODELS.reduce((acc, m) => ({ ...acc, [m.id]: "Queued" }), {});
+      const initialProgress = RESUME_MODELS.reduce((acc, m) => ({ ...acc, [m.id]: 0 }), {});
+      const initialPhases = RESUME_MODELS.reduce((acc, m) => ({ ...acc, [m.id]: "Queued" }), {});
       setParallelProgress(initialProgress);
       setParallelPhases(initialPhases);
 
@@ -1761,7 +1763,7 @@ export default function Home() {
         let buffer = "";
         const accumulatedResults: any[] = [];
 
-        const targetModels = isAutoRun ? AI_MODELS : AI_MODELS.filter(m => m.id === primaryModel);
+        const targetModels = isAutoRun ? RESUME_MODELS : RESUME_MODELS.filter(m => m.id === primaryModel);
 
         const currentProgress: { [key: string]: number } = {};
         targetModels.forEach(m => currentProgress[m.id] = 0);
@@ -2147,7 +2149,7 @@ export default function Home() {
                   className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold border transition-all flex items-center justify-center gap-2 ${isAutoRun ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'}`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                  Auto Run (All {AI_MODELS.length} Models)
+                  Auto Run (All {RESUME_MODELS.length} Models)
                 </button>
                 <button 
                   onClick={() => { if (isAutoRun) { setIsAutoRun(false); handleReset(); } }} 
@@ -2169,7 +2171,7 @@ export default function Home() {
                         handleReset();
                       }
                     }}
-                    options={AI_MODELS}
+                    options={RESUME_MODELS}
                     focusColor="border-emerald-500/50"
                   />
                   <p className="text-xs text-slate-400 pl-1">
@@ -2180,7 +2182,7 @@ export default function Home() {
                 <div className="p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
                   <div className="h-2 w-2 rounded-full bg-indigo-400 animate-pulse"></div>
                   <p className="text-xs text-slate-400">
-                    <span className="font-semibold text-slate-300">Parallel Power Tailoring active:</span> Generates resume variations using {AI_MODELS.length} AI models simultaneously. Highly demanding on API Rate Limits.
+                    <span className="font-semibold text-slate-300">Parallel Power Tailoring active:</span> Generates resume variations using {RESUME_MODELS.length} AI models simultaneously. Highly demanding on API Rate Limits.
                   </p>
                 </div>
               )}
@@ -2210,8 +2212,8 @@ export default function Home() {
                     compilePdfForIndex={compilePdfForIndex}
                     targetModels={
                       retryingModels.size > 0 
-                        ? AI_MODELS.filter(m => retryingModels.has(m.id))
-                        : isAutoRun ? AI_MODELS : AI_MODELS.filter(m => m.id === primaryModel)
+                        ? RESUME_MODELS.filter(m => retryingModels.has(m.id))
+                        : isAutoRun ? RESUME_MODELS : RESUME_MODELS.filter(m => m.id === primaryModel)
                     }
                   />
                 ) : (
@@ -2224,7 +2226,7 @@ export default function Home() {
                 <div className="flex flex-col items-center gap-6 w-full mt-4">
                   {status === "success" && (
                     <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium text-center w-full">
-                      Success! Tailored resumes generated using {AI_MODELS.length} models and analyzed by ATS Scoring Engine.
+                      Success! Tailored resumes generated using {RESUME_MODELS.length} models and analyzed by ATS Scoring Engine.
                     </div>
                   )}
 
@@ -2286,9 +2288,9 @@ export default function Home() {
                               )}
                             </div>
                             <div className="flex items-center gap-2 mt-1">
-                              <img src={AI_MODELS.find(m => m.id === result.modelId)?.icon} className="w-4 h-4 rounded" onError={(e) => e.currentTarget.style.display='none'} />
+                              <img src={ALL_MODELS.find(m => m.id === result.modelId)?.icon} className="w-4 h-4 rounded" onError={(e) => e.currentTarget.style.display='none'} />
                               <span className="text-xs font-bold text-slate-200 truncate">
-                                {AI_MODELS.find(m => m.id === result.modelId)?.shortName || result.modelName}
+                                {ALL_MODELS.find(m => m.id === result.modelId)?.shortName || result.modelName}
                               </span>
                             </div>
 
