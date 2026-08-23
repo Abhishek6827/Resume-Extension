@@ -88,9 +88,31 @@ export function categorizeSkill(skillName: string): SkillItem["category"] {
   return "Methodologies";
 }
 
+// Set of generic non-technical descriptors and soft skills that should not be flagged as missing ATS keywords
+const GENERIC_SOFT_QUALITIES = new Set([
+  "accuracy",
+  "clarity",
+  "code decisions",
+  "technical reasoning",
+  "solution approaches",
+  "software defects",
+  "performance bottlenecks",
+  "maintainability",
+  "scalability",
+  "problem solving",
+  "critical thinking",
+  "collaboration",
+  "communication",
+  "leadership",
+  "attention to detail",
+  "agile methodology",
+  "team player"
+]);
+
 /**
- * Filters out missing keywords that are version variants (e.g. "Java 8", "Java 17", "Java 21", "Python 3")
- * of a skill that is already present in matchedKeywords or candidate's skills.
+ * Filters out missing keywords that are:
+ * 1. Version variants (e.g. "Java 8", "Java 17", "Java 21", "Python 3") of an already matched skill.
+ * 2. Generic non-technical descriptors or soft qualities that are inherent to standard engineering work.
  */
 export function sanitizeMissingKeywords(
   missing: string[],
@@ -107,10 +129,13 @@ export function sanitizeMissingKeywords(
     if (!kw || typeof kw !== "string") return false;
     const kwLower = kw.toLowerCase().trim();
 
-    // Direct match check
+    // 1. Direct match check
     if (matchedSet.has(kwLower)) return false;
 
-    // Extract base technology name by removing version numbers/suffixes
+    // 2. Filter out generic soft traits
+    if (GENERIC_SOFT_QUALITIES.has(kwLower)) return false;
+
+    // 3. Extract base technology name by removing version numbers/suffixes
     const baseTech = kwLower
       .replace(/(\s*v?\d+(\.\d+)*(\/\d+)*\+?)+/g, "")
       .replace(/\s*(8|11|17|21|3|4|5|16|17|18|19|20|21)\b/g, "")
