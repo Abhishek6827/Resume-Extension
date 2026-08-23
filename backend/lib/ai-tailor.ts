@@ -27,54 +27,105 @@ function ensureNewestFirst(resume: ResumeData) {
 export function extractNameFromLatex(text: string): string | null {
   if (!text) return null;
 
-  const clean = (str: string) =>
-    str
-      .replace(/\\(?:textbf|textit|textnormal|mbox|small|large|Large|LARGE|huge|Huge|scshape)\s*\{([^}]*)\}/gi, "$1")
-      .replace(/\\[a-zA-Z]+/g, "")
-      .replace(/[\{\}]/g, "")
+  const clean = (str: string) => {
+    if (!str) return "";
+    return str
+      .replace(/\\(?:textbf|textit|textnormal|mbox|small|large|Large|LARGE|huge|Huge|scshape|bfseries|itshape|selectfont|fontsize|sc|bf)\s*\{?([^}]*)\}?/gi, "$1")
+      .replace(/\\[a-zA-Z]+/g, " ")
+      .replace(/[\{\}\[\]\\]/g, " ")
+      .replace(/[^a-zA-Z0-9\s\.\-']/g, " ")
       .replace(/\s+/g, " ")
       .trim();
+  };
+
+  const isValidName = (name: string) => {
+    if (!name || name.length < 2 || name.length > 50) return false;
+    const lower = name.toLowerCase();
+    if (lower.includes("documentclass") || lower.includes("usepackage") || lower.includes("begin") || lower.includes("resume") || lower.includes("curriculum") || lower.includes("vitae") || lower.includes("experience") || lower.includes("education")) {
+      return false;
+    }
+    return /[a-zA-Z]/.test(name);
+  };
 
   // 1. \name{First}{Last}
   const nameTwoArgsMatch = text.match(/\\name\s*\{([^}]+)\}\s*\{([^}]+)\}/i);
   if (nameTwoArgsMatch) {
     const res = clean(`${nameTwoArgsMatch[1]} ${nameTwoArgsMatch[2]}`);
-    if (res && res.length < 60) return res;
+    if (isValidName(res)) return res;
   }
 
-  // 2. \name{Full Name}
-  const nameOneArgMatch = text.match(/\\name\s*\{([^}]+)\}/i);
-  if (nameOneArgMatch) {
-    const res = clean(nameOneArgMatch[1]);
-    if (res && res.length < 60) return res;
+  // 1b. \firstname{First}\familyname{Last} or \firstname{First} \lastname{Last}
+  const firstLastMatch = text.match(/\\(?:first|given)name\s*\{([^}]+)\}[\s\S]*?\\(?:family|last)name\s*\{([^}]+)\}/i);
+  if (firstLastMatch) {
+    const res = clean(`${firstLastMatch[1]} ${firstLastMatch[2]}`);
+    if (isValidName(res)) return res;
   }
 
-  // 3. \author{Full Name}
-  const authorMatch = text.match(/\\author\s*\{([^}]+)\}/i);
-  if (authorMatch) {
-    const res = clean(authorMatch[1]);
-    if (res && res.length < 60) return res;
+  // 1c. \namesection{First}{Last}{...}
+  const nameSectionMatch = text.match(/\\namesection\s*\{([^}]+)\}\s*\{([^}]+)\}/i);
+  if (nameSectionMatch) {
+    const res = clean(`${nameSectionMatch[1]} ${nameSectionMatch[2]}`);
+    if (isValidName(res)) return res;
   }
 
-  // 4. \fullname{Full Name}
-  const fullnameMatch = text.match(/\\fullname\s*\{([^}]+)\}/i);
-  if (fullnameMatch) {
-    const res = clean(fullnameMatch[1]);
-    if (res && res.length < 60) return res;
+  // 2. Explicit macro definitions: \name{...}, \author{...}, \fullname{...}, \cvname{...}, \candidate{...}
+  const explicitMacroMatch = text.match(/\\(?:name|author|fullname|cvname|candidate|profileName)\s*\{([^}]+)\}/i);
+  if (explicitMacroMatch) {
+    const res = clean(explicitMacroMatch[1]);
+    if (isValidName(res)) return res;
   }
 
-  // 5. \newcommand{\name}{Full Name}
+  // 3. \newcommand{\name}{Full Name} or \newcommand{\myname}{Full Name}
   const newcmdMatch = text.match(/\\newcommand\s*\{\s*\\(?:my)?name\s*\}\s*\{([^}]+)\}/i);
   if (newcmdMatch) {
     const res = clean(newcmdMatch[1]);
-    if (res && res.length < 60) return res;
+    if (isValidName(res)) return res;
   }
 
-  // 6. {\Huge Full Name} or {\LARGE Full Name}
-  const hugeMatch = text.match(/\{\s*\\(?:Huge|huge|LARGE|Large)\s+([^}]+)\}/i);
-  if (hugeMatch) {
-    const res = clean(hugeMatch[1]);
-    if (res && !res.includes("\\") && res.length < 60) return res;
+  // 4. \header{Full Name}{...}
+  const headerMatch = text.match(/\\header\s*\{([^}]+)\}/i);
+  if (headerMatch) {
+    const res = clean(headerMatch[1]);
+    if (isValidName(res)) return res;
+  }
+
+  // 5. Look inside the first header/center block of \begin{document}
+  const docBodyIdx = text.indexOf("\\begin{document}");
+  const searchArea = docBodyIdx !== -1 ? text.substring(docBodyIdx, docBodyIdx + 2000) : text;
+
+  // 5a. \textbf{\Huge ...} or \textbf{\LARGE ...} or \textbf{\Large ...}
+  const textbfHugeMatch = searchArea.match(/\\textbf\s*\{\s*\\(?:Huge|huge|LARGE|Large|large)\s*(?:\\scshape\s*)?\{?([^\\\}]+)\}?\s*\}/i);
+  if (textbfHugeMatch) {
+    const res = clean(textbfHugeMatch[1]);
+    if (isValidName(res)) return res;
+  }
+
+  // 5b. {\Huge\textbf{...}} or {\LARGE\textbf{...}} or {\Huge ...} or {\LARGE ...}
+  const hugeTextbfMatch = searchArea.match(/\{\s*\\(?:Huge|huge|LARGE|Large|large)\s*(?:\\(?:textbf|scshape|bfseries)\s*\{?|\s+)([^\\\}]+)\}?\s*\}/i);
+  if (hugeTextbfMatch) {
+    const res = clean(hugeTextbfMatch[1]);
+    if (isValidName(res)) return res;
+  }
+
+  // 5c. {\Huge \scshape Name} or {\LARGE Name}
+  const hugeGeneralMatch = searchArea.match(/\{\s*\\(?:Huge|huge|LARGE|Large)\s+([^}\\\n]+)\}/i);
+  if (hugeGeneralMatch) {
+    const res = clean(hugeGeneralMatch[1]);
+    if (isValidName(res)) return res;
+  }
+
+  // 5d. \begin{center} ... \textbf{Full Name} \\ or {\LARGE ...}
+  const centerMatch = searchArea.match(/\\begin\{center\}\s*\\(?:textbf|Huge|LARGE|Large)\s*(?:\{|\s+)([^\\\}\n]+)(?:\}|\s*\\\\)/i);
+  if (centerMatch) {
+    const res = clean(centerMatch[1]);
+    if (isValidName(res)) return res;
+  }
+
+  // 5e. \begin{center}\s*{\s*([^}\n]+)\s*}
+  const centerBraceMatch = searchArea.match(/\\begin\{center\}\s*\{+([^\\\}\n]{3,40})\}+/i);
+  if (centerBraceMatch) {
+    const res = clean(centerBraceMatch[1]);
+    if (isValidName(res)) return res;
   }
 
   return null;

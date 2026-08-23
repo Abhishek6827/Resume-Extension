@@ -3,6 +3,7 @@ import { getCorsHeaders, handleOptions } from "../../../lib/cors";
 import { callLLM, callFastLLM, extractJSON } from "../../../lib/llm-client";
 import { sanitizeMissingKeywords } from "../../../lib/skill-bank";
 import { ensureLatexSpacing } from "../../../lib/latex-generator";
+import { extractNameFromLatex } from "../../../lib/ai-tailor";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -200,6 +201,7 @@ ${latex}`;
 interface TailoredResult {
   modelId: string;
   modelName: string;
+  candidateName?: string;
   latex: string;
   originalLength: number;
   generatedLength: number;
@@ -567,9 +569,12 @@ You MUST produce the full LaTeX document with total length <= ${maxAllowedBudget
             }
             const finalScore = Math.max(0, Math.min(100, Math.round(rawScore)));
 
+            const candidateName = extractNameFromLatex(tailoredLatex) || extractNameFromLatex(latex) || "";
+
             const result: TailoredResult = {
               modelId: model.id,
               modelName: model.name,
+              candidateName,
               latex: tailoredLatex,
               originalLength: latexLength,
               generatedLength: tailoredLatex.length,
@@ -589,9 +594,11 @@ You MUST produce the full LaTeX document with total length <= ${maxAllowedBudget
           } catch (err: any) {
             console.error(`[Stream Error] Model execution failed for ${model.id}:`, err);
             const errStr = formatApiError(err);
+            const candidateName = extractNameFromLatex(latex) || "";
             const errorResult: TailoredResult = {
               modelId: model.id,
               modelName: model.name,
+              candidateName,
               latex: "",
               originalLength: latexLength,
               generatedLength: 0,
