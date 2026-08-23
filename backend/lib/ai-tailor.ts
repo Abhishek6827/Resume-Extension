@@ -166,11 +166,13 @@ CRITICAL REMINDER: You will be penalized if you drop any experience bullet point
     const response = await callLLM({
       systemPrompt,
       userMessage: `Resume text:\n${rawText}`,
-      modelSelection: modelSelection || { primaryModel: "groq:openai/gpt-oss-120b" },
+      modelSelection,
     });
 
     const jsonStr = extractJSON(response.content);
-    const resume = JSON.parse(jsonStr) as ResumeData;
+    // Fix invalid JSON escape sequences from LaTeX content (e.g. \textbf → \\textbf)
+    const sanitized = jsonStr.replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
+    const resume = JSON.parse(sanitized) as ResumeData;
 
     // Fallback LaTeX candidate name extraction & cleaning
     if (!resume.name || resume.name.trim() === "" || resume.name.includes("\\")) {

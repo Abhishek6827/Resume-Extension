@@ -10,7 +10,11 @@ const AI_MODELS = [
   { id: "nvidia:z-ai/glm-5.2", name: "GLM-5.2 (Balanced)", shortName: "NVIDIA GLM-5.2", icon: "https://www.google.com/s2/favicons?domain=zhipuai.cn&sz=128" },
   { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron Lightning (Fast)", shortName: "Nemotron Lightning", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)", shortName: "Nemotron 550B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
+  { id: "groq:qwen/qwen3.6-27b", name: "Qwen 3.6 27B (Groq)", shortName: "Groq Qwen 3.6", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" },
+  { id: "groq:openai/gpt-oss-120b", name: "GPT-OSS 120B (Groq)", shortName: "Groq GPT-OSS", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" },
 ];
+
+const COVER_LETTER_MODELS = AI_MODELS.filter(m => m.id.startsWith("groq:"));
 
 function extractCandidateNameFromLatex(latex: string): string {
   if (!latex) return "";
@@ -2534,7 +2538,7 @@ export default function Home() {
                   label="Cover Letter Model"
                   value={coverLetterModel}
                   onChange={setCoverLetterModel}
-                  options={AI_MODELS}
+                  options={COVER_LETTER_MODELS}
                   focusColor="hover:bg-indigo-500/10"
                 />
               </div>
