@@ -13,8 +13,9 @@ const RESUME_MODELS = [
 ];
 
 const COVER_LETTER_MODELS = [
-  { id: "groq:qwen/qwen3.6-27b", name: "Qwen 3.6 27B (Groq)", shortName: "Groq Qwen 3.6", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" },
   { id: "groq:openai/gpt-oss-120b", name: "GPT-OSS 120B (Groq)", shortName: "Groq GPT-OSS", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" },
+  { id: "groq:qwen/qwen3.6-27b", name: "Qwen 3.6 27B (Groq)", shortName: "Groq Qwen 3.6", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" },
+
 ];
 
 const ALL_MODELS = [...RESUME_MODELS, ...COVER_LETTER_MODELS];
@@ -131,7 +132,7 @@ function formatResumeFilename(candidateName: string, jobTitle?: string): string 
     .replace(/[^a-zA-Z0-9]/g, "_")
     .replace(/_+/g, "_")
     .replace(/^_+|_+$/g, "");
-  
+
   const cleanTitle = (jobTitle || "")
     .replace(/[^a-zA-Z0-9]/g, "_")
     .replace(/_+/g, "_")
@@ -149,26 +150,26 @@ const CustomDropdown = ({ value, onChange, options, label, focusColor }: { value
     <div>
       <span className="text-xs text-slate-400 mb-1 block">{label}</span>
       <div className="relative">
-        <div 
+        <div
           onClick={() => setIsOpen(!isOpen)}
           className={`flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 cursor-pointer transition-colors ${isOpen ? focusColor : 'hover:bg-white/10'}`}
         >
-          <img src={selectedModel?.icon} alt="icon" className="w-5 h-5 rounded" onError={(e) => e.currentTarget.src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><circle cx="12" cy="12" r="10"></circle></svg>'} />
+          <img src={selectedModel?.icon} alt="icon" className="w-5 h-5 rounded" onError={(e) => e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><circle cx="12" cy="12" r="10"></circle></svg>'} />
           <span className="text-sm text-slate-200 flex-1">{selectedModel?.name}</span>
           <svg className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
         </div>
-        
+
         {isOpen && (
           <>
             <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)}></div>
             <div className="absolute top-full left-0 right-0 mt-2 bg-[#121324] border border-white/10 rounded-xl shadow-xl z-20 overflow-hidden backdrop-blur-xl">
               {options.map((m: any) => (
-                <div 
+                <div
                   key={m.id}
                   onClick={() => { onChange(m.id); setIsOpen(false); }}
                   className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors hover:bg-white/10 ${value === m.id ? 'bg-indigo-500/10' : ''}`}
                 >
-                  <img src={m.icon} alt="icon" className="w-5 h-5 rounded" onError={(e) => e.currentTarget.src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><circle cx="12" cy="12" r="10"></circle></svg>'} />
+                  <img src={m.icon} alt="icon" className="w-5 h-5 rounded" onError={(e) => e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><circle cx="12" cy="12" r="10"></circle></svg>'} />
                   <span className={`text-sm ${value === m.id ? 'text-indigo-300 font-medium' : 'text-slate-300'}`}>{m.name}</span>
                 </div>
               ))}
@@ -202,7 +203,7 @@ export function sortLeaderboardResults(results: any[]) {
     // 3. Secondary sort: Character utilization percentage (Generated / Max) descending
     const aRatio = Math.min(100, ((a.generatedLength || 0) / (a.originalLength || 1)) * 100);
     const bRatio = Math.min(100, ((b.generatedLength || 0) / (b.originalLength || 1)) * 100);
-    
+
     if (bRatio !== aRatio) {
       return bRatio - aRatio;
     }
@@ -536,7 +537,7 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
       )}
 
       <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 min-h-[500px] md:px-8 w-full">
-        
+
         {/* 1. Source Node */}
         <div className="w-full md:w-[15%] flex flex-col items-center justify-center">
           <div ref={sourceRef} className={`p-5 rounded-2xl bg-slate-950/80 border border-white/10 flex flex-col items-center gap-2 text-center w-full max-w-[160px] transition-all duration-500 ${status === "parsing" ? "border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.2)]" : "border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.05)]"}`}>
@@ -554,7 +555,7 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
 
         {/* 2. Middle Parallel Branches */}
         <div className="w-full md:w-[45%] flex flex-col gap-3 px-2">
-          
+
           {/* Branch A: Summary */}
           <div ref={summaryRef} className={`rounded-xl bg-slate-950/70 border overflow-hidden transition-all duration-300 ${summary.done ? "border-emerald-500/20" : summary.ready ? "border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.05)]" : summary.active ? "active-glow-summary" : "border-white/5"}`}>
             <div className="p-2.5 flex items-center justify-between">
@@ -693,9 +694,9 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
   );
 };
 
-const ParallelPipelineVisualizer = ({ 
-  status, 
-  progress: realProgress, 
+const ParallelPipelineVisualizer = ({
+  status,
+  progress: realProgress,
   activePhases: realPhases,
   tailoredResumes = [],
   selectedResultIndex = 0,
@@ -706,10 +707,10 @@ const ParallelPipelineVisualizer = ({
   compilePdfForIndex,
   targetModels,
   candidateName = ""
-}: { 
-  status: string; 
-  progress: { [key: string]: number }; 
-  activePhases: { [key: string]: string }; 
+}: {
+  status: string;
+  progress: { [key: string]: number };
+  activePhases: { [key: string]: string };
   tailoredResumes?: any[];
   selectedResultIndex?: number;
   onSelectModel?: (idx: number) => void;
@@ -795,7 +796,7 @@ const ParallelPipelineVisualizer = ({
     const interval = setInterval(() => {
       setVisualProgress((prev) => {
         const next = { ...prev };
-        
+
         Object.keys(next).forEach((modelId) => {
           const target = realProgress[modelId] || 0;
           const current = next[modelId];
@@ -1009,21 +1010,19 @@ const ParallelPipelineVisualizer = ({
                   if (idx !== -1) onSelectModel(idx);
                 }
               }}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
-                isSelected 
-                  ? 'bg-indigo-500/10 border-indigo-500 text-indigo-300' 
-                  : 'bg-white/5 border-white/10 text-slate-400 hover:text-slate-300'
-              }`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${isSelected
+                ? 'bg-indigo-500/10 border-indigo-500 text-indigo-300'
+                : 'bg-white/5 border-white/10 text-slate-400 hover:text-slate-300'
+                }`}
             >
-              <img src={model.icon} alt="icon" className="w-4.5 h-4.5 rounded" onError={(e) => e.currentTarget.src='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>'} />
+              <img src={model.icon} alt="icon" className="w-4.5 h-4.5 rounded" onError={(e) => e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>'} />
               <span>{model.shortName || model.name}</span>
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${
-                isReady 
-                  ? 'bg-emerald-500/20 text-emerald-400 font-bold' 
-                  : isError 
-                    ? 'bg-red-500/20 text-red-400 font-bold'
-                    : 'bg-indigo-500/20 text-indigo-400 animate-pulse font-mono'
-              }`}>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded-md ${isReady
+                ? 'bg-emerald-500/20 text-emerald-400 font-bold'
+                : isError
+                  ? 'bg-red-500/20 text-red-400 font-bold'
+                  : 'bg-indigo-500/20 text-indigo-400 animate-pulse font-mono'
+                }`}>
                 {isReady ? "Ready" : isError ? "Error" : `${progressVal}%`}
               </span>
             </button>
@@ -1034,13 +1033,13 @@ const ParallelPipelineVisualizer = ({
       {/* Pipeline View: Error Card or Flowchart Graph */}
       {isModelError ? (
         <div className="w-full p-12 bg-slate-950/80 border border-red-500/20 rounded-2xl flex flex-col items-center justify-center gap-4 relative overflow-hidden backdrop-blur-xl z-10 transition-all duration-500">
-           <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-2">
-             <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-           </div>
-           <h3 className="text-xl font-bold text-slate-200">Model Execution Failed</h3>
-           <p className="text-sm text-slate-400 text-center max-w-md">
-             The {targetModels.find((m: any) => m.id === selectedTab)?.name || "selected"} model encountered an error during resume tailoring. This could be due to rate limits or API timeouts.
-           </p>
+          <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-2">
+            <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          </div>
+          <h3 className="text-xl font-bold text-slate-200">Model Execution Failed</h3>
+          <p className="text-sm text-slate-400 text-center max-w-md">
+            The {targetModels.find((m: any) => m.id === selectedTab)?.name || "selected"} model encountered an error during resume tailoring. This could be due to rate limits or API timeouts.
+          </p>
         </div>
       ) : (
         <>
@@ -1344,7 +1343,7 @@ export default function Home() {
   const [parsedJobTitle, setParsedJobTitle] = useState("");
   const [fileKey, setFileKey] = useState(0);
   const [generatedLatexLength, setGeneratedLatexLength] = useState<number | null>(null);
-  
+
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const [primaryModel, setPrimaryModel] = useState(RESUME_MODELS[0].id);
@@ -1544,10 +1543,10 @@ export default function Home() {
       setClError("Please provide both Resume and Cover Letter Job Description.");
       return;
     }
-    
+
     setIsGeneratingCL(true);
     setClError("");
-    
+
     try {
       // Parse JD
       const jdRes = await fetch(`${API_BASE_URL}/api/parse-jd`, {
@@ -1598,7 +1597,7 @@ export default function Home() {
       const res = await fetch(`${API_BASE_URL}/api/export-cover-letter-pdf`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           content: coverLetter,
           candidateName: extractCandidateNameFromLatex(latexText) || "Candidate"
         }),
@@ -1671,14 +1670,14 @@ export default function Home() {
 
   const handleRetryModel = async (e: React.MouseEvent, modelId: string, idx: number) => {
     e.stopPropagation();
-    
+
     setRetryingModels(prev => new Set(prev).add(modelId));
     setStatus("tailoring");
-    
+
     // Reset visualizer progress for this model
     setParallelProgress(prev => ({ ...prev, [modelId]: 0 }));
     setParallelPhases(prev => ({ ...prev, [modelId]: "Queued" }));
-    
+
     try {
       const jdRes = await fetch(`${API_BASE_URL}/api/parse-jd`, {
         method: "POST",
@@ -1699,13 +1698,13 @@ export default function Home() {
           modelsToRun: [modelId]
         }),
       });
-      
+
       if (!tailorRes.ok) throw new Error("Failed to retry model");
 
       const reader = tailorRes.body?.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      
+
       if (reader) {
         while (true) {
           const { done, value } = await reader.read();
@@ -1713,17 +1712,17 @@ export default function Home() {
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split("\n");
           buffer = lines.pop() || "";
-          
+
           for (const line of lines) {
             if (!line.trim()) continue;
             try {
               const event = JSON.parse(line);
               const { modelId: evtModelId, progress: p, phase, result } = event;
-              
+
               if (evtModelId) {
                 setParallelProgress(prev => ({ ...prev, [evtModelId]: p }));
                 setParallelPhases(prev => ({ ...prev, [evtModelId]: phase }));
-                
+
                 if (result) {
                   setTailoredResumes(prev => {
                     const next = [...prev];
@@ -1761,7 +1760,7 @@ export default function Home() {
     setSelectedResultIndex(index);
     const result = tailoredResumes[index];
     setGeneratedLatexLength(result.generatedLength);
-    
+
     // Dynamically set download name with candidate name and job title
     const cand = result.candidateName || extractCandidateNameFromLatex(result.latex || latexText) || "Candidate";
     setDownloadName(formatResumeFilename(cand, parsedJobTitle));
@@ -1915,7 +1914,7 @@ export default function Home() {
         setSelectedResultIndex(0);
 
         const bestResult = sortedResults.find(r => !r.error && r.latex);
-        
+
         if (bestResult && bestResult.latex) {
           const resCand = bestResult.candidateName || candidateName || extractCandidateNameFromLatex(bestResult.latex) || "Candidate";
           setDownloadName(formatResumeFilename(resCand, jobTitle));
@@ -1927,7 +1926,7 @@ export default function Home() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ latex: bestResult.latex }),
           });
-          
+
           if (!compileRes.ok) {
             const errDetails = await compileRes.json();
             console.error("LaTeX compilation failed:", errDetails);
@@ -1938,7 +1937,7 @@ export default function Home() {
             setPdfUrl(url);
           }
         }
-        
+
         setStatus("success");
         return;
       }
@@ -1948,7 +1947,7 @@ export default function Home() {
       const formData = new FormData();
       formData.append("file", file!);
       formData.append("primaryModel", primaryModel);
-      
+
       const parseRes = await fetch(`${API_BASE_URL}/api/parse-resume`, {
         method: "POST",
         body: formData,
@@ -1972,7 +1971,7 @@ export default function Home() {
       });
       if (!tailorRes.ok) throw new Error("Failed to tailor resume");
       const tailoredResult = await tailorRes.json();
-      
+
       const candidateName = tailoredResult.tailoredResume?.name?.trim() || extractCandidateNameFromLatex(latexText || "");
       const jobTitle = jdData?.jobTitle?.trim() || "";
       setParsedJobTitle(jobTitle);
@@ -1984,7 +1983,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tailoredResume: tailoredResult.tailoredResume }),
       });
-      
+
       if (!compileRes.ok) {
         const errDetails = await compileRes.json();
         throw new Error(errDetails.error || "LaTeX compilation failed");
@@ -2040,7 +2039,7 @@ export default function Home() {
         {/* Generator Tool */}
         <div className="w-full max-w-4xl bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl shadow-2xl">
           <div className="flex flex-col gap-6">
-            
+
             {/* GitHub Skill Bank Card */}
             <SkillBankCard
               skillBank={skillBank}
@@ -2074,9 +2073,9 @@ export default function Home() {
                 <div>
                   <label className="block text-sm font-semibold text-slate-300 mb-2">1. Upload Base Resume (PDF/DOCX)</label>
                   <div className="relative">
-                    <input 
+                    <input
                       key={fileKey}
-                      type="file" 
+                      type="file"
                       accept=".pdf,.docx"
                       onChange={handleFileChange}
                       className="block w-full text-sm text-slate-400
@@ -2091,7 +2090,7 @@ export default function Home() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-300 mb-2">2. Paste Job Description</label>
-                  <textarea 
+                  <textarea
                     value={jdText}
                     onChange={(e) => setJdText(e.target.value)}
                     placeholder="Paste the target job description here..."
@@ -2130,7 +2129,7 @@ export default function Home() {
                         </button>
                       </div>
                     </div>
-                    
+
                     <div className="text-xs text-slate-400 font-mono flex items-center gap-3">
                       <span>{latexText.length} characters</span>
                       <span>•</span>
@@ -2156,7 +2155,7 @@ export default function Home() {
                         </button>
                       )}
                     </div>
-                    <textarea 
+                    <textarea
                       value={latexText}
                       onChange={(e) => handleLatexChange(e.target.value)}
                       placeholder="Paste your raw LaTeX resume code here..."
@@ -2220,7 +2219,7 @@ export default function Home() {
                         </button>
                       )}
                     </div>
-                    <textarea 
+                    <textarea
                       value={jdText}
                       onChange={(e) => handleJdChange(e.target.value)}
                       placeholder="Paste the target job description here..."
@@ -2235,17 +2234,17 @@ export default function Home() {
             {/* Always Visible: AI Model Selection and Run Mode */}
             <div>
               <label className="block text-sm font-semibold text-slate-300 mb-2">{activeTab === "latex" ? "3." : "3."} Execution Mode</label>
-              
+
               <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                <button 
-                  onClick={() => { if (!isAutoRun) { setIsAutoRun(true); handleReset(); } }} 
+                <button
+                  onClick={() => { if (!isAutoRun) { setIsAutoRun(true); handleReset(); } }}
                   className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold border transition-all flex items-center justify-center gap-2 ${isAutoRun ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'}`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                   Auto Run (All {RESUME_MODELS.length} Models)
                 </button>
-                <button 
-                  onClick={() => { if (isAutoRun) { setIsAutoRun(false); handleReset(); } }} 
+                <button
+                  onClick={() => { if (isAutoRun) { setIsAutoRun(false); handleReset(); } }}
                   className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold border transition-all flex items-center justify-center gap-2 ${!isAutoRun ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'}`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
@@ -2283,7 +2282,7 @@ export default function Home() {
 
             {/* Status & Actions */}
             <div className="flex flex-col items-center gap-4 mt-2">
-              
+
               {status === "error" && !!errorMessage && (
                 <div className="w-full p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium text-center">
                   {errorMessage}
@@ -2292,10 +2291,10 @@ export default function Home() {
 
               {["parsing", "tailoring", "compiling"].includes(status) && (
                 activeTab === "latex" ? (
-                  <ParallelPipelineVisualizer 
-                    status={status} 
-                    progress={parallelProgress} 
-                    activePhases={parallelPhases} 
+                  <ParallelPipelineVisualizer
+                    status={status}
+                    progress={parallelProgress}
+                    activePhases={parallelPhases}
                     tailoredResumes={tailoredResumes}
                     selectedResultIndex={selectedResultIndex}
                     onSelectModel={handleSelectModel}
@@ -2305,7 +2304,7 @@ export default function Home() {
                     compilePdfForIndex={compilePdfForIndex}
                     candidateName={extractCandidateNameFromLatex(latexText) || (tailoredResumes.length > 0 ? (tailoredResumes[selectedResultIndex]?.candidateName || tailoredResumes[0]?.candidateName) : "")}
                     targetModels={
-                      retryingModels.size > 0 
+                      retryingModels.size > 0
                         ? RESUME_MODELS.filter(m => retryingModels.has(m.id))
                         : isAutoRun ? RESUME_MODELS : RESUME_MODELS.filter(m => m.id === primaryModel)
                     }
@@ -2338,7 +2337,7 @@ export default function Home() {
                               )}
                             </h3>
                             <p className="text-xs text-slate-400">
-                              {status === "success" 
+                              {status === "success"
                                 ? "Click any model below to preview its ATS report and download its PDF."
                                 : "Models are tailoring in parallel. You can click any finished model below to compile and download its resume immediately."}
                             </p>
@@ -2359,26 +2358,25 @@ export default function Home() {
                         const isSelected = idx === selectedResultIndex;
                         const hasError = !!result.error;
                         const cardCandidate = result.candidateName || extractCandidateNameFromLatex(latexText) || "Candidate";
-                        
+
                         const scoreColor = hasError
                           ? "text-red-400 border-red-500/30 bg-red-500/5"
-                          : result.score >= 85 
-                            ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/5" 
-                            : result.score >= 70 
-                              ? "text-yellow-400 border-yellow-500/30 bg-yellow-500/5" 
+                          : result.score >= 85
+                            ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/5"
+                            : result.score >= 70
+                              ? "text-yellow-400 border-yellow-500/30 bg-yellow-500/5"
                               : "text-red-400 border-red-500/30 bg-red-500/5";
 
                         return (
-                          <div 
+                          <div
                             key={result.modelId}
                             onClick={() => handleSelectModel(idx)}
-                            className={`flex flex-col gap-2.5 p-4 rounded-xl border cursor-pointer transition-all ${
-                              isSelected 
-                                ? 'border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/10 scale-[1.02]' 
-                                : hasError
-                                  ? 'border-red-500/10 bg-red-500/5 opacity-60 hover:opacity-100 hover:bg-red-500/10'
-                                  : 'border-white/10 bg-white/5 hover:bg-white/10'
-                            }`}
+                            className={`flex flex-col gap-2.5 p-4 rounded-xl border cursor-pointer transition-all ${isSelected
+                              ? 'border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/10 scale-[1.02]'
+                              : hasError
+                                ? 'border-red-500/10 bg-red-500/5 opacity-60 hover:opacity-100 hover:bg-red-500/10'
+                                : 'border-white/10 bg-white/5 hover:bg-white/10'
+                              }`}
                           >
                             <div className="flex justify-between items-center">
                               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rank {idx + 1}</span>
@@ -2410,7 +2408,7 @@ export default function Home() {
                             </div>
 
                             <div className="flex items-center gap-2">
-                              <img src={ALL_MODELS.find(m => m.id === result.modelId)?.icon} className="w-3.5 h-3.5 rounded" onError={(e) => e.currentTarget.style.display='none'} />
+                              <img src={ALL_MODELS.find(m => m.id === result.modelId)?.icon} className="w-3.5 h-3.5 rounded" onError={(e) => e.currentTarget.style.display = 'none'} />
                               <span className="text-[11px] font-medium text-slate-400 truncate">
                                 {ALL_MODELS.find(m => m.id === result.modelId)?.shortName || result.modelName}
                               </span>
@@ -2489,16 +2487,16 @@ export default function Home() {
                               </div>
                             ) : pdfUrl ? (
                               <div className="flex flex-col gap-2.5 w-full mt-1">
-                                <a 
-                                  href={pdfUrl || undefined} 
+                                <a
+                                  href={pdfUrl || undefined}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center w-full"
                                 >
                                   View PDF
                                 </a>
-                                <a 
-                                  href={pdfUrl || undefined} 
+                                <a
+                                  href={pdfUrl || undefined}
                                   download={downloadName}
                                   className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-center w-full"
                                 >
@@ -2568,14 +2566,14 @@ export default function Home() {
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                    <button 
+                    <button
                       onClick={handleGenerate}
                       disabled={["parsing", "tailoring", "compiling"].includes(status)}
                       className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-center"
                     >
                       Regenerate
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleReset(true)}
                       className="w-full sm:w-auto px-8 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-all text-center cursor-pointer"
                     >
@@ -2591,30 +2589,30 @@ export default function Home() {
                   <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium text-center w-full">
                     Success! Your resume has been tailored and compiled successfully.
                   </div>
-                  
+
                   <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                    <a 
-                      href={pdfUrl || undefined} 
+                    <a
+                      href={pdfUrl || undefined}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-full sm:w-auto px-8 py-3.5 bg-indigo-500 hover:bg-indigo-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center"
                     >
                       View PDF
                     </a>
-                    <a 
-                      href={pdfUrl || undefined} 
+                    <a
+                      href={pdfUrl || undefined}
                       download={downloadName}
                       className="w-full sm:w-auto px-8 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-center"
                     >
                       Download PDF
                     </a>
-                    <button 
+                    <button
                       onClick={handleGenerate}
                       className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center"
                     >
                       Regenerate
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleReset(true)}
                       className="w-full sm:w-auto px-8 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-all text-center cursor-pointer"
                     >
@@ -2627,7 +2625,7 @@ export default function Home() {
               {/* Initial state Generate Button */}
               {status !== "success" && tailoredResumes.length === 0 && (
                 <div className="flex flex-col sm:flex-row gap-4 w-full justify-center mt-4">
-                  <button 
+                  <button
                     onClick={handleGenerate}
                     disabled={["parsing", "tailoring", "compiling"].includes(status)}
                     className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-center"
@@ -2635,7 +2633,7 @@ export default function Home() {
                     {["parsing", "tailoring", "compiling"].includes(status) ? "Processing..." : "Generate Tailored PDF"}
                   </button>
                   {(file || jdText || latexText || ["parsing", "tailoring", "compiling"].includes(status)) && (
-                    <button 
+                    <button
                       onClick={() => handleReset(true)}
                       className="w-full sm:w-auto px-8 py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl transition-all text-center cursor-pointer"
                     >
@@ -2645,7 +2643,7 @@ export default function Home() {
                 </div>
               )}
             </div>
-            
+
           </div>
 
           {/* Cover Letter Generator Section */}
@@ -2675,7 +2673,7 @@ export default function Home() {
                   focusColor="hover:bg-indigo-500/10"
                 />
               </div>
-              <button 
+              <button
                 onClick={handleGenerateCoverLetter}
                 disabled={isGeneratingCL || !clJdText || (!latexText && !file)}
                 className="w-full md:w-auto px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed h-[42px] flex items-center justify-center gap-2"
@@ -2707,7 +2705,7 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col sm:flex-row justify-end gap-3">
-              <button 
+              <button
                 onClick={handleDownloadCoverLetterTXT}
                 disabled={!coverLetter}
                 className="w-full sm:w-auto px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
@@ -2715,7 +2713,7 @@ export default function Home() {
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                 Download TXT
               </button>
-              <button 
+              <button
                 onClick={handleDownloadCoverLetterPDF}
                 disabled={!coverLetter}
                 className="w-full sm:w-auto px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
