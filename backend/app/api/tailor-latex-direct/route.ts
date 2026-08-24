@@ -478,7 +478,7 @@ CORE IN-PLACE TAILORING RULES (85-90%+ COVERAGE + STRICT 1-PAGE BUDGET):
 
 5. STRICT 1-PAGE CHARACTER LIMIT (HARD REQUIREMENT):
    - The original LaTeX has ${latexLength} characters.
-   - Your tailored LaTeX MUST be <= ${latexLength} characters (Target budget: ~${Math.round(latexLength * 0.88)} to ${Math.round(latexLength * 0.95)} characters).
+   - Your tailored LaTeX MUST be <= ${latexLength} characters (Target budget: ~${Math.round(latexLength * 1)} to ${latexLength} characters).
    - DO NOT alter preamble, geometry, margins, packages, or vertical spacing.
 
 6. LATEX FORMATTING RULES:
