@@ -12,17 +12,20 @@ export async function POST(request: NextRequest) {
   const corsHeaders = getCorsHeaders(request);
 
   try {
-    const { resumeData, jdData, modelSelection } = await request.json();
+    const { resumeData, resumeText, jdData, rawJdText, modelSelection, candidateName } = await request.json();
 
-    if (!resumeData || !jdData) {
+    const resumeInput = resumeText || resumeData;
+    const jdInput = jdData || rawJdText;
+
+    if (!resumeInput || !jdInput) {
       return NextResponse.json(
-        { error: "Missing resumeData or jdData" },
+        { error: "Missing resume or job description" },
         { status: 400, headers: corsHeaders }
       );
     }
 
     // Call LLM for cover letter
-    const content = await generateCoverLetter(resumeData, jdData, modelSelection);
+    const content = await generateCoverLetter(resumeInput, jdInput, modelSelection, candidateName);
 
     return NextResponse.json({ content }, { headers: corsHeaders });
   } catch (err: unknown) {
