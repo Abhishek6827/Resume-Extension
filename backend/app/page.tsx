@@ -2013,6 +2013,54 @@ export default function Home() {
       localStorage.removeItem("downloadName");
       localStorage.removeItem("generatedLatexLength");
 
+      // Start Cover Letter visualizer & generation immediately in parallel
+      setIsGeneratingCL(true);
+      setClError("");
+      setCoverLetter("");
+      const clJdSource = clJdText.trim() || jdText;
+      const initialCandidateName = extractCandidateNameFromLatex(latexText) || "Candidate";
+
+      (async () => {
+        try {
+          let bodyPayload: any = {
+            rawJdText: clJdSource,
+            modelSelection: { primaryModel: coverLetterModel },
+            candidateName: initialCandidateName,
+          };
+
+          if (activeTab === "latex" && latexText.trim()) {
+            bodyPayload.resumeText = latexText;
+          } else if (file) {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("primaryModel", primaryModel);
+            const parseRes = await fetch(`${API_BASE_URL}/api/parse-resume`, {
+              method: "POST",
+              body: formData,
+            });
+            if (!parseRes.ok) throw new Error("Failed to parse resume for cover letter.");
+            bodyPayload.resumeData = await parseRes.json();
+          }
+
+          const clRes = await fetch(`${API_BASE_URL}/api/generate-cover-letter`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(bodyPayload),
+          });
+          if (!clRes.ok) {
+            const errData = await clRes.json();
+            throw new Error(errData.error || "Failed to generate cover letter.");
+          }
+          const { content } = await clRes.json();
+          setCoverLetter(content);
+        } catch (err: any) {
+          console.error("[parallel-cover-letter] Error:", err);
+          setClError(err.message || "Cover letter generation failed.");
+        } finally {
+          setIsGeneratingCL(false);
+        }
+      })();
+
       if (activeTab === "latex") {
         // Parse the JD first
         const jdRes = await fetch(`${API_BASE_URL}/api/parse-jd`, {
@@ -2029,38 +2077,6 @@ export default function Home() {
         setDownloadName(formatResumeFilename(candidateName, jobTitle));
 
         setStatus("tailoring");
-
-        // Fire-and-forget: generate cover letter in parallel directly without blocking resume tailoring
-        setIsGeneratingCL(true);
-        setClError("");
-        setCoverLetter("");
-        const clJdSource = clJdText.trim() || jdText;
-        (async () => {
-          try {
-            const clRes = await fetch(`${API_BASE_URL}/api/generate-cover-letter`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                resumeText: latexText,
-                jdData,
-                rawJdText: clJdSource,
-                candidateName,
-                modelSelection: { primaryModel: coverLetterModel },
-              }),
-            });
-            if (!clRes.ok) {
-              const errData = await clRes.json();
-              throw new Error(errData.error || "Failed to generate cover letter.");
-            }
-            const { content } = await clRes.json();
-            setCoverLetter(content);
-          } catch (err: any) {
-            console.error("[parallel-cover-letter] Error:", err);
-            setClError(err.message || "Cover letter generation failed.");
-          } finally {
-            setIsGeneratingCL(false);
-          }
-        })();
 
         // Use direct LaTeX tailor endpoint (which streams updates for the 6 models in parallel)
         const tailorRes = await fetch(`${API_BASE_URL}/api/tailor-latex-direct`, {
@@ -2194,38 +2210,6 @@ export default function Home() {
       const jdData = await jdRes.json();
 
       setStatus("tailoring");
-
-      // Fire-and-forget: generate cover letter in parallel for file uploads
-      setIsGeneratingCL(true);
-      setClError("");
-      setCoverLetter("");
-      const clFileJdSource = clJdText.trim() || jdText;
-      (async () => {
-        try {
-          const clRes = await fetch(`${API_BASE_URL}/api/generate-cover-letter`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              resumeData,
-              jdData,
-              rawJdText: clFileJdSource,
-              candidateName: resumeData.name || "Candidate",
-              modelSelection: { primaryModel: coverLetterModel },
-            }),
-          });
-          if (!clRes.ok) {
-            const errData = await clRes.json();
-            throw new Error(errData.error || "Failed to generate cover letter.");
-          }
-          const { content } = await clRes.json();
-          setCoverLetter(content);
-        } catch (err: any) {
-          console.error("[parallel-cover-letter] Error:", err);
-          setClError(err.message || "Cover letter generation failed.");
-        } finally {
-          setIsGeneratingCL(false);
-        }
-      })();
 
       const tailorRes = await fetch(`${API_BASE_URL}/api/tailor`, {
         method: "POST",
