@@ -249,9 +249,9 @@ CRITICAL REMINDER: You will be penalized if you drop any experience bullet point
  */
 export async function parseJDWithAI(rawText: string, modelSelection?: ModelSelection): Promise<JDData> {
   const systemPrompt = `You are an expert job description parsing assistant.
-Your task is to take raw text from a Job Description (JD) and perform an EXHAUSTIVE extraction of ALL requirements, programming languages, tools, domain competencies, and responsibilities into a structured JSON object.
+Your task is to take raw text from a Job Description (JD) and perform an EXHAUSTIVE extraction of ALL technical requirements, programming languages, tools, domain competencies, and responsibilities into a structured JSON object.
 
-CRITICAL INSTRUCTION: Be extremely thorough. Extract EVERY single programming language (e.g., Java, Python, Golang, C++, JavaScript, TypeScript, AngularJS, HTML, CSS), framework, database, tool, core engineering concept (e.g. Data Structures, Algorithms, Distributed Systems, Accessible Technologies, WCAG, High Throughput, Concurrency), and operational responsibility (e.g. Code Reviews, Design Reviews, Technical Documentation, Debugging, Triaging Issues). Do NOT summarize or leave out details.
+CRITICAL INSTRUCTION: Extract every programming language (e.g., Java, Python, Golang, C#, C++, JavaScript, TypeScript), framework, database, cloud tool, container platform, and core technical requirement. For keywords, extract specific architectural paradigms (e.g. Distributed Systems, High Throughput, Concurrency, Microservices, CI/CD, Large-Scale System Design, Security) rather than generic text fragments. Do NOT summarize or leave out details.
 
 Return ONLY a valid JSON object matching this exact structure (no markdown wrapper, no prose):
 {
@@ -259,8 +259,8 @@ Return ONLY a valid JSON object matching this exact structure (no markdown wrapp
   "company": "Company name if present, else empty string",
   "mustHaveSkills": ["EVERY programming language, framework, database, tool, or mandatory technical skill mentioned in minimum or core qualifications"],
   "niceToHaveSkills": ["Desired or preferred skills, degrees, or optional qualifications"],
-  "responsibilities": ["EXHAUSTIVE list of all tasks, operational workflows, reviews, documentation, debugging, and engineering responsibilities listed"],
-  "keywords": ["EXHAUSTIVE list of domain concepts, e.g. Data Structures, Algorithms, Distributed Systems, Accessible Technologies (WCAG/ARIA), Large-Scale System Design, Networking, Storage, Security, AI, NLP, UI Design"]
+  "responsibilities": ["List of core engineering responsibilities, architecture workflows, and system ownership"],
+  "keywords": ["List of domain & architectural concepts, e.g. Distributed Systems, High Throughput, Microservices, Concurrency, CI/CD, Cloud Architecture, Query Optimization, Security"]
 }
 `;
 
@@ -460,12 +460,12 @@ export async function tailorSummaryWithAI(
   jd: JDData,
   modelSelection?: ModelSelection
 ): Promise<{ summary: string }> {
-  const systemPrompt = `You are an expert resume optimizer. Rewrite the candidate's Professional Summary to align with the target role and key JD requirements.
-CRITICAL SAFETY RULES:
-1. NEVER invent experience, skills, or degrees.
-2. Keep it concise, punchy, and professional.
-3. **CRITICAL LENGTH CONSTRAINT**: Ensure the tailored professional summary is of a similar length (number of lines, approximately 4 lines, 70-85 words) as the original summary to avoid creating layout gaps or page overflow. Keep word/character count within +/- 15% of the original.
-4. MANDATORY DOMAIN & ARCHITECTURAL WEAVING: You MUST rewrite the summary to explicitly incorporate the highest-priority architectural scale, domain competencies, and core requirements from the Job Description (e.g. large-scale distributed systems, data structures & algorithms, accessible technologies, Java/Python/TypeScript/Angular/HTML/CSS, design/code reviews, triage/debugging)!
+  const systemPrompt = `You are an expert resume optimizer and senior technical recruiter. Rewrite the candidate's Professional Summary to align with the target role and key JD requirements.
+CRITICAL SAFETY & PHRASING RULES:
+1. NEVER invent experience, degrees, or false credentials.
+2. Keep it targeted, concise, and professional (strictly 3-4 lines, 50-65 words).
+3. TARGETED STACK FOCUS: Focus sharply on the primary tech stack and domain relevant to the target role. Do NOT list 6 competing backend ecosystems or 3 cloud providers in a single sentence.
+4. Highlight technical depth, API architecture, high throughput, and end-to-end engineering ownership.
 
 Return ONLY a valid JSON object matching this exact structure:
 {
@@ -495,17 +495,25 @@ export async function tailorExperienceWithAI(
   const keywords = Array.isArray(jd.keywords) ? jd.keywords : [];
   const allJdRequirements = Array.from(new Set([...mustHave, ...niceToHave, ...keywords])).filter(Boolean);
 
-  const systemPrompt = `You are an expert resume optimizer. Rewrite the candidate's Work Experience bullet points to align deeply with the target Job Description.
-CRITICAL MANDATORY INSTRUCTIONS FOR 100% JD COVERAGE & ATS SCORE MAXIMIZATION:
-1. INJECT ALL MISSING JD REQUIREMENTS & OPERATIONAL WORKFLOWS: You MUST weave the target Job Description requirements (including hard tools like Kubernetes, Docker, GraphQL, Terraform/IaC, SSO, Vector DBs, CI/CD, AWS, PostgreSQL and operational terms like code reviews, design reviews, triaging/debugging production issues) directly into the work experience bullet points as realistic engineering actions!
-2. NEVER invent work experience, company names, dates, or locations. Keep all factual metadata identical.
-3. You may rewrite and refine phrasing of bullet points to naturally incorporate JD keywords and core responsibilities (e.g., data structures & algorithms, large-scale distributed systems, accessible technologies, Java, Python, Angular, HTML/CSS, code reviews, design reviews, triage & debugging).
-4. Highlight outcomes, metrics, and scale where possible.
-4b. ARCHITECTURAL REALISM (NO COMPETING BACKEND SLASH-MIXING): NEVER mix competing backend technologies in the same sentence or bullet point (e.g., NEVER write "Java Spring Boot / C# .Net services"). Allocate different services/roles to their respective stacks (e.g. one service uses Java & Spring Boot, another uses C# & .Net Core microservices, another uses Node.js).
-5. DO NOT reorder the jobs. Keep the exact same array length and order.
-6. You MUST preserve the exact same number of bullet points in the "highlights" array for each work experience entry as the original. Do not merge, split, add, or delete bullet points.
-7. **CRITICAL LENGTH CONSTRAINT**: Keep character length/word count of each tailored bullet point within +/- 15% of the original bullet point.
-8. ABSOLUTE BAN ON LAZY SUFFIXES: Do NOT append lazy suffixes like ", demonstrating expertise in...". Truly rewrite the engineering action verbs.
+  const systemPrompt = `You are an expert technical recruiter and senior software engineer. Rewrite the candidate's Work Experience bullet points to align deeply with the target Job Description while maintaining senior-level credibility.
+
+CRITICAL MANDATORY INSTRUCTIONS:
+1. ABSOLUTE BAN ON ROBOTIC / META PHRASING:
+   - NEVER write meta-descriptions like "applied Data Structures, Algorithms for...", "conducted task estimation", "practiced Agile/Scrum ceremonies", "demonstrating OOPS", or list software concepts as awkward trailing clauses.
+   - Express engineering depth through authentic technical actions, concrete architecture, and measurable outcomes (e.g. "Optimized high-traffic query latency from 850ms to 550ms by adding composite indexing and query caching", "Architected idempotent webhook event pipeline cutting failure detection from 20m to 3m").
+
+2. CAREER CREDIBILITY & ARCHITECTURAL REALISM:
+   - Keep historical company work authentic. Do NOT completely swap the core language/database of established past employers (e.g., do not turn a past Node.js/Postgres startup job into ASP.NET/SQL Server).
+   - Align past company roles by highlighting transferable senior engineering patterns: API latency, microservices, cloud infrastructure, containerization, concurrency, CI/CD pipelines, automated testing, security, and schema optimization.
+   - For Founder / SaaS / Contract roles where candidate had full ownership (e.g. Chintu AI), actively showcase relevant target JD architectures and technologies.
+
+3. ARCHITECTURAL REALISM (NO COMPETING BACKEND SLASH-MIXING):
+   - NEVER mix competing backend technologies in the same sentence or bullet point (e.g., NEVER write "Java Spring Boot / C# .Net services"). Allocate different services/roles to their respective stacks.
+
+4. PRESERVE STRUCTURE & LENGTH:
+   - DO NOT reorder jobs. Preserve the exact same number of bullet points in the "highlights" array as the original.
+   - Keep character length/word count of each tailored bullet point within +/- 15% of the original bullet point.
+   - ABSOLUTE BAN ON LAZY SUFFIXES: Do NOT append lazy suffixes like ", demonstrating expertise in...". Truly rewrite the engineering action verbs.
 
 Return ONLY a valid JSON object matching this exact structure:
 {
@@ -547,20 +555,19 @@ export async function tailorProjectsWithAI(
   const keywords = Array.isArray(jd.keywords) ? jd.keywords : [];
   const allJdRequirements = Array.from(new Set([...mustHave, ...niceToHave, ...keywords])).filter(Boolean);
 
-  const systemPrompt = `You are an expert resume optimizer. Rewrite the candidate's Projects section to align deeply with the target JD.
+  const systemPrompt = `You are an expert resume optimizer and senior software engineer. Rewrite the candidate's Projects section to align deeply with the target JD.
+
 CRITICAL MANDATORY RULES:
-1. 100% JD SKILLS INJECTION & PROJECT TECH OVERHAUL: In EVERY project's "tech" array, aggressively REPLACE unrelated tools (e.g. Stripe, AssemblyAI, WebRTC, Socket.io, Passport.js, Tailwind CSS) with target JD technologies (e.g. GraphQL, Kubernetes, Java, Spring Boot, C#, .Net, PostgreSQL, Docker, AWS).
-2. STRICT ARCHITECTURAL REALISM & NO COMPETING BACKENDS:
-   - NEVER mix competing backend frameworks in the SAME project or bullet point (e.g., NEVER write "Java Spring Boot / C# .Net REST APIs" or "Angular/Node.js frontend and C# .Net backend").
-   - A single project MUST use ONE coherent, realistic backend stack!
-   - If the target JD requires multiple backend technologies (e.g. Java, C#, Node.js, Python), DISTRIBUTE them across different projects in the resume so each project represents a distinct, realistic stack.
+1. TARGET JD TECH INJECTION: In project "tech" arrays, showcase target JD technologies (e.g. GraphQL, Kubernetes, Java, Spring Boot, C#, .NET Core, PostgreSQL, Docker, AWS).
+2. STRICT ARCHITECTURAL REALISM & COHERENT STACKS:
+   - NEVER mix competing backend frameworks in the SAME project (e.g., NEVER write "Java Spring Boot / C# .Net REST APIs").
+   - A single project MUST use ONE coherent, realistic stack!
+   - If the target JD requires multiple technologies (e.g. Java, C#, Node.js, Python), DISTRIBUTE them across different projects in the resume.
 3. Limit each project's "tech" array to strictly 4-5 core technologies.
 4. GITHUB SKILL BANK DYNAMIC SWAPPING: You may swap out any low-relevance project with any matching verified project from the candidate's GitHub Skill Bank.
-5. Weave target JD technical actions (e.g., GraphQL schema & query optimization, containerized pod deployments in Kubernetes, building .NET/C# microservices) directly into project bullet points.
-6. DO NOT reorder the projects unless replacing with a GitHub Skill Bank project. Keep the exact same array length.
-7. You MUST preserve the exact same number of bullet points in the "highlights" array for each project entry as the original. Do not merge, split, add, or delete bullet points.
-8. **CRITICAL LENGTH CONSTRAINT**: Keep character length/word count of each tailored bullet point and project description within +/- 15% of original.
-9. ABSOLUTE BAN ON LAZY SUFFIXES: Do NOT append lazy suffixes like ", demonstrating expertise in...". Truly rewrite the engineering details.
+5. In project bullet points: describe realistic technical actions (e.g., designing GraphQL queries/mutations, deploying containerized pods in Kubernetes, building RESTful microservices, query tuning).
+6. BAN ON ROBOTIC PHRASING: Never write "applied Data Structures, Algorithms" or similar meta-phrases. Express depth through real features.
+7. Preserve the exact same number of bullet points in the "highlights" array. Keep character length within +/- 15% of original.
 
 Return ONLY a valid JSON object matching this exact structure:
 {
@@ -568,7 +575,7 @@ Return ONLY a valid JSON object matching this exact structure:
     {
       "name": "Same project name",
       "description": "Tailored description",
-      "tech": ["Top JD skills and relevant technologies"],
+      "tech": ["Top JD skills and relevant technologies (max 5)"],
       "highlights": [
         "Tailored bullet point 1"
       ]
@@ -599,19 +606,25 @@ export async function tailorSkillsWithAI(
   const keywords = Array.isArray(jd.keywords) ? jd.keywords : [];
   const allJdRequirements = Array.from(new Set([...mustHave, ...niceToHave, ...keywords])).filter(Boolean);
 
-  const systemPrompt = `You are an expert resume optimizer. Reorder and refine the candidate's Skills section to perfectly match the target Job Description.
+  const systemPrompt = `You are an expert resume optimizer. Reorder and refine the candidate's Skills section to match the target Job Description while keeping it sharp and credible.
+
 CRITICAL MANDATORY RULES:
-1. MANDATORY 100% JD SKILLS INJECTION: Every single technical skill, framework, database, tool, container technology, and protocol listed in the target Job Description (e.g. GraphQL, Kubernetes, Terraform, REST APIs, Microservices, Docker, PostgreSQL, Java, C#, .Net) MUST be added to its logically correct category line!
-2. LOGICAL CATEGORY PLACEMENT: Place skills into their proper logical categories (Languages under Languages, Backend under Backend, Cloud & DevOps under Cloud/DevOps, etc.). DO NOT dump programming languages into "AI & LLM" or concepts into "Payments & Billing". If the input categories are irrelevant to the target role, adapt them to standard relevant categories (e.g., "Cloud & DevOps", "Core Concepts").
-3. JD SKILLS FIRST: Within each skill category, place JD-matching skills at the VERY BEGINNING (first items in the array).
-4. REPLACE UNRELATED SKILLS: Replace less relevant or outdated skills with top JD-required technologies.
-5. DEDUPLICATION RULE: A skill MUST ONLY appear in ONE category. Do not list the same skill across multiple categories.
-6. **CRITICAL LENGTH CONSTRAINT**: Limit each category to 5 to 7 highly relevant skills to keep the resume clean and breathable.
+1. LOGICAL CATEGORY PLACEMENT: Place skills into their proper logical categories:
+   - Languages: Java, C#, TypeScript, JavaScript, Python, C/C++, SQL
+   - Backend: Spring Boot, .NET Core, Node.js, Express.js, GraphQL, REST APIs, Microservices
+   - Frontend: React.js, Next.js, Angular, HTML5, CSS3, Redux
+   - Cloud & DevOps: Kubernetes, Docker, AWS, Azure, GCP, CI/CD, GitHub Actions, Git
+   - Databases: PostgreSQL, MongoDB, MySQL, SQL Server, Redis, Query Optimization
+   - Core Concepts: Distributed Systems, High Throughput, Concurrency, Large-Scale Design, Security
+2. JD SKILLS FIRST: Within each skill category, place JD-matching skills at the VERY BEGINNING.
+3. AVOID KITCHEN-SINK BLOAT: Limit each category strictly to 5 to 6 highly relevant skills to keep the resume clean and credible. Do not dump every possible language or framework.
+4. MODERN AI & TOOLS: If including AI or developer tooling, use professional category names (e.g. "AI & LLM Integration: OpenAI API, LangChain, Prompt Engineering, Vector Search" or "Developer Tools: Git, Docker, Postman, Linux") rather than listing IDE plugins as core standalone categories.
+5. DEDUPLICATION RULE: A skill MUST ONLY appear in ONE category.
 
 Return ONLY a valid JSON object matching this exact structure:
 {
   "skills": {
-    "<Category Name>": ["JD-matching skills first, followed by candidate's core skills", "max 7 total"]
+    "<Category Name>": ["JD-matching skills first, followed by candidate's core skills", "max 6 total"]
   }
 }
 `;
@@ -695,27 +708,37 @@ export async function tailorResume(
       skills: (() => {
         const finalSkills: Record<string, string[]> = {};
         const rawSkills = (tailoredSkillsObj.skills || {}) as Record<string, string[]>;
+        const seenSkills = new Set<string>();
         
-        // 1. First, process all original categories from candidate's resume
-        Object.entries(resume.skills || {}).forEach(([category, originalList]) => {
-          const tailoredList = rawSkills[category] || 
-                               rawSkills[category.toLowerCase()] ||
-                               rawSkills[category.replace(/&/g, "and")] ||
-                               rawSkills[category.replace(/and/g, "&")];
-          
-          if (tailoredList && Array.isArray(tailoredList) && tailoredList.length > 0) {
-            finalSkills[category] = tailoredList;
-          } else {
-            finalSkills[category] = originalList || [];
+        const cleanList = (list: string[]) => {
+          const unique: string[] = [];
+          for (const item of list) {
+            const normalized = item.trim().toLowerCase();
+            if (normalized && !seenSkills.has(normalized)) {
+              seenSkills.add(normalized);
+              unique.push(item.trim());
+            }
+            if (unique.length >= 6) break;
           }
-        });
+          return unique;
+        };
 
-        // 2. Include any additional new categories returned by LLM that were not in original
-        Object.entries(rawSkills).forEach(([category, list]) => {
-          if (!finalSkills[category] && Array.isArray(list) && list.length > 0) {
-            finalSkills[category] = list;
-          }
-        });
+        if (Object.keys(rawSkills).length > 0) {
+          Object.entries(rawSkills).forEach(([category, list]) => {
+            if (Array.isArray(list) && list.length > 0) {
+              const cleaned = cleanList(list);
+              if (cleaned.length > 0) {
+                finalSkills[category] = cleaned;
+              }
+            }
+          });
+        } else {
+          Object.entries(resume.skills || {}).forEach(([category, originalList]) => {
+            if (Array.isArray(originalList) && originalList.length > 0) {
+              finalSkills[category] = cleanList(originalList);
+            }
+          });
+        }
 
         return finalSkills as SkillsData;
       })(),

@@ -248,15 +248,15 @@ async function tailorForModel(
     }
 
     const excess = tailoredLatex.length - maxAllowedBudget;
-    currentSystemPrompt = `You are an expert ATS specialist and LaTeX editor.
+    currentSystemPrompt = `You are an expert ATS specialist and senior LaTeX editor.
 CRITICAL 1-PAGE CHARACTER LIMIT OVERFLOW (ATTEMPT ${attempt + 1}/${maxAttempts}):
 Your generated LaTeX was ${tailoredLatex.length} characters long, which is ${excess} characters OVER the strict 1-page budget (${maxAllowedBudget} characters).
 
-TO GUARANTEE THE RESUME FITS ON EXACTLY 1 PAGE WHILE RETAINING 100% OF JD KEYWORDS:
-1. SWAP IN-PLACE & COMPACT: Keep single-line bullets under 80 characters, and 2-line bullets under 145 characters. Remove unnecessary filler words, but DO NOT drop required JD technologies (GraphQL, Kubernetes, C#, .Net, Java, Docker, etc.).
+TO GUARANTEE THE RESUME FITS ON EXACTLY 1 PAGE WHILE RETAINING HIGH CREDIBILITY:
+1. SWAP IN-PLACE & COMPACT: Keep single-line bullets under 80 characters, and 2-line bullets under 145 characters. Remove filler words, but retain key technical achievements. NEVER write robotic meta-phrases like "applied Data Structures, Algorithms" or "conducted task estimation".
 2. PROJECT TECH HEADERS: Keep strictly to 4-5 core JD technologies per project subtitle.
-3. SKILL ROWS: Keep each skill category to 1 single line (max 5-6 tools, max 55-60 chars).
-4. SUMMARY: Limit summary to strictly 3 compact lines (~45 words).
+3. SKILL ROWS: Keep each skill category to 1 single line (max 5-6 core tools, max 55-60 chars). Lead with target JD skills.
+4. SUMMARY: Limit summary to strictly 3 compact, focused lines (~45-50 words).
 5. DO NOT add extra bullets or projects. Keep the exact count as the original template.
 
 You MUST produce the full LaTeX document with total length <= ${maxAllowedBudget} characters.`;
@@ -450,48 +450,52 @@ VERIFIED GITHUB SKILL BANK INTEGRATION:
     const jdChecklistText = allJdRequirements.length > 0
       ? allJdRequirements.map((req: string) => `- ${req}`).join("\n")
       : "- Align with structured JD requirements";
-    const systemPrompt = `You are an elite ATS resume optimizer and senior LaTeX developer.
-Your task is to tailor a raw LaTeX resume to achieve 95-100% ATS match alignment with the target Job Description by replacing irrelevant skills and words with 100% of the target JD's required technologies and competencies.
+    const systemPrompt = `You are an elite technical recruiter, senior software engineer, and LaTeX resume optimizer.
+Your task is to tailor a raw LaTeX resume to achieve 95-100% ATS match alignment with the target Job Description while maintaining senior-level credibility, professional phrasing, and authentic engineering depth.
 
-TARGET JD REQUIREMENTS CHECKLIST (EVERY TECHNICAL ITEM MUST BE INJECTED):
+TARGET JD REQUIREMENTS CHECKLIST:
 ${jdChecklistText}
 
 CORE IN-PLACE TAILORING RULES:
-1. 100% MANDATORY JD TECHNICAL SKILLS INJECTION:
-   - Every single programming language, framework, database, tool, and protocol listed in the Target JD (including GraphQL, Kubernetes, Docker, Java, Spring Boot, C#, .Net, Angular, Node.js, PostgreSQL, etc.) MUST be injected into the resume!
-   - Aggressively IDENTIFY and REPLACE tools and phrases in the original LaTeX that are NOT in the JD (e.g., replace Stripe, Zoho, AssemblyAI, WebRTC, Socket.io, Passport.js, Tailwind CSS) with the target JD's required technologies.
-   - Place JD-matching skills at the very front of each skill category and project header.
 
-2. PROJECTS SECTION OVERHAUL & ARCHITECTURAL REALISM (CRITICAL):
+1. ABSOLUTE BAN ON ROBOTIC / META PHRASING (CRITICAL):
+   - NEVER write meta-phrases or academic descriptions like "applied Data Structures, Algorithms for...", "conducted task estimation", "practiced Agile/Scrum ceremonies", "demonstrating OOPS concepts", or list software concepts as plain trailing nouns.
+   - Express technical mastery through REALISTIC senior engineering actions, concrete architecture, and measurable outcomes (e.g., "Optimized high-traffic query latency from 850ms to 550ms by adding composite indexing and query caching", "Architected idempotent webhook event pipeline cutting failure detection from 20m to 3m").
+
+2. CAREER CREDIBILITY & ARCHITECTURAL REALISM (NO PAST COMPANY TECH-SWAPPING):
+   - Keep historical company work technically authentic. Do NOT completely swap the foundational language/stack of established past employers (e.g., do NOT turn a past Node.js/PostgreSQL startup role into ASP.NET/SQL Server).
+   - Instead, align historical experience by highlighting transferable high-value engineering patterns: API latency, microservices, cloud infrastructure, containerization, concurrency, CI/CD pipelines, automated testing, security, and schema optimization.
+   - Focus primary target JD stack shifts aggressively in:
+     * Professional Summary (sharp, authoritative focus on target role & stack).
+     * Founder / Live SaaS / Contract roles (e.g. Chintu AI or client projects where candidate has full architectural ownership).
+     * Projects Section (re-align project tech stacks to match target JD stack).
+     * Technical Skills Section (prioritize target JD matching skills at the top).
+
+3. PROJECTS SECTION OVERHAUL & COHERENT ARCHITECTURES:
    - In EVERY project header (the second argument of \\project{ProjectName}{Tech Stack}):
-     REPLACE non-JD tools with target JD technologies so each project showcases target JD skills!
-     Keep strictly to 4-5 core tools per project subtitle (do NOT cram 8+ tools in one header).
+     Showcase target JD technologies! Keep strictly to 4-5 core tools per project subtitle (do NOT cram 8+ tools in one header).
    - STRICT ARCHITECTURAL REALISM & NO COMPETING BACKENDS:
      * NEVER mix competing backend ecosystems in the SAME single project or bullet point (e.g., NEVER write "Java Spring Boot / C# .Net REST APIs" or "Angular/Node.js frontend and C# .Net backend").
-     * A single project MUST use ONE coherent, realistic backend stack!
+     * A single project MUST use ONE coherent, realistic stack!
      * If the target JD requires multiple backend technologies (e.g. Java, C#, Node.js, Python), DISTRIBUTE them across different projects in the resume so each project represents a distinct, realistic stack.
    - GITHUB SKILL BANK DYNAMIC SWAPPING:
      * You may swap out any low-relevance project with any matching verified project from the candidate's GitHub Skill Bank, keeping the exact LaTeX \\project{...}{...} command and bullet structure.
-   - In project bullet points: describe realistic technical actions with the specific project's allocated stack (e.g., designing GraphQL queries/mutations in .NET/Node, deploying containerized pods in Kubernetes, building Java Spring Boot microservices, optimizing algorithms).
+   - In project bullet points: describe realistic technical actions with the specific project's allocated stack (e.g., designing GraphQL queries/mutations, deploying containerized pods in Kubernetes, building RESTful microservices, optimizing algorithms).
 
-3. TECHNICAL SKILLS SECTION (LOGICAL & COMPACT):
-   - Every skill MUST be placed in its logically correct category:
+4. TECHNICAL SKILLS SECTION (FOCUSED, CREDIBLE & COMPACT):
+   - Place skills in logically correct categories:
      * Languages: Java, C\\#, TypeScript, JavaScript, Python, C/C++, SQL, Kotlin, Swift
-     * Backend: Spring Boot, .Net, Node.js, Express.js, GraphQL, REST APIs, Microservices
-     * Frontend: Angular, AngularJS, React.js, HTML5, CSS
-     * Cloud \\& DevOps: Kubernetes, Docker, AWS, CI/CD, GitHub Actions, Git
-     * Databases: PostgreSQL, MongoDB, MySQL, Database Concepts, SQL
-     * Core Concepts: Data Structures, Algorithms, OOPS, Agile/Scrum, Distributed Systems
-   - DO NOT dump programming languages into "AI & LLM" or concepts into "Payments & Billing". If the original resume has category labels like "AI & LLM" or "Payments & Billing" that are irrelevant to the target role, rename/replace those labels with standard relevant categories (e.g. \\textbf{Cloud \\& DevOps:}, \\textbf{Core Concepts:}).
-   - Keep each skill category line strictly on 1 physical line (max 5-6 core tools, ~50-65 chars).
-
-4. WORK EXPERIENCE & ARCHITECTURAL REALISM:
-   - Weave target domain concepts, languages, and methodologies (e.g. Java, C#, .Net, Kubernetes, Docker, GraphQL, Agile/Scrum, Data Structures, Algorithms) directly into action verbs across the bullet points.
-   - ARCHITECTURAL REALISM: NEVER mix competing backend technologies in the same sentence or bullet point (e.g., NEVER write "Java Spring Boot / C# .Net services"). Allocate different roles/services to their respective stacks.
-   - Maintain the EXACT SAME number of bullet points per job/project as the original template.
+     * Backend: Spring Boot, .NET Core, ASP.NET, Node.js, Express.js, GraphQL, REST APIs, Microservices
+     * Frontend: React.js, Next.js, Angular, HTML5, CSS3, Redux
+     * Cloud \\& DevOps: Kubernetes, Docker, AWS, Azure, GCP, CI/CD, GitHub Actions, Git
+     * Databases: PostgreSQL, MongoDB, MySQL, SQL Server, Redis, Query Optimization
+     * Core Concepts: Distributed Systems, High Throughput, Concurrency, System Design, Security, Microservices
+   - AVOID KITCHEN-SINK BLOAT: Keep each skill category line strictly on 1 physical line with 5-6 core, high-relevance technologies (~50-65 chars). Do NOT dump every existing technology into one resume. Lead with the target JD's required technologies!
+   - MODERN AI / DEVELOPER TOOLS: Do not list simple IDE plugins as standalone skill categories. If including AI tooling, format as practical engineering competencies (e.g. \\textbf{AI \\& LLM Integration:} OpenAI API, LangChain, Prompt Engineering, Vector Search, AI-Assisted Workflows) or combine under \\textbf{Developer Tools:}.
 
 5. PROFESSIONAL SUMMARY:
-   - Rewrite the summary to highlight target role title and domain focus in strictly 3 compact lines (~45-55 words).
+   - Rewrite the summary to highlight the candidate's target role title, years of experience (3+ years), and primary domain/stack focus in strictly 3 compact lines (~45-55 words).
+   - Keep it targeted and cohesive—do not list 6 competing backend frameworks in a single sentence.
 
 6. STRICT 1-PAGE CHARACTER LIMIT (HARD REQUIREMENT):
    - The original LaTeX has ${latexLength} characters.
@@ -557,15 +561,15 @@ ${latex}`;
               }
 
               const excess = latexResult.length - maxAllowedBudget;
-              currentSystemPrompt = `You are an expert ATS specialist and LaTeX editor.
+              currentSystemPrompt = `You are an expert ATS specialist and senior LaTeX editor.
 CRITICAL 1-PAGE CHARACTER LIMIT OVERFLOW (ATTEMPT ${attempt + 1}/${maxAttempts}):
 Your generated LaTeX was ${latexResult.length} characters long, which is ${excess} characters OVER the strict 1-page budget (${maxAllowedBudget} characters).
 
-TO GUARANTEE THE RESUME FITS ON EXACTLY 1 PAGE WHILE RETAINING 100% OF JD KEYWORDS:
-1. SWAP IN-PLACE & COMPACT: Keep single-line bullets under 80 characters, and 2-line bullets under 145 characters. Remove unnecessary filler words, but DO NOT drop required JD technologies (GraphQL, Kubernetes, C#, .Net, Java, Docker, etc.).
+TO GUARANTEE THE RESUME FITS ON EXACTLY 1 PAGE WHILE RETAINING HIGH CREDIBILITY:
+1. SWAP IN-PLACE & COMPACT: Keep single-line bullets under 80 characters, and 2-line bullets under 145 characters. Remove filler words, but retain key technical achievements. NEVER write robotic meta-phrases like "applied Data Structures, Algorithms" or "conducted task estimation".
 2. PROJECT TECH HEADERS: Keep strictly to 4-5 core JD technologies per project subtitle.
-3. SKILL ROWS: Keep each skill category to 1 single line (max 5-6 tools, max 55-60 chars).
-4. SUMMARY: Limit summary to strictly 3 compact lines (~45 words).
+3. SKILL ROWS: Keep each skill category to 1 single line (max 5-6 core tools, max 55-60 chars). Lead with target JD skills.
+4. SUMMARY: Limit summary to strictly 3 compact, focused lines (~45-50 words).
 5. DO NOT add extra bullets or projects. Keep the exact count as the original template.
 
 You MUST produce the full LaTeX document with total length <= ${maxAllowedBudget} characters.`;
