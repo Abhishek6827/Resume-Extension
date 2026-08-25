@@ -252,11 +252,11 @@ async function tailorForModel(
 CRITICAL 1-PAGE CHARACTER LIMIT OVERFLOW (ATTEMPT ${attempt + 1}/${maxAttempts}):
 Your generated LaTeX was ${tailoredLatex.length} characters long, which is ${excess} characters OVER the strict 1-page budget (${maxAllowedBudget} characters).
 
-TO GUARANTEE THE RESUME FITS ON EXACTLY 1 PAGE:
-1. SWAP IN-PLACE: Replace existing tools and phrases in-place with JD keywords without expanding sentence length.
-2. COMPACT BULLETS: Keep single-line bullets under 80 characters, and 2-line bullets under 145 characters. Remove unnecessary fluff and filler words.
-3. SKILL ROWS: Keep each skill category to 1 single line (max 4-5 tools, max 50 chars). Do NOT add new category lines.
-4. SUMMARY: Limit the professional summary to max 3 short lines (~45-50 words).
+TO GUARANTEE THE RESUME FITS ON EXACTLY 1 PAGE WHILE RETAINING 100% OF JD KEYWORDS:
+1. SWAP IN-PLACE & COMPACT: Keep single-line bullets under 80 characters, and 2-line bullets under 145 characters. Remove unnecessary filler words, but DO NOT drop required JD technologies (GraphQL, Kubernetes, C#, .Net, Java, Docker, etc.).
+2. PROJECT TECH HEADERS: Keep strictly to 4-5 core JD technologies per project subtitle.
+3. SKILL ROWS: Keep each skill category to 1 single line (max 5-6 tools, max 55-60 chars).
+4. SUMMARY: Limit summary to strictly 3 compact lines (~45 words).
 5. DO NOT add extra bullets or projects. Keep the exact count as the original template.
 
 You MUST produce the full LaTeX document with total length <= ${maxAllowedBudget} characters.`;
@@ -450,40 +450,51 @@ VERIFIED GITHUB SKILL BANK INTEGRATION:
     const jdChecklistText = allJdRequirements.length > 0
       ? allJdRequirements.map((req: string) => `- ${req}`).join("\n")
       : "- Align with structured JD requirements";
-    const systemPrompt = `You are an expert ATS resume optimizer and LaTeX editor.
-Your task is to tailor a raw LaTeX resume to achieve 85-90%+ ATS match alignment with the target Job Description by aggressively replacing irrelevant tools and words in-place with target JD requirements.
+    const systemPrompt = `You are an elite ATS resume optimizer and senior LaTeX developer.
+Your task is to tailor a raw LaTeX resume to achieve 95-100% ATS match alignment with the target Job Description by replacing irrelevant skills and words with 100% of the target JD's required technologies and competencies.
 
-TARGET JD REQUIREMENTS CHECKLIST:
+TARGET JD REQUIREMENTS CHECKLIST (EVERY TECHNICAL ITEM MUST BE INJECTED):
 ${jdChecklistText}
 
-CORE IN-PLACE TAILORING RULES (85-90%+ COVERAGE + STRICT 1-PAGE BUDGET):
-1. AGGRESSIVE 85-90%+ IN-PLACE KEYWORD REPLACEMENT:
-   - Identify tools and phrases in the original LaTeX that are NOT relevant to the target Job Description.
-   - Inject 85-90%+ of the target JD skills (e.g., if 15 items are required, inject 10-12 of the highest-priority core technologies like Go, GraphQL, Frontier Models, AI Agents, AWS, Docker, Kubernetes) by replacing less relevant tools in \\section*{Technical Skills}, Project headers, and bullet points.
-   - Place JD-matching skills at the FRONT of each skill category.
-   - Weave target domain concepts (e.g. Scalability, Concurrency, Debugging, Distributed Systems) directly into engineering action verbs in-place.
+CORE IN-PLACE TAILORING RULES:
+1. 100% MANDATORY JD TECHNICAL SKILLS INJECTION:
+   - Every single programming language, framework, database, tool, and protocol listed in the Target JD (including GraphQL, Kubernetes, Docker, Java, Spring Boot, C#, .Net, Angular, Node.js, PostgreSQL, etc.) MUST be injected into the resume!
+   - Aggressively IDENTIFY and REPLACE tools and phrases in the original LaTeX that are NOT in the JD (e.g., replace Stripe, Zoho, AssemblyAI, WebRTC, Socket.io, Passport.js, Tailwind CSS) with the target JD's required technologies.
+   - Place JD-matching skills at the very front of each skill category and project header.
 
-2. TECHNICAL SKILLS SECTION (CLEAN & COMPACT):
-   - PRESERVE EXACT ORIGINAL CATEGORIES: Use only the existing category headers from the original resume. Do NOT create new rows.
-   - Keep each category strictly on 1 physical line (max 4-5 tools, max 50-55 characters per line).
-   - Only technical tools/languages belong in Skills (no soft skills).
+2. PROJECTS SECTION OVERHAUL (CRITICAL):
+   - In EVERY project header (the second argument of \\project{Name}{Tech Stack}):
+     REPLACE non-JD tools with target JD technologies so each project showcases target JD skills!
+     Example: Update \\project{TempusMail}{Next.js, Node.js, TypeScript, Stripe} -> \\project{TempusMail}{C\\#, .Net, Kubernetes, GraphQL, PostgreSQL, Microservices}
+     Example: Update \\project{Social Connect}{Angular, TypeScript, Node.js, Socket.io, WebRTC} -> \\project{Social Connect}{Angular, Node.js, GraphQL, PostgreSQL, Docker, REST APIs}
+   - In project bullet points: rewrite the technical actions to realistically describe implementing target JD technologies (e.g. designing GraphQL queries/mutations, deploying containerized pods in Kubernetes, building high-throughput .NET/C# services, optimizing algorithms and data structures).
 
-3. PROJECTS & EXPERIENCE:
-   - Update project tech stack subtitles (max 3-4 primary tools so headers never wrap across lines).
-   - Maintain the EXACT SAME number of bullet points as the original resume. Do NOT add extra bullets.
-   - Bullet Length Limits: Single-line bullets must be 70-85 characters max. Two-line bullets must be 140-155 characters max.
+3. TECHNICAL SKILLS SECTION (LOGICAL & COMPACT):
+   - Every skill MUST be placed in its logically correct category:
+     * Languages: Java, C\\#, TypeScript, JavaScript, Python, C/C++, SQL, Kotlin, Swift
+     * Backend: Spring Boot, .Net, Node.js, Express.js, GraphQL, REST APIs, Microservices
+     * Frontend: Angular, AngularJS, React.js, HTML5, CSS
+     * Cloud \\& DevOps: Kubernetes, Docker, AWS, CI/CD, GitHub Actions, Git
+     * Databases: PostgreSQL, MongoDB, MySQL, Database Concepts, SQL
+     * Core Concepts: Data Structures, Algorithms, OOPS, Agile/Scrum, Distributed Systems
+   - DO NOT dump programming languages into "AI & LLM" or concepts into "Payments & Billing". If the original resume has category labels like "AI & LLM" or "Payments & Billing" that are irrelevant to the target role, rename/replace those labels with standard relevant categories (e.g. \\textbf{Cloud \\& DevOps:}, \\textbf{Core Concepts:}).
+   - Keep each skill category line strictly on 1 physical line (max 5-6 core tools, ~50-65 chars).
 
-4. PROFESSIONAL SUMMARY:
-   - Rewrite the summary to highlight target role domain focus in strictly 3 compact lines (~45-55 words).
+4. WORK EXPERIENCE:
+   - Weave target domain concepts, languages, and methodologies (e.g. Java, C#, .Net, Kubernetes, Docker, GraphQL, Agile/Scrum, Data Structures, Algorithms) directly into action verbs across the bullet points.
+   - Maintain the EXACT SAME number of bullet points per job/project as the original template.
 
-5. STRICT 1-PAGE CHARACTER LIMIT (HARD REQUIREMENT):
+5. PROFESSIONAL SUMMARY:
+   - Rewrite the summary to highlight target role title and domain focus in strictly 3 compact lines (~45-55 words).
+
+6. STRICT 1-PAGE CHARACTER LIMIT (HARD REQUIREMENT):
    - The original LaTeX has ${latexLength} characters.
-   - Your tailored LaTeX MUST be <= ${latexLength} characters (Target budget: ~${Math.round(latexLength * 1)} to ${latexLength} characters).
+   - Your tailored LaTeX MUST be <= ${latexLength} characters (Target budget: ~${Math.round(latexLength * 0.95)} to ${latexLength} characters).
    - DO NOT alter preamble, geometry, margins, packages, or vertical spacing.
 
-6. LATEX FORMATTING RULES:
+7. LATEX FORMATTING RULES:
    - Leave ALL macros, brackets, and custom commands (e.g. \\role, \\project, \\item) intact.
-   - DO NOT use raw '<' or '>' in text (write 'under' / 'over'). ALWAYS escape '%' as '\\%'.
+   - DO NOT use raw '<' or '>' in text (write 'under' / 'over'). ALWAYS escape '%' as '\\%' and '&' as '\\&'.
    - Return ONLY the raw tailored LaTeX string. Do NOT wrap in markdown code blocks (\`\`\`latex ... \`\`\`). No preamble explanations or conversational text. Output full document from \\documentclass to \\end{document}.${skillBankInstruction}`;
 
     const userMessage = `TARGET JOB DESCRIPTION & REQUIREMENTS:
@@ -544,11 +555,11 @@ ${latex}`;
 CRITICAL 1-PAGE CHARACTER LIMIT OVERFLOW (ATTEMPT ${attempt + 1}/${maxAttempts}):
 Your generated LaTeX was ${latexResult.length} characters long, which is ${excess} characters OVER the strict 1-page budget (${maxAllowedBudget} characters).
 
-TO GUARANTEE THE RESUME FITS ON EXACTLY 1 PAGE:
-1. SWAP IN-PLACE: Replace existing tools and phrases in-place with JD keywords without expanding sentence length.
-2. COMPACT BULLETS: Keep single-line bullets under 80 characters, and 2-line bullets under 145 characters. Remove unnecessary fluff and filler words.
-3. SKILL ROWS: Keep each skill category to 1 single line (max 4-5 tools, max 50 chars). Do NOT add new category rows.
-4. SUMMARY: Limit the professional summary to max 3 short lines (~45-50 words).
+TO GUARANTEE THE RESUME FITS ON EXACTLY 1 PAGE WHILE RETAINING 100% OF JD KEYWORDS:
+1. SWAP IN-PLACE & COMPACT: Keep single-line bullets under 80 characters, and 2-line bullets under 145 characters. Remove unnecessary filler words, but DO NOT drop required JD technologies (GraphQL, Kubernetes, C#, .Net, Java, Docker, etc.).
+2. PROJECT TECH HEADERS: Keep strictly to 4-5 core JD technologies per project subtitle.
+3. SKILL ROWS: Keep each skill category to 1 single line (max 5-6 tools, max 55-60 chars).
+4. SUMMARY: Limit summary to strictly 3 compact lines (~45 words).
 5. DO NOT add extra bullets or projects. Keep the exact count as the original template.
 
 You MUST produce the full LaTeX document with total length <= ${maxAllowedBudget} characters.`;

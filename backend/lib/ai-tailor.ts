@@ -548,15 +548,14 @@ export async function tailorProjectsWithAI(
   const allJdRequirements = Array.from(new Set([...mustHave, ...niceToHave, ...keywords])).filter(Boolean);
 
   const systemPrompt = `You are an expert resume optimizer. Rewrite the candidate's Projects section to align deeply with the target JD.
-CRITICAL SAFETY & REPLACEMENT RULES:
-1. FORCEFULLY INJECT TOP JD SKILLS & ELIMINATE MISSING KEYWORD GAPS: Across the projects, inject 100% of missing JD technologies (e.g. GraphQL, Kubernetes, Terraform, SSO, Vector Databases, Microservices, CI/CD, AWS) into project "tech" arrays and bullet points while retaining candidate's core matching skills (e.g. Stripe, AssemblyAI, WebRTC, React, TypeScript).
-2. Each project's "tech" array must include candidate's core technologies + top JD skills (5-7 total per project).
-2b. ARCHITECTURAL REALISM: Ensure the tech stack makes logical architectural sense.
-2c. STACK LIMIT: Limit the "tech" array for each project to a maximum of 5 to 7 core technologies.
-3. DO NOT reorder the projects. Keep the exact same array length and order.
-4. You MUST preserve the exact same number of bullet points in the "highlights" array for each project entry as the original. Do not merge, split, add, or delete bullet points.
-5. **CRITICAL LENGTH CONSTRAINT**: Keep character length/word count of each tailored bullet point and project description within +/- 15% of original.
-6. ABSOLUTE BAN ON LAZY SUFFIXES: Do NOT append lazy suffixes like ", demonstrating expertise in...". Truly rewrite the engineering details.
+CRITICAL MANDATORY RULES:
+1. 100% JD SKILLS INJECTION & PROJECT TECH OVERHAUL: In EVERY project's "tech" array, aggressively REPLACE unrelated tools (e.g. Stripe, AssemblyAI, WebRTC, Socket.io, Passport.js, Tailwind CSS) with target JD technologies (e.g. GraphQL, Kubernetes, Java, Spring Boot, C#, .Net, PostgreSQL, Docker, AWS).
+2. Each project's "tech" array MUST prioritize the target JD skills (4-6 relevant technologies total per project).
+3. Weave target JD technical actions (e.g., GraphQL schema & query optimization, containerized pod deployments in Kubernetes, building .NET/C# microservices) directly into project bullet points.
+4. DO NOT reorder the projects. Keep the exact same array length and order.
+5. You MUST preserve the exact same number of bullet points in the "highlights" array for each project entry as the original. Do not merge, split, add, or delete bullet points.
+6. **CRITICAL LENGTH CONSTRAINT**: Keep character length/word count of each tailored bullet point and project description within +/- 15% of original.
+7. ABSOLUTE BAN ON LAZY SUFFIXES: Do NOT append lazy suffixes like ", demonstrating expertise in...". Truly rewrite the engineering details.
 
 Return ONLY a valid JSON object matching this exact structure:
 {
@@ -597,17 +596,17 @@ export async function tailorSkillsWithAI(
 
   const systemPrompt = `You are an expert resume optimizer. Reorder and refine the candidate's Skills section to perfectly match the target Job Description.
 CRITICAL MANDATORY RULES:
-1. MANDATORY 100% JD SKILLS INJECTION: Every single technical skill, framework, database, tool, container technology, and security concept listed in the target Job Description (e.g. GraphQL, Kubernetes, Terraform, SSO, Vector Databases, REST APIs, Microservices, Docker, PostgreSQL, AWS) MUST be added to its respective category line in the returned skills object!
-2. PRESERVE ALL ORIGINAL SKILL CATEGORIES: You MUST preserve ALL skill categories present in the candidate's input resume (e.g., "Payments & Billing", "AI & LLM", "Languages", "Frontend", "Backend", "Databases", "DevOps & Tools", "Auth & Security", etc.). Do NOT merge, rename, drop, or delete any category name provided in the input resume.
+1. MANDATORY 100% JD SKILLS INJECTION: Every single technical skill, framework, database, tool, container technology, and protocol listed in the target Job Description (e.g. GraphQL, Kubernetes, Terraform, REST APIs, Microservices, Docker, PostgreSQL, Java, C#, .Net) MUST be added to its logically correct category line!
+2. LOGICAL CATEGORY PLACEMENT: Place skills into their proper logical categories (Languages under Languages, Backend under Backend, Cloud & DevOps under Cloud/DevOps, etc.). DO NOT dump programming languages into "AI & LLM" or concepts into "Payments & Billing". If the input categories are irrelevant to the target role, adapt them to standard relevant categories (e.g., "Cloud & DevOps", "Core Concepts").
 3. JD SKILLS FIRST: Within each skill category, place JD-matching skills at the VERY BEGINNING (first items in the array).
-4. RETAIN CANDIDATE'S CORE SKILLS & AUGMENT WITH JD SKILLS: Retain the candidate's valid core skills in each category. Replace less relevant or outdated skills with top JD-required technologies. DO NOT wipe out or leave any category empty.
-5. DEDUPLICATION RULE: A skill MUST ONLY appear in ONE category. Do not list the same skill across multiple categories. Pick the single most relevant category for it.
-6. **CRITICAL LENGTH CONSTRAINT**: Limit each category to a maximum of 5 to 7 highly relevant skills to keep the resume clean and breathable.
+4. REPLACE UNRELATED SKILLS: Replace less relevant or outdated skills with top JD-required technologies.
+5. DEDUPLICATION RULE: A skill MUST ONLY appear in ONE category. Do not list the same skill across multiple categories.
+6. **CRITICAL LENGTH CONSTRAINT**: Limit each category to 5 to 7 highly relevant skills to keep the resume clean and breathable.
 
-Return ONLY a valid JSON object matching this exact structure (keys MUST match input category names exactly):
+Return ONLY a valid JSON object matching this exact structure:
 {
   "skills": {
-    "<Input Category Name>": ["JD-matching skills first, followed by candidate's core skills", "max 7 total"]
+    "<Category Name>": ["JD-matching skills first, followed by candidate's core skills", "max 7 total"]
   }
 }
 `;
