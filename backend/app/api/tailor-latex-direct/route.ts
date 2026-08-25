@@ -462,12 +462,17 @@ CORE IN-PLACE TAILORING RULES:
    - Aggressively IDENTIFY and REPLACE tools and phrases in the original LaTeX that are NOT in the JD (e.g., replace Stripe, Zoho, AssemblyAI, WebRTC, Socket.io, Passport.js, Tailwind CSS) with the target JD's required technologies.
    - Place JD-matching skills at the very front of each skill category and project header.
 
-2. PROJECTS SECTION OVERHAUL (CRITICAL):
-   - In EVERY project header (the second argument of \\project{Name}{Tech Stack}):
+2. PROJECTS SECTION OVERHAUL & ARCHITECTURAL REALISM (CRITICAL):
+   - In EVERY project header (the second argument of \\project{ProjectName}{Tech Stack}):
      REPLACE non-JD tools with target JD technologies so each project showcases target JD skills!
-     Example: Update \\project{TempusMail}{Next.js, Node.js, TypeScript, Stripe} -> \\project{TempusMail}{C\\#, .Net, Kubernetes, GraphQL, PostgreSQL, Microservices}
-     Example: Update \\project{Social Connect}{Angular, TypeScript, Node.js, Socket.io, WebRTC} -> \\project{Social Connect}{Angular, Node.js, GraphQL, PostgreSQL, Docker, REST APIs}
-   - In project bullet points: rewrite the technical actions to realistically describe implementing target JD technologies (e.g. designing GraphQL queries/mutations, deploying containerized pods in Kubernetes, building high-throughput .NET/C# services, optimizing algorithms and data structures).
+     Keep strictly to 4-5 core tools per project subtitle (do NOT cram 8+ tools in one header).
+   - STRICT ARCHITECTURAL REALISM & NO COMPETING BACKENDS:
+     * NEVER mix competing backend ecosystems in the SAME single project or bullet point (e.g., NEVER write "Java Spring Boot / C# .Net REST APIs" or "Angular/Node.js frontend and C# .Net backend").
+     * A single project MUST use ONE coherent, realistic backend stack!
+     * If the target JD requires multiple backend technologies (e.g. Java, C#, Node.js, Python), DISTRIBUTE them across different projects in the resume so each project represents a distinct, realistic stack.
+   - GITHUB SKILL BANK DYNAMIC SWAPPING:
+     * You may swap out any low-relevance project with any matching verified project from the candidate's GitHub Skill Bank, keeping the exact LaTeX \\project{...}{...} command and bullet structure.
+   - In project bullet points: describe realistic technical actions with the specific project's allocated stack (e.g., designing GraphQL queries/mutations in .NET/Node, deploying containerized pods in Kubernetes, building Java Spring Boot microservices, optimizing algorithms).
 
 3. TECHNICAL SKILLS SECTION (LOGICAL & COMPACT):
    - Every skill MUST be placed in its logically correct category:
@@ -480,8 +485,9 @@ CORE IN-PLACE TAILORING RULES:
    - DO NOT dump programming languages into "AI & LLM" or concepts into "Payments & Billing". If the original resume has category labels like "AI & LLM" or "Payments & Billing" that are irrelevant to the target role, rename/replace those labels with standard relevant categories (e.g. \\textbf{Cloud \\& DevOps:}, \\textbf{Core Concepts:}).
    - Keep each skill category line strictly on 1 physical line (max 5-6 core tools, ~50-65 chars).
 
-4. WORK EXPERIENCE:
+4. WORK EXPERIENCE & ARCHITECTURAL REALISM:
    - Weave target domain concepts, languages, and methodologies (e.g. Java, C#, .Net, Kubernetes, Docker, GraphQL, Agile/Scrum, Data Structures, Algorithms) directly into action verbs across the bullet points.
+   - ARCHITECTURAL REALISM: NEVER mix competing backend technologies in the same sentence or bullet point (e.g., NEVER write "Java Spring Boot / C# .Net services"). Allocate different roles/services to their respective stacks.
    - Maintain the EXACT SAME number of bullet points per job/project as the original template.
 
 5. PROFESSIONAL SUMMARY:

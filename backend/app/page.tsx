@@ -694,6 +694,184 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
   );
 };
 
+const CoverLetterPipelineVisualizer = ({
+  isGenerating,
+  modelId,
+}: {
+  isGenerating: boolean;
+  modelId: string;
+}) => {
+  const [ticks, setTicks] = useState(0);
+
+  useEffect(() => {
+    if (!isGenerating) {
+      setTicks(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setTicks((prev) => prev + 1);
+    }, 350);
+    return () => clearInterval(interval);
+  }, [isGenerating]);
+
+  const activeModel = COVER_LETTER_MODELS.find((m) => m.id === modelId) || COVER_LETTER_MODELS[0];
+
+  const step1 = {
+    active: isGenerating && ticks < 4,
+    done: !isGenerating || ticks >= 4,
+    progress: isGenerating ? Math.min(100, Math.round((ticks / 3) * 100)) : 100,
+    log: ticks < 2 ? "Analyzing job description & core requirements..." : "Company & role context extracted.",
+  };
+
+  const step2 = {
+    active: isGenerating && ticks >= 4 && ticks < 9,
+    done: !isGenerating || ticks >= 9,
+    progress: !isGenerating ? 100 : ticks < 4 ? 0 : Math.min(100, Math.round(((ticks - 4) / 5) * 100)),
+    log: ticks < 4 ? "Queued..." : ticks < 7 ? "Synthesizing executive value proposition..." : "Narrative & tone aligned.",
+  };
+
+  const step3 = {
+    active: isGenerating && ticks >= 9,
+    done: !isGenerating,
+    progress: !isGenerating ? 100 : ticks < 9 ? 0 : Math.min(95, Math.round(((ticks - 9) / 4) * 95)),
+    log: ticks < 9 ? "Queued..." : "Polishing formal letter structure & interview CTA...",
+  };
+
+  const totalProgress = !isGenerating ? 100 : Math.min(98, Math.round((ticks / 12) * 100));
+
+  return (
+    <div className="w-full bg-slate-950/80 border border-indigo-500/25 rounded-2xl p-6 relative overflow-hidden backdrop-blur-xl flex flex-col gap-6 shadow-[0_0_30px_rgba(99,102,241,0.12)] transition-all duration-500">
+      <style>{`
+        @keyframes clLaserScan {
+          0% { top: 0%; opacity: 0; }
+          15% { opacity: 1; }
+          85% { opacity: 1; }
+          100% { top: 100%; opacity: 0; }
+        }
+        .cl-laser-scan {
+          animation: clLaserScan 2.4s ease-in-out infinite;
+        }
+      `}</style>
+
+      {/* Background glowing gradients */}
+      <div className="absolute -top-24 -left-24 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
+      <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
+
+      {/* Top Header Status */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-white/5 pb-4 relative z-10">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center shadow-lg shadow-indigo-500/10">
+              <img src={activeModel.icon} alt="icon" className="w-5 h-5 rounded" onError={(e) => (e.currentTarget.style.display = "none")} />
+            </div>
+            <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-slate-100">Generating Cover Letter</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 font-semibold">
+                {activeModel.shortName}
+              </span>
+            </div>
+            <span className="text-xs text-slate-400">Neural Executive Letter Synthesis in Progress</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 self-end sm:self-auto bg-indigo-500/10 border border-indigo-500/20 px-3 py-1.5 rounded-xl">
+          <div className="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></div>
+          <span className="text-xs font-mono font-bold text-indigo-300">
+            {totalProgress}%
+          </span>
+        </div>
+      </div>
+
+      {/* 3-Step Pipeline Flow Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 relative z-10">
+        {/* Stage 1 */}
+        <div className={`p-4 rounded-xl border transition-all duration-300 ${step1.active ? "bg-indigo-500/10 border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.15)]" : step1.done ? "bg-slate-900/60 border-emerald-500/30" : "bg-slate-950/40 border-white/5 opacity-60"}`}>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold ${step1.done ? "bg-emerald-500/20 text-emerald-400" : step1.active ? "bg-indigo-500/20 text-indigo-300 animate-pulse" : "bg-white/5 text-slate-500"}`}>
+                {step1.done ? "✓" : "1"}
+              </span>
+              <span className="text-xs font-bold text-slate-200">Context Extraction</span>
+            </div>
+            <span className="text-[10px] font-mono text-slate-400">{step1.progress}%</span>
+          </div>
+          <p className="text-[11px] text-slate-400 leading-tight mb-2">{step1.log}</p>
+          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+            <div className={`h-full transition-all duration-500 ${step1.done ? "bg-emerald-400" : "bg-indigo-500 animate-pulse"}`} style={{ width: `${step1.progress}%` }}></div>
+          </div>
+        </div>
+
+        {/* Stage 2 */}
+        <div className={`p-4 rounded-xl border transition-all duration-300 ${step2.active ? "bg-purple-500/10 border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.15)]" : step2.done ? "bg-slate-900/60 border-emerald-500/30" : "bg-slate-950/40 border-white/5 opacity-60"}`}>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold ${step2.done ? "bg-emerald-500/20 text-emerald-400" : step2.active ? "bg-purple-500/20 text-purple-300 animate-pulse" : "bg-white/5 text-slate-500"}`}>
+                {step2.done ? "✓" : "2"}
+              </span>
+              <span className="text-xs font-bold text-slate-200">Narrative Alignment</span>
+            </div>
+            <span className="text-[10px] font-mono text-slate-400">{step2.progress}%</span>
+          </div>
+          <p className="text-[11px] text-slate-400 leading-tight mb-2">{step2.log}</p>
+          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+            <div className={`h-full transition-all duration-500 ${step2.done ? "bg-emerald-400" : "bg-purple-500 animate-pulse"}`} style={{ width: `${step2.progress}%` }}></div>
+          </div>
+        </div>
+
+        {/* Stage 3 */}
+        <div className={`p-4 rounded-xl border transition-all duration-300 ${step3.active ? "bg-emerald-500/10 border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]" : step3.done ? "bg-slate-900/60 border-emerald-500/30" : "bg-slate-950/40 border-white/5 opacity-60"}`}>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold ${step3.done ? "bg-emerald-500/20 text-emerald-400" : step3.active ? "bg-emerald-500/20 text-emerald-300 animate-pulse" : "bg-white/5 text-slate-500"}`}>
+                {step3.done ? "✓" : "3"}
+              </span>
+              <span className="text-xs font-bold text-slate-200">Letter Synthesis</span>
+            </div>
+            <span className="text-[10px] font-mono text-slate-400">{step3.progress}%</span>
+          </div>
+          <p className="text-[11px] text-slate-400 leading-tight mb-2">{step3.log}</p>
+          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+            <div className={`h-full transition-all duration-500 ${step3.done ? "bg-emerald-400" : "bg-emerald-500 animate-pulse"}`} style={{ width: `${step3.progress}%` }}></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Holographic Document Laser-Scanning Preview Skeleton */}
+      <div className="relative w-full h-[190px] bg-slate-950/60 border border-white/10 rounded-xl p-5 overflow-hidden flex flex-col gap-3">
+        {/* Sweeping Laser Beam */}
+        <div className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-indigo-400 to-transparent shadow-[0_0_12px_#818cf8] cl-laser-scan"></div>
+
+        {/* Shimmering Skeletons */}
+        <div className="w-1/4 h-3 bg-white/10 rounded animate-pulse"></div>
+        <div className="w-1/3 h-2.5 bg-white/5 rounded animate-pulse"></div>
+        <div className="w-full h-[1px] bg-white/5 my-1"></div>
+        
+        <div className="flex flex-col gap-2">
+          <div className="w-full h-2.5 bg-gradient-to-r from-white/10 via-white/5 to-white/10 rounded animate-pulse"></div>
+          <div className="w-[92%] h-2.5 bg-gradient-to-r from-white/10 via-white/5 to-white/10 rounded animate-pulse"></div>
+          <div className="w-[96%] h-2.5 bg-gradient-to-r from-white/10 via-white/5 to-white/10 rounded animate-pulse"></div>
+          <div className="w-[84%] h-2.5 bg-gradient-to-r from-white/10 via-white/5 to-white/10 rounded animate-pulse"></div>
+        </div>
+
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-950/40 backdrop-blur-[1px]">
+          <div className="px-4 py-2.5 rounded-xl bg-slate-900/90 border border-indigo-500/30 flex items-center gap-3 shadow-xl backdrop-blur-md">
+            <svg className="w-4 h-4 text-indigo-400 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
+            <span className="text-xs font-semibold text-slate-200">
+              {ticks < 4 ? "Analyzing Job Profile & Candidate Achievements..." : ticks < 9 ? "Drafting Executive Value Proposition with Groq..." : "Finalizing ATS-Friendly Formatting & CTA..."}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ParallelPipelineVisualizer = ({
   status,
   progress: realProgress,
@@ -1369,6 +1547,7 @@ export default function Home() {
   const [isGeneratingCL, setIsGeneratingCL] = useState<boolean>(false);
   const [coverLetterModel, setCoverLetterModel] = useState<string>(COVER_LETTER_MODELS[0].id);
   const [clError, setClError] = useState<string>("");
+  const [hasCopiedCL, setHasCopiedCL] = useState<boolean>(false);
 
   // Load all persisted states on mount
   useEffect(() => {
@@ -1614,12 +1793,10 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: coverLetter,
-          candidateName: extractCandidateNameFromLatex(latexText) || "Candidate"
+          downloadName: "Cover_Letter.pdf"
         }),
       });
-
-      if (!res.ok) throw new Error("Failed to export PDF.");
-
+      if (!res.ok) throw new Error("Failed to export PDF");
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -1628,11 +1805,17 @@ export default function Home() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
     } catch (err: any) {
       console.error(err);
       setClError(err.message);
     }
+  };
+
+  const handleCopyCoverLetter = () => {
+    if (!coverLetter) return;
+    navigator.clipboard.writeText(coverLetter);
+    setHasCopiedCL(true);
+    setTimeout(() => setHasCopiedCL(false), 2000);
   };
 
   const handleDownloadCoverLetterTXT = () => {
@@ -2774,29 +2957,83 @@ export default function Home() {
               </div>
             )}
 
+            {/* Neural Visualizer when generating Cover Letter */}
+            {isGeneratingCL && (
+              <CoverLetterPipelineVisualizer
+                isGenerating={isGeneratingCL}
+                modelId={coverLetterModel}
+              />
+            )}
+
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Cover Letter Content</label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                  Cover Letter Content
+                  {coverLetter && !isGeneratingCL && (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-mono lowercase flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                      ready ({coverLetter.trim().split(/\s+/).filter(Boolean).length} words)
+                    </span>
+                  )}
+                </label>
+                {coverLetter && !isGeneratingCL && (
+                  <button
+                    onClick={handleCopyCoverLetter}
+                    className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    {hasCopiedCL ? (
+                      <>
+                        <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        <span className="text-emerald-400">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                        <span>Copy Text</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
               <textarea
                 value={coverLetter}
                 onChange={(e) => setCoverLetter(e.target.value)}
                 placeholder="Your generated cover letter will appear here. You can manually edit it before downloading."
-                className="w-full h-[300px] bg-slate-950/50 border border-white/10 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 font-mono leading-relaxed resize-y"
+                className="w-full h-[320px] bg-slate-950/50 border border-white/10 rounded-xl p-4 text-sm text-slate-200 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 font-mono leading-relaxed resize-y"
               ></textarea>
             </div>
 
             <div className="flex flex-col sm:flex-row justify-end gap-3">
+              {coverLetter && (
+                <button
+                  onClick={handleCopyCoverLetter}
+                  className="w-full sm:w-auto px-6 py-2.5 bg-white/10 hover:bg-white/15 text-white text-sm font-bold rounded-xl transition-all border border-white/10 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {hasCopiedCL ? (
+                    <>
+                      <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      <span className="text-emerald-400">Copied to Clipboard!</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                      <span>Copy Text</span>
+                    </>
+                  )}
+                </button>
+              )}
               <button
                 onClick={handleDownloadCoverLetterTXT}
-                disabled={!coverLetter}
-                className="w-full sm:w-auto px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                disabled={!coverLetter || isGeneratingCL}
+                className="w-full sm:w-auto px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                 Download TXT
               </button>
               <button
                 onClick={handleDownloadCoverLetterPDF}
-                disabled={!coverLetter}
-                className="w-full sm:w-auto px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                disabled={!coverLetter || isGeneratingCL}
+                className="w-full sm:w-auto px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                 Download PDF

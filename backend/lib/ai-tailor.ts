@@ -501,7 +501,7 @@ CRITICAL MANDATORY INSTRUCTIONS FOR 100% JD COVERAGE & ATS SCORE MAXIMIZATION:
 2. NEVER invent work experience, company names, dates, or locations. Keep all factual metadata identical.
 3. You may rewrite and refine phrasing of bullet points to naturally incorporate JD keywords and core responsibilities (e.g., data structures & algorithms, large-scale distributed systems, accessible technologies, Java, Python, Angular, HTML/CSS, code reviews, design reviews, triage & debugging).
 4. Highlight outcomes, metrics, and scale where possible.
-4b. ARCHITECTURAL REALISM (MUTUALLY EXCLUSIVE TECH): Ensure the tech stack makes logical architectural sense for each component.
+4b. ARCHITECTURAL REALISM (NO COMPETING BACKEND SLASH-MIXING): NEVER mix competing backend technologies in the same sentence or bullet point (e.g., NEVER write "Java Spring Boot / C# .Net services"). Allocate different services/roles to their respective stacks (e.g. one service uses Java & Spring Boot, another uses C# & .Net Core microservices, another uses Node.js).
 5. DO NOT reorder the jobs. Keep the exact same array length and order.
 6. You MUST preserve the exact same number of bullet points in the "highlights" array for each work experience entry as the original. Do not merge, split, add, or delete bullet points.
 7. **CRITICAL LENGTH CONSTRAINT**: Keep character length/word count of each tailored bullet point within +/- 15% of the original bullet point.
@@ -550,12 +550,17 @@ export async function tailorProjectsWithAI(
   const systemPrompt = `You are an expert resume optimizer. Rewrite the candidate's Projects section to align deeply with the target JD.
 CRITICAL MANDATORY RULES:
 1. 100% JD SKILLS INJECTION & PROJECT TECH OVERHAUL: In EVERY project's "tech" array, aggressively REPLACE unrelated tools (e.g. Stripe, AssemblyAI, WebRTC, Socket.io, Passport.js, Tailwind CSS) with target JD technologies (e.g. GraphQL, Kubernetes, Java, Spring Boot, C#, .Net, PostgreSQL, Docker, AWS).
-2. Each project's "tech" array MUST prioritize the target JD skills (4-6 relevant technologies total per project).
-3. Weave target JD technical actions (e.g., GraphQL schema & query optimization, containerized pod deployments in Kubernetes, building .NET/C# microservices) directly into project bullet points.
-4. DO NOT reorder the projects. Keep the exact same array length and order.
-5. You MUST preserve the exact same number of bullet points in the "highlights" array for each project entry as the original. Do not merge, split, add, or delete bullet points.
-6. **CRITICAL LENGTH CONSTRAINT**: Keep character length/word count of each tailored bullet point and project description within +/- 15% of original.
-7. ABSOLUTE BAN ON LAZY SUFFIXES: Do NOT append lazy suffixes like ", demonstrating expertise in...". Truly rewrite the engineering details.
+2. STRICT ARCHITECTURAL REALISM & NO COMPETING BACKENDS:
+   - NEVER mix competing backend frameworks in the SAME project or bullet point (e.g., NEVER write "Java Spring Boot / C# .Net REST APIs" or "Angular/Node.js frontend and C# .Net backend").
+   - A single project MUST use ONE coherent, realistic backend stack!
+   - If the target JD requires multiple backend technologies (e.g. Java, C#, Node.js, Python), DISTRIBUTE them across different projects in the resume so each project represents a distinct, realistic stack.
+3. Limit each project's "tech" array to strictly 4-5 core technologies.
+4. GITHUB SKILL BANK DYNAMIC SWAPPING: You may swap out any low-relevance project with any matching verified project from the candidate's GitHub Skill Bank.
+5. Weave target JD technical actions (e.g., GraphQL schema & query optimization, containerized pod deployments in Kubernetes, building .NET/C# microservices) directly into project bullet points.
+6. DO NOT reorder the projects unless replacing with a GitHub Skill Bank project. Keep the exact same array length.
+7. You MUST preserve the exact same number of bullet points in the "highlights" array for each project entry as the original. Do not merge, split, add, or delete bullet points.
+8. **CRITICAL LENGTH CONSTRAINT**: Keep character length/word count of each tailored bullet point and project description within +/- 15% of original.
+9. ABSOLUTE BAN ON LAZY SUFFIXES: Do NOT append lazy suffixes like ", demonstrating expertise in...". Truly rewrite the engineering details.
 
 Return ONLY a valid JSON object matching this exact structure:
 {
