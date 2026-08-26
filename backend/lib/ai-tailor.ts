@@ -559,15 +559,18 @@ export async function tailorProjectsWithAI(
 
 CRITICAL MANDATORY RULES:
 1. TARGET JD TECH INJECTION: In project "tech" arrays, showcase target JD technologies (e.g. GraphQL, Kubernetes, Java, Spring Boot, C#, .NET Core, PostgreSQL, Docker, AWS).
-2. STRICT ARCHITECTURAL REALISM & COHERENT STACKS:
+2. EXPLICIT BASE LANGUAGE PAIRING (CRITICAL FOR ATS):
+   - Whenever featuring a backend framework (e.g. Django, FastAPI, Flask, Spring Boot, .NET Core), ALWAYS explicitly include the foundational programming language if required by the JD (e.g. write "Python, Django REST Framework, PostgreSQL, React, Docker" or "Java, Spring Boot", NEVER omit "Python" or "Java" when using its framework).
+   - In project bullet points, explicitly state the language + framework (e.g. "React frontend and Python/Django REST Framework backend...").
+3. STRICT ARCHITECTURAL REALISM & COHERENT STACKS:
    - NEVER mix competing backend frameworks in the SAME project (e.g., NEVER write "Java Spring Boot / C# .Net REST APIs").
    - A single project MUST use ONE coherent, realistic stack!
    - If the target JD requires multiple technologies (e.g. Java, C#, Node.js, Python), DISTRIBUTE them across different projects in the resume.
-3. Limit each project's "tech" array to strictly 4-5 core technologies.
-4. GITHUB SKILL BANK DYNAMIC SWAPPING: You may swap out any low-relevance project with any matching verified project from the candidate's GitHub Skill Bank.
-5. In project bullet points: describe realistic technical actions (e.g., designing GraphQL queries/mutations, deploying containerized pods in Kubernetes, building RESTful microservices, query tuning).
-6. BAN ON ROBOTIC PHRASING: Never write "applied Data Structures, Algorithms" or similar meta-phrases. Express depth through real features.
-7. Preserve the exact same number of bullet points in the "highlights" array. Keep character length within +/- 15% of original.
+4. Limit each project's "tech" array to strictly 4-5 core technologies.
+5. GITHUB SKILL BANK DYNAMIC SWAPPING: You may swap out any low-relevance project with any matching verified project from the candidate's GitHub Skill Bank.
+6. In project bullet points: describe realistic technical actions (e.g., designing GraphQL queries/mutations, deploying containerized pods in Kubernetes, building RESTful microservices, query tuning).
+7. BAN ON ROBOTIC PHRASING: Never write "applied Data Structures, Algorithms" or similar meta-phrases. Express depth through real features.
+8. Preserve the exact same number of bullet points in the "highlights" array. Keep character length within +/- 15% of original.
 
 Return ONLY a valid JSON object matching this exact structure:
 {

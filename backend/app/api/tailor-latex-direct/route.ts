@@ -501,6 +501,9 @@ CORE IN-PLACE TAILORING RULES:
 3. PROJECTS SECTION OVERHAUL & COHERENT ARCHITECTURES:
    - In EVERY project header (the second argument of \\project{ProjectName}{Tech Stack}):
      Showcase target JD technologies! Keep strictly to 4-5 core tools per project subtitle (do NOT cram 8+ tools in one header).
+   - EXPLICIT BASE LANGUAGE PAIRING (CRITICAL FOR ATS):
+     * Whenever featuring a framework (e.g., Django, FastAPI, Flask, Spring Boot, .NET Core), ALWAYS explicitly include the foundational language if required by the JD (e.g. write "Python, Django REST Framework, PostgreSQL, React, Docker" or "Java, Spring Boot", NEVER omit "Python" or "Java" when using its framework).
+     * In project bullets, explicitly state the language + framework (e.g., "Engineered full-stack Kanban board with React frontend and Python/Django REST Framework backend...").
    - STRICT ARCHITECTURAL REALISM & NO COMPETING BACKENDS:
      * NEVER mix competing backend ecosystems in the SAME single project or bullet point (e.g., NEVER write "Java Spring Boot / C# .Net REST APIs" or "Angular/Node.js frontend and C# .Net backend").
      * A single project MUST use ONE coherent, realistic stack!
