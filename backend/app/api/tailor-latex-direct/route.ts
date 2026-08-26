@@ -353,53 +353,78 @@ function findRelevantSkillBankItems(skillBank: any, jdData: any) {
 
   const jdString = (typeof jdData === "string" ? jdData : JSON.stringify(jdData)).toLowerCase();
 
-  const matchedSkills: any[] = [];
+  const matchKw = (kw: string) => {
+    if (!kw || kw.trim().length < 2) return false;
+    const lower = kw.toLowerCase().trim();
+    if (lower === "c++" || lower === "c#" || lower === ".net") {
+      const esc = lower.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      return new RegExp(`(?:^|[\\s/,()])${esc}(?:$|[\\s/,()])`, "i").test(jdString);
+    }
+    const escaped = lower.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`\\b${escaped}\\b`, "i").test(jdString);
+  };
+
+  const matchedSkillsMap = new Map<string, any>();
   const otherSkills: any[] = [];
 
   for (const skill of skillBank.skills) {
-    const sName = (skill.name || "").toLowerCase();
-    const sRepo = (skill.sourceRepo || "").toLowerCase();
-    const sCat = (skill.category || "").toLowerCase();
+    const sName = (skill.name || "").toLowerCase().trim();
+    if (!sName || sName.length < 2) continue;
 
     const isMatched =
-      (sName.length > 2 && jdString.includes(sName)) ||
-      (sRepo.length > 2 && jdString.includes(sRepo)) ||
-      (sCat.length > 2 && jdString.includes(sCat));
+      matchKw(sName) ||
+      (sName === "django rest framework" && (matchKw("django") || matchKw("drf") || jdString.includes("rest framework"))) ||
+      (sName === "golang" && matchKw("go")) ||
+      (sName === "mongo" && matchKw("mongodb")) ||
+      (sName === "github" && matchKw("git"));
 
     if (isMatched) {
-      matchedSkills.push(skill);
+      const existing = matchedSkillsMap.get(sName);
+      if (!existing) {
+        matchedSkillsMap.set(sName, skill);
+      } else if (
+        (existing.sourceRepo?.toLowerCase().includes("portfolio") || existing.sourceRepo?.toLowerCase().includes("account")) &&
+        !skill.sourceRepo?.toLowerCase().includes("portfolio") &&
+        !skill.sourceRepo?.toLowerCase().includes("account")
+      ) {
+        matchedSkillsMap.set(sName, skill);
+      }
     } else {
       otherSkills.push(skill);
     }
   }
 
-  const relevantSkills = [...matchedSkills, ...otherSkills].slice(0, 20);
+  const matchedSkills = Array.from(matchedSkillsMap.values());
+  const relevantSkills = [...matchedSkills, ...otherSkills].slice(0, 25);
 
-  const matchedProjects: any[] = [];
-  const otherProjects: any[] = [];
-
-  for (const proj of skillBank.projects || []) {
-    const pName = (proj.name || "").toLowerCase();
-    const pDesc = (proj.description || "").toLowerCase();
-    const pLang = (proj.primaryLanguage || "").toLowerCase();
+  // Score and rank projects by JD relevance
+  const scoredProjects: Array<{ project: any; score: number }> = (skillBank.projects || []).map((proj: any) => {
+    let score = 0;
     const pSkills = (proj.extractedSkills || []).map((s: string) => String(s).toLowerCase());
-    const pTopics = (proj.topics || []).map((t: string) => String(t).toLowerCase());
 
-    const isMatched =
-      (pName.length > 2 && jdString.includes(pName)) ||
-      (pDesc.length > 2 && jdString.includes(pDesc)) ||
-      (pLang.length > 2 && jdString.includes(pLang)) ||
-      pSkills.some((s: string) => s.length > 2 && jdString.includes(s)) ||
-      pTopics.some((t: string) => t.length > 2 && jdString.includes(t));
+    pSkills.forEach((sk: string) => {
+      if (matchKw(sk)) score += 10;
+    });
 
-    if (isMatched) {
-      matchedProjects.push(proj);
-    } else {
-      otherProjects.push(proj);
+    if (proj.primaryLanguage && matchKw(proj.primaryLanguage.toLowerCase())) {
+      score += 15;
     }
-  }
 
-  const relevantProjects = [...matchedProjects, ...otherProjects].slice(0, 4);
+    if (proj.description && matchKw("django") && proj.description.toLowerCase().includes("django")) {
+      score += 20;
+    }
+
+    if (proj.name && matchKw(proj.name.toLowerCase())) {
+      score += 5;
+    }
+
+    return { project: proj, score };
+  });
+
+  const relevantProjects = scoredProjects
+    .sort((a, b) => b.score - a.score)
+    .map((sp) => sp.project)
+    .slice(0, 5);
 
   return { relevantSkills, relevantProjects, matchCount: matchedSkills.length };
 }
@@ -438,10 +463,12 @@ export async function POST(request: NextRequest) {
 
       skillBankInstruction = `
 
-VERIFIED GITHUB SKILL BANK INTEGRATION:
+MANDATORY VERIFIED GITHUB SKILL BANK INTEGRATION:
 - Verified candidate skills: ${topSkills}
 - Verified projects: ${topProjects}
-- IN-PLACE REPLACEMENT: Inject relevant skills and swap low-relevance resume projects with matching verified GitHub projects, keeping the exact same LaTeX commands and bullet count.`;
+- MANDATORY IN-PLACE INJECTION & SWAPPING:
+  1. TECHNICAL SKILLS: If the target JD requires technologies (e.g. Python, Django, REST APIs, Docker, PostgreSQL) that exist in the Verified GitHub Skill Bank, you MUST include them in the Technical Skills section under their proper category.
+  2. PROJECTS SECTION: If an existing resume project is low-relevance or lacks target JD technologies, SWAP it out with the most relevant verified GitHub project (e.g. Kanban_WorkBoard for Python/Django/REST APIs). Keep exact LaTeX markup and bullet counts intact.`;
     }
     const mustHave = Array.isArray(jdData.mustHaveSkills) ? jdData.mustHaveSkills : [];
     const niceToHave = Array.isArray(jdData.niceToHaveSkills) ? jdData.niceToHaveSkills : [];

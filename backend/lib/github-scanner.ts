@@ -81,7 +81,13 @@ const NOISE_SKILLS = new Set([
   "react-hook-form", "react-dialog", "react-accordion", "react-tabs", "react-icons",
   "cheerio", "file-opener", "common", "jest-dom", "user-event", "web-vitals",
   "cookie-parser", "body-parser", "cross-env", "nodemon", "concurrently", "rimraf",
-  "path", "fs", "os", "crypto", "buffer", "stream", "util", "events", "url", "http", "https"
+  "path", "fs", "os", "crypto", "buffer", "stream", "util", "events", "url", "http", "https",
+  "ava", "types", "app", "debug", "affine", "annotated-doc", "annotated-types", "anyio",
+  "asgiref", "attrs", "blinker", "certifi", "click", "click-plugins", "cligj", "colorama",
+  "dj-database-url", "h11", "idna", "imageio", "itsdangerous", "jinja2", "lazy_loader",
+  "markupsafe", "networkx", "packaging", "pyparsing", "pyproj", "python-dotenv",
+  "python-multipart", "rasterio", "setuptools", "sniffio", "sqlparse", "starlette",
+  "tifffile", "typing-inspection", "typing_extensions", "tzdata", "werkzeug", "wheel", "whitenoise"
 ]);
 
 const NPM_MAPPINGS: Record<string, { name: string; extra?: string[] }> = {
@@ -130,14 +136,15 @@ const NPM_MAPPINGS: Record<string, { name: string; extra?: string[] }> = {
 };
 
 const PYTHON_MAPPINGS: Record<string, { name: string; extra?: string[] }> = {
-  "django": { name: "Django", extra: ["Python"] },
+  "django": { name: "Django", extra: ["Python", "REST API"] },
   "djangorestframework": { name: "Django REST Framework", extra: ["Django", "Python", "REST API"] },
-  "djangorestframework-simplejwt": { name: "Django REST Framework", extra: ["Django", "REST API"] },
+  "djangorestframework-simplejwt": { name: "Django REST Framework", extra: ["Django", "REST API", "JWT"] },
+  "djangorestframework_simplejwt": { name: "Django REST Framework", extra: ["Django", "REST API", "JWT"] },
   "django-cors-headers": { name: "Django" },
   "django-filter": { name: "Django" },
   "django-environ": { name: "Django" },
   "django-crispy-forms": { name: "Django" },
-  "flask": { name: "Flask", extra: ["Python"] },
+  "flask": { name: "Flask", extra: ["Python", "REST API"] },
   "flask-cors": { name: "Flask" },
   "flask-sqlalchemy": { name: "Flask", extra: ["SQLAlchemy"] },
   "flask-restful": { name: "Flask", extra: ["REST API"] },
@@ -146,8 +153,8 @@ const PYTHON_MAPPINGS: Record<string, { name: string; extra?: string[] }> = {
   "gunicorn": { name: "Gunicorn" },
   "celery": { name: "Celery" },
   "sqlalchemy": { name: "SQLAlchemy" },
-  "psycopg2": { name: "PostgreSQL" },
-  "psycopg2-binary": { name: "PostgreSQL" },
+  "psycopg2": { name: "PostgreSQL", extra: ["Python"] },
+  "psycopg2-binary": { name: "PostgreSQL", extra: ["Python"] },
   "asyncpg": { name: "PostgreSQL" },
   "pymongo": { name: "MongoDB" },
   "djongo": { name: "MongoDB", extra: ["Django"] },
@@ -157,7 +164,9 @@ const PYTHON_MAPPINGS: Record<string, { name: string; extra?: string[] }> = {
   "pytest": { name: "Pytest" },
   "pandas": { name: "Pandas", extra: ["Python"] },
   "numpy": { name: "NumPy", extra: ["Python"] },
+  "scipy": { name: "SciPy", extra: ["Python"] },
   "scikit-learn": { name: "Scikit-Learn", extra: ["Python"] },
+  "scikit-image": { name: "Scikit-Image", extra: ["Python"] },
   "sklearn": { name: "Scikit-Learn", extra: ["Python"] },
   "tensorflow": { name: "TensorFlow", extra: ["Python"] },
   "keras": { name: "TensorFlow", extra: ["Python"] },
@@ -165,6 +174,8 @@ const PYTHON_MAPPINGS: Record<string, { name: string; extra?: string[] }> = {
   "pytorch": { name: "PyTorch", extra: ["Python"] },
   "boto3": { name: "AWS", extra: ["Python"] },
   "requests": { name: "REST API", extra: ["Python"] },
+  "pydantic": { name: "Pydantic", extra: ["Python"] },
+  "pyjwt": { name: "JWT", extra: ["Python"] },
 };
 
 function prioritizeSkills(skills: string[]): string[] {
@@ -337,6 +348,21 @@ export async function scanGithubProfile(options: {
     for (const item of treeItems) {
       const lowerPath = item.path.toLowerCase();
 
+      // Skip vendor, dependencies, and virtual environments
+      if (
+        lowerPath.includes("node_modules/") ||
+        lowerPath.includes("venv/") ||
+        lowerPath.includes(".venv/") ||
+        lowerPath.includes("env/") ||
+        lowerPath.includes(".env/") ||
+        lowerPath.includes("dist/") ||
+        lowerPath.includes("build/") ||
+        lowerPath.includes(".git/") ||
+        lowerPath.includes(".next/")
+      ) {
+        continue;
+      }
+
       // Framework Signatures
       if (lowerPath.endsWith("manage.py") || lowerPath.endsWith("wsgi.py") || lowerPath.endsWith("asgi.py")) {
         addRepoSkill("Django", `Django signature file (${item.path}) detected in repository`);
@@ -395,15 +421,28 @@ export async function scanGithubProfile(options: {
       }
     }
 
-    // F. Parse discovered manifest files
-    const processedManifests = manifestPaths.slice(0, 6);
+    // F. Parse discovered manifest files (prioritize non-nested and python/node manifests)
+    const sortedManifests = manifestPaths.sort((a, b) => {
+      // Prioritize root or primary manifests over deeply nested ones
+      const depthA = a.split("/").length;
+      const depthB = b.split("/").length;
+      return depthA - depthB;
+    });
+
+    const processedManifests = sortedManifests.slice(0, 8);
     for (const mPath of processedManifests) {
       try {
         const fileUrl = `https://raw.githubusercontent.com/${repo.full_name}/${repo.default_branch || 'main'}/${mPath}`;
         const fileRes = await fetch(fileUrl, { headers });
         if (!fileRes.ok) continue;
 
-        const contentText = await fileRes.text();
+        const rawText = await fileRes.text();
+        // Clean null bytes (UTF-16 LE encoding), BOM markers, and non-printable noise
+        const contentText = rawText
+          .replace(/\0/g, '')
+          .replace(/^\uFEFF/, '')
+          .replace(/^[^\x20-\x7E\s]+/, '');
+
         const lowerMPath = mPath.toLowerCase();
 
         if (lowerMPath.endsWith("package.json")) {

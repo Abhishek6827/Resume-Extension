@@ -163,6 +163,20 @@ export function sanitizeMissingKeywords(
   });
 }
 
+function matchesKeyword(text: string, kw: string): boolean {
+  if (!text || !kw || kw.trim().length < 2) return false;
+  const lowerText = text.toLowerCase();
+  const lowerKw = kw.toLowerCase().trim();
+
+  if (lowerKw === "c++" || lowerKw === "c#" || lowerKw === ".net") {
+    const escaped = lowerKw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`(?:^|[\\s/,()])${escaped}(?:$|[\\s/,()])`, "i").test(lowerText);
+  }
+
+  const escaped = lowerKw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`\\b${escaped}\\b`, "i").test(lowerText);
+}
+
 /**
   Matches a parsed Job Description (keywords/text) against a user's SkillBank.
  */
@@ -173,28 +187,40 @@ export function matchSkillBankWithJD(skillBank: SkillBank, jdText: string | any)
   const matchedKeywordsMap = new Map<string, JDMatchResult["matchedKeywords"][0]>();
   const missingGapsSet = new Set<string>();
 
-  // Check each skill in candidate's skill bank
+  // Check each skill in candidate's skill bank with word boundary matching
   skillBank.skills.forEach((item) => {
-    const skillLower = item.name.toLowerCase();
+    const skillLower = item.name.toLowerCase().trim();
+    if (!skillLower || skillLower.length < 2) return;
     
-    // Alias matching
+    // Alias / boundary matching
     const matchesJd =
-      lowerJd.includes(skillLower) ||
-      (skillLower === "golang" && lowerJd.includes("go")) ||
-      (skillLower === "mongo" && lowerJd.includes("mongodb")) ||
-      (skillLower === "github" && lowerJd.includes("git")) ||
-      (skillLower === "django" && (lowerJd.includes("django") || lowerJd.includes("drf"))) ||
-      (skillLower === "django rest framework" && (lowerJd.includes("django") || lowerJd.includes("drf") || lowerJd.includes("rest framework")));
+      matchesKeyword(lowerJd, skillLower) ||
+      (skillLower === "golang" && matchesKeyword(lowerJd, "go")) ||
+      (skillLower === "mongo" && matchesKeyword(lowerJd, "mongodb")) ||
+      (skillLower === "github" && matchesKeyword(lowerJd, "git")) ||
+      (skillLower === "django" && (matchesKeyword(lowerJd, "django") || matchesKeyword(lowerJd, "drf"))) ||
+      (skillLower === "django rest framework" && (matchesKeyword(lowerJd, "django") || matchesKeyword(lowerJd, "drf") || lowerJd.includes("rest framework")));
 
     if (matchesJd) {
-      const normalizedKey = item.name.toLowerCase();
-      if (!matchedKeywordsMap.has(normalizedKey)) {
+      const normalizedKey = skillLower;
+      const existing = matchedKeywordsMap.get(normalizedKey);
+      if (!existing) {
         matchedKeywordsMap.set(normalizedKey, {
           skill: item.name + (item.versionDetails ? ` (${item.versionDetails})` : ""),
           category: item.category,
           evidence: item.evidence,
           sourceRepo: item.sourceRepo
         });
+      } else {
+        // If existing is a portfolio or account-level repo, prefer the actual implementation project repo (e.g. Kanban_WorkBoard)
+        if (
+          (existing.sourceRepo.toLowerCase().includes("portfolio") || existing.sourceRepo.toLowerCase().includes("account")) &&
+          !item.sourceRepo.toLowerCase().includes("portfolio") &&
+          !item.sourceRepo.toLowerCase().includes("account")
+        ) {
+          existing.sourceRepo = item.sourceRepo;
+          existing.evidence = item.evidence;
+        }
       }
     }
   });
@@ -230,10 +256,10 @@ export function matchSkillBankWithJD(skillBank: SkillBank, jdText: string | any)
   ];
 
   commonTechList.forEach((tech) => {
-    const jdRequiresTech = tech.aliases.some(alias => lowerJd.includes(alias));
+    const jdRequiresTech = tech.aliases.some(alias => matchesKeyword(lowerJd, alias));
     if (jdRequiresTech) {
       const candidateHasTech = skillBank.skills.some(s =>
-        tech.aliases.some(alias => s.name.toLowerCase().includes(alias))
+        tech.aliases.some(alias => matchesKeyword(s.name.toLowerCase(), alias))
       );
       if (!candidateHasTech) {
         missingGapsSet.add(tech.name);
@@ -241,11 +267,36 @@ export function matchSkillBankWithJD(skillBank: SkillBank, jdText: string | any)
     }
   });
 
-  // Find relevant projects that contain matched skills
-  const relevantProjects = skillBank.projects.filter((p) => {
-    return p.extractedSkills.some(skill => lowerJd.includes(skill.toLowerCase())) ||
-      (p.description && lowerJd.includes(p.name.toLowerCase()));
+  // Score and rank relevant projects by relevance to JD
+  const scoredProjects = (skillBank.projects || []).map((proj) => {
+    let score = 0;
+    const pSkills = proj.extractedSkills || [];
+
+    pSkills.forEach((skill) => {
+      if (matchesKeyword(lowerJd, skill)) {
+        score += 10;
+      }
+    });
+
+    if (proj.primaryLanguage && matchesKeyword(lowerJd, proj.primaryLanguage)) {
+      score += 15;
+    }
+
+    if (proj.description && (matchesKeyword(lowerJd, "django") && proj.description.toLowerCase().includes("django"))) {
+      score += 20;
+    }
+
+    if (proj.name && matchesKeyword(lowerJd, proj.name)) {
+      score += 5;
+    }
+
+    return { project: proj, score };
   });
+
+  const relevantProjects = scoredProjects
+    .filter(sp => sp.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map(sp => sp.project);
 
   const matchedNames = matchedKeywords.map((m) => m.skill);
   const candidateSkillNames = skillBank.skills.map((s) => s.name);
