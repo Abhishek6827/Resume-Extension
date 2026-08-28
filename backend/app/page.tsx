@@ -7,7 +7,8 @@ import type { SkillBank } from "../lib/skill-bank";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 const RESUME_MODELS = [
-  { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron Lightning (Fast)", shortName: "Nemotron Lightning", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
+  { id: "nvidia:moonshotai/kimi-k3", name: "Kimi K3 (Moonshot AI)", shortName: "Kimi K3", icon: "https://www.google.com/s2/favicons?domain=moonshot.cn&sz=128" },
+  { id: "nvidia:nvidia/nemotron-3-nano-30b-a3b", name: "Nemotron Nano 30B (Fast)", shortName: "Nemotron Nano", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
   { id: "nvidia:nvidia/nemotron-3-super-120b-a12b", name: "Nemotron 120B (Balanced)", shortName: "Nemotron 120B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)", shortName: "Nemotron 550B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
 ];
@@ -980,9 +981,8 @@ const ParallelPipelineVisualizer = ({
           const current = next[modelId];
 
           const incrementRates: { [key: string]: number } = {
-            "groq:openai/gpt-oss-120b": 0.5,
-            "groq:qwen/qwen3.6-27b": 0.45,
-            "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b": 0.35,
+            "nvidia:moonshotai/kimi-k3": 0.45,
+            "nvidia:nvidia/nemotron-3-nano-30b-a3b": 0.35,
             "nvidia:nvidia/nemotron-3-super-120b-a12b": 0.25,
             "nvidia:nvidia/nemotron-3-ultra-550b-a55b": 0.1,
           };
@@ -2484,14 +2484,14 @@ export default function Home() {
 
               <div className="flex flex-col sm:flex-row gap-4 mb-4">
                 <button
-                  onClick={() => { if (!isAutoRun) { setIsAutoRun(true); handleReset(); } }}
+                  onClick={() => { if (!isAutoRun) { setIsAutoRun(true); handleReset(false); } }}
                   className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold border transition-all flex items-center justify-center gap-2 ${isAutoRun ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'}`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                   Auto Run (All {RESUME_MODELS.length} Models)
                 </button>
                 <button
-                  onClick={() => { if (isAutoRun) { setIsAutoRun(false); handleReset(); } }}
+                  onClick={() => { if (isAutoRun) { setIsAutoRun(false); handleReset(false); } }}
                   className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold border transition-all flex items-center justify-center gap-2 ${!isAutoRun ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'}`}
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
@@ -2507,7 +2507,7 @@ export default function Home() {
                     onChange={(val) => {
                       if (val !== primaryModel) {
                         setPrimaryModel(val);
-                        handleReset();
+                        handleReset(false);
                       }
                     }}
                     options={RESUME_MODELS}

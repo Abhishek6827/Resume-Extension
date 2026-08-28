@@ -268,21 +268,12 @@ Return ONLY a valid JSON object matching this exact structure (no markdown wrapp
     const response = await callFastLLM({
       systemPrompt,
       userMessage: `Job Description:\n${rawText}`,
-      modelSelection,
+      modelSelection: { primaryModel: "groq:openai/gpt-oss-120b" },
+      maxTokens: 2048,
     });
 
-    try {
-      const jsonStr = extractJSON(response.content);
-      return JSON.parse(jsonStr) as JDData;
-    } catch (parseErr) {
-      console.warn(`[parseJDWithAI] Primary model (${modelSelection?.primaryModel}) produced invalid JSON. Retrying with default Fast LLM...`, parseErr);
-      const fallbackResponse = await callFastLLM({
-        systemPrompt,
-        userMessage: `Job Description:\n${rawText}`,
-      });
-      const jsonStr = extractJSON(fallbackResponse.content);
-      return JSON.parse(jsonStr) as JDData;
-    }
+    const jsonStr = extractJSON(response.content);
+    return JSON.parse(jsonStr) as JDData;
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(`Failed to parse job description with AI: ${msg}`);

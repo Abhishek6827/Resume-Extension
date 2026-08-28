@@ -63,20 +63,29 @@ export function extractJSON(text: string): string {
 }
 
 /**
- * Call NVIDIA NIM API provider
+ * Get NVIDIA API keys from env, rotating through available keys
+ */
+function getNvidiaApiKeys(): string[] {
+  const keys: string[] = [];
+  const k1 = process.env.NVIDIA_API_KEY;
+  const k2 = process.env.NVIDIA_API_KEY_2;
+  const k3 = process.env.NVIDIA_API_KEY_3;
+  const k4 = process.env.NVIDIA_API_KEY_4;
+  if (k1) keys.push(k1);
+  if (k2) keys.push(k2);
+  if (k3) keys.push(k3);
+  if (k4) keys.push(k4);
+  return keys;
+}
+
+/**
+ * Call NVIDIA NIM API provider with key rotation and backoff on failure
  */
 async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<LLMResponse> {
-  const apiKey = process.env.NVIDIA_API_KEY;
-  if (!apiKey) throw new Error("NVIDIA_API_KEY not set");
+  const keys = getNvidiaApiKeys();
+  if (keys.length === 0) throw new Error("No NVIDIA_API_KEY set");
 
-  const modelToUse = forceModel || "nvidia/nemotron-3.5-lightning-30b-a3b";
-
-  const nvidia = new OpenAI({
-    baseURL: "https://integrate.api.nvidia.com/v1",
-    apiKey,
-    timeout: 180000,
-    maxRetries: 2,
-  });
+  const modelToUse = forceModel || "moonshotai/kimi-k3";
 
   const cleanedUserMessage = options.userMessage
     .replace(/\r\n/g, "\n")
@@ -84,46 +93,92 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
     .replace(/[ \t]+/g, " ")
     .trim();
 
-  try {
-    const requestOptions: any = {
-      model: modelToUse,
-      messages: [
-        { role: "system", content: options.systemPrompt },
-        { role: "user", content: cleanedUserMessage },
-      ],
-      temperature: options.temperature ?? 0.3,
-      max_tokens: options.maxTokens ?? 16384,
-      stream: true, // Always use stream: true for NVIDIA NIM endpoints to prevent truncation and 429 concurrency drops
-    };
+  let lastError: any = null;
 
-    // Specific model configurations as specified in NVIDIA specs
-    if (modelToUse === "nvidia/nemotron-3.5-lightning-30b-a3b" || modelToUse.includes("lightning")) {
-      requestOptions.temperature = 0.2;
-      requestOptions.max_tokens = 16384;
-      requestOptions.chat_template_kwargs = { enable_thinking: false };
-    } else if (modelToUse === "nvidia/nemotron-3-super-120b-a12b" || modelToUse.includes("120b")) {
-      requestOptions.temperature = 0.2;
-      requestOptions.max_tokens = 16384;
-    } else if (modelToUse === "nvidia/nemotron-3-ultra-550b-a55b" || modelToUse.includes("550b")) {
-      requestOptions.temperature = 0.2;
-      requestOptions.top_p = 0.95;
-      requestOptions.max_tokens = 16384;
-    }
+  for (let keyIdx = 0; keyIdx < keys.length; keyIdx++) {
+    const apiKey = keys[keyIdx];
+    const nvidia = new OpenAI({
+      baseURL: "https://integrate.api.nvidia.com/v1",
+      apiKey,
+      timeout: 600000,
+      maxRetries: 2,
+    });
 
-    const stream = await nvidia.chat.completions.create(requestOptions) as any;
-    let content = "";
-    for await (const chunk of stream) {
-      const delta = chunk.choices?.[0]?.delta;
-      if (delta?.content) {
-        content += delta.content;
+    const maxRetries = keys.length === 1 ? 3 : 1;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const requestOptions: any = {
+          model: modelToUse,
+          messages: [
+            { role: "system", content: options.systemPrompt },
+            { role: "user", content: cleanedUserMessage },
+          ],
+          temperature: options.temperature ?? 0.3,
+          max_tokens: options.maxTokens ?? 16384,
+          stream: true,
+        };
+
+        // Specific model configurations as specified in NVIDIA specs
+        if (modelToUse === "moonshotai/kimi-k3" || modelToUse.includes("kimi")) {
+          requestOptions.temperature = 0.6;
+          requestOptions.max_tokens = options.maxTokens ?? 16384;
+          requestOptions.seed = 0;
+          requestOptions.stream = true;
+        } else if (modelToUse === "nvidia/nemotron-3-nano-30b-a3b" || modelToUse.includes("nano") || modelToUse.includes("lightning")) {
+          requestOptions.temperature = 0.2;
+          requestOptions.max_tokens = options.maxTokens ?? 16384;
+          requestOptions.stream = true;
+        } else if (modelToUse === "nvidia/nemotron-3-super-120b-a12b" || modelToUse.includes("120b")) {
+          requestOptions.temperature = 0.2;
+          requestOptions.max_tokens = options.maxTokens ?? 16384;
+          requestOptions.stream = true;
+        } else if (modelToUse === "nvidia/nemotron-3-ultra-550b-a55b" || modelToUse.includes("550b")) {
+          requestOptions.temperature = 0.2;
+          requestOptions.top_p = 0.95;
+          requestOptions.max_tokens = options.maxTokens ?? 16384;
+          requestOptions.stream = false;
+        }
+
+        let content = "";
+        if (requestOptions.stream) {
+          const stream = await nvidia.chat.completions.create(requestOptions) as any;
+          for await (const chunk of stream) {
+            const delta = chunk.choices?.[0]?.delta;
+            if (delta?.content) {
+              content += delta.content;
+            }
+          }
+        } else {
+          const response = await nvidia.chat.completions.create(requestOptions) as any;
+          content = response.choices?.[0]?.message?.content || "";
+        }
+
+        content = stripThinkTags(content);
+        if (!content) throw new Error(`Empty response from NVIDIA (${modelToUse})`);
+        return { content, provider: "nvidia", model: modelToUse };
+      } catch (err: any) {
+        lastError = err;
+        const msg = err?.message || String(err);
+        const is429 = err?.status === 429 || msg.includes("429") || msg.includes("rate_limit") || msg.includes("concurrency");
+
+        if (is429) {
+          if (keys.length > 1 && keyIdx < keys.length - 1) {
+            console.warn(`[NVIDIA] Key ${keyIdx + 1} concurrency limit on ${modelToUse}. Rotating to key ${keyIdx + 2}...`);
+            break; // Try next key
+          } else if (attempt < maxRetries) {
+            const delay = attempt * 2500;
+            console.warn(`[NVIDIA] Concurrency limit (429) on ${modelToUse}. Retrying in ${delay}ms (attempt ${attempt}/${maxRetries})...`);
+            await new Promise((r) => setTimeout(r, delay));
+            continue;
+          }
+        }
+        throw err;
       }
     }
-    content = stripThinkTags(content);
-    if (!content) throw new Error(`Empty streamed response from NVIDIA (${modelToUse})`);
-    return { content, provider: "nvidia", model: modelToUse };
-  } catch (err: any) {
-    throw err;
   }
+
+  throw lastError;
 }
 
 /**
@@ -147,7 +202,7 @@ async function tryGroq(options: LLMCallOptions, forceModel?: string): Promise<LL
   const keys = getGroqApiKeys();
   if (keys.length === 0) throw new Error("No GROQ_API_KEY set");
 
-  const modelToUse = forceModel || "qwen/qwen3.6-27b";
+  const modelToUse = forceModel || "openai/gpt-oss-120b";
   let lastError: Error | null = null;
 
   for (const apiKey of keys) {
@@ -172,20 +227,14 @@ async function tryGroq(options: LLMCallOptions, forceModel?: string): Promise<LL
           { role: "user", content: cleanedUserMessage },
         ],
         temperature: options.temperature ?? 0.3,
-        max_tokens: options.maxTokens ?? 8192,
-        stream: true,
+        max_tokens: options.maxTokens ?? 3500,
+        stream: false,
       };
 
-      const stream = await groq.chat.completions.create(requestOptions) as any;
-      let content = "";
-      for await (const chunk of stream) {
-        const delta = chunk.choices?.[0]?.delta;
-        if (delta?.content) {
-          content += delta.content;
-        }
-      }
+      const response = await groq.chat.completions.create(requestOptions) as any;
+      let content = response.choices?.[0]?.message?.content || "";
       content = stripThinkTags(content);
-      if (!content) throw new Error(`Empty streamed response from Groq (${modelToUse})`);
+      if (!content) throw new Error(`Empty response from Groq (${modelToUse})`);
       return { content, provider: "groq", model: modelToUse };
     } catch (err: any) {
       lastError = err;
@@ -215,120 +264,38 @@ async function tryProvider(options: LLMCallOptions, modelId: string): Promise<LL
 }
 
 /**
- * Call LLM with automatic fallback chain.
+ * Call LLM directly with NO fallback. Throws exact error immediately on failure.
  */
 export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
-  const errors: string[] = [];
-  const primary = options.modelSelection?.primaryModel;
+  const modelToUse = options.modelSelection?.primaryModel || "nvidia:moonshotai/kimi-k3";
 
-  // 1. Try Primary Model if specified
-  if (primary) {
-    try {
-      console.log(`[LLM] Trying Primary Model (${primary})...`);
-      const result = await tryProvider(options, primary);
-      console.log(`[LLM] Success with Primary Model (${primary})`);
-      return result;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error(`[LLM] Selected Model (${primary}) failed: ${message}`);
-      if (!options.modelSelection?.fallbackModel && primary.startsWith("groq:")) {
-        throw err;
-      }
-      errors.push(`Primary Model (${primary}): ${message}`);
-    }
+  console.log(`[LLM] Calling Model (${modelToUse})...`);
+  try {
+    const result = await tryProvider(options, modelToUse);
+    console.log(`[LLM] Success with Model (${modelToUse})`);
+    return result;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[LLM] Model (${modelToUse}) failed: ${message}`);
+    throw err;
   }
-
-  // 1.5 Try Fallback Model if specified
-  if (options.modelSelection?.fallbackModel) {
-    const fallback = options.modelSelection.fallbackModel;
-    try {
-      console.log(`[LLM] Trying Fallback Model (${fallback})...`);
-      const result = await tryProvider(options, fallback);
-      console.log(`[LLM] Success with Fallback Model (${fallback})`);
-      return result;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error(`[LLM] Fallback Model (${fallback}) failed: ${message}`);
-      errors.push(`Fallback Model (${fallback}): ${message}`);
-    }
-  }
-
-  // 2. Fallbacks for resume tailoring (NVIDIA models)
-  const globalProviders = [
-    { name: "NVIDIA (Nemotron Lightning)", modelId: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b" },
-    { name: "NVIDIA (Nemotron 120B)", modelId: "nvidia:nvidia/nemotron-3-super-120b-a12b" },
-    { name: "NVIDIA (Nemotron 550B)", modelId: "nvidia:nvidia/nemotron-3-ultra-550b-a55b" },
-  ];
-
-  for (const provider of globalProviders) {
-    try {
-      console.log(`[LLM] Fallback trying ${provider.name}...`);
-      const result = await tryProvider(options, provider.modelId);
-      console.log(`[LLM] Success with ${provider.name}`);
-      return result;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error(`[LLM] ${provider.name} failed: ${message}`);
-      errors.push(`${provider.name}: ${message}`);
-    }
-  }
-
-  throw new Error(`All LLM providers failed:\n${errors.join("\n")}`);
 }
 
 /**
- * Call LLM prioritizing speed with automatic fallback chain.
+ * Call fast LLM directly with NO fallback. Throws exact error immediately on failure.
  */
 export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse> {
-  const errors: string[] = [];
-  const primary = options.modelSelection?.primaryModel;
+  const modelToUse = options.modelSelection?.primaryModel || "groq:openai/gpt-oss-120b";
 
-  if (primary) {
-    try {
-      console.log(`[LLM Fast] Trying Primary Model (${primary})...`);
-      const result = await tryProvider(options, primary);
-      console.log(`[LLM Fast] Success with Primary Model (${primary})`);
-      return result;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error(`[LLM Fast] Selected Model (${primary}) failed: ${message}`);
-      errors.push(`Primary Model (${primary}): ${message}`);
-    }
+  console.log(`[LLM Fast] Calling Model (${modelToUse})...`);
+  try {
+    const result = await tryProvider(options, modelToUse);
+    console.log(`[LLM Fast] Success with Model (${modelToUse})`);
+    return result;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[LLM Fast] Model (${modelToUse}) failed: ${message}`);
+    throw err;
   }
-
-  if (options.modelSelection?.fallbackModel) {
-    const fallback = options.modelSelection.fallbackModel;
-    try {
-      console.log(`[LLM Fast] Trying Fallback Model (${fallback})...`);
-      const result = await tryProvider(options, fallback);
-      console.log(`[LLM Fast] Success with Fallback Model (${fallback})`);
-      return result;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error(`[LLM Fast] Fallback Model (${fallback}) failed: ${message}`);
-      errors.push(`Fallback Model (${fallback}): ${message}`);
-    }
-  }
-
-  const globalProviders = [
-    { name: "NVIDIA (Nemotron Lightning)", modelId: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b" },
-    { name: "NVIDIA (Nemotron 120B)", modelId: "nvidia:nvidia/nemotron-3-super-120b-a12b" },
-    { name: "NVIDIA (Nemotron 550B)", modelId: "nvidia:nvidia/nemotron-3-ultra-550b-a55b" },
-  ];
-
-  for (const provider of globalProviders) {
-    try {
-      console.log(`[LLM Fast] Fallback trying ${provider.name}...`);
-      const result = await tryProvider(options, provider.modelId);
-      console.log(`[LLM Fast] Success with ${provider.name}`);
-      return result;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error(`[LLM Fast] ${provider.name} failed: ${message}`);
-      errors.push(`${provider.name}: ${message}`);
-    }
-  }
-
-  throw new Error(`All Fast LLM providers failed:\n${errors.join("\n")}`);
 }
 

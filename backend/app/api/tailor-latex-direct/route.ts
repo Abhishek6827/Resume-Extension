@@ -6,10 +6,11 @@ import { ensureLatexSpacing } from "../../../lib/latex-generator";
 import { extractNameFromLatex } from "../../../lib/ai-tailor";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 300;
+export const maxDuration = 600;
 
 const AI_MODELS = [
-  { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron Lightning (Fast)" },
+  { id: "nvidia:moonshotai/kimi-k3", name: "Kimi K3 (Moonshot AI)" },
+  { id: "nvidia:nvidia/nemotron-3-nano-30b-a3b", name: "Nemotron Nano 30B (Fast)" },
   { id: "nvidia:nvidia/nemotron-3-super-120b-a12b", name: "Nemotron 120B (Balanced)" },
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)" },
 ];
@@ -537,11 +538,13 @@ CORE IN-PLACE TAILORING RULES:
    - DO NOT use raw '<' or '>' in text (write 'under' / 'over'). ALWAYS escape '%' as '\\%' and '&' as '\\&'.
    - Return ONLY the raw tailored LaTeX string. Do NOT wrap in markdown code blocks (\`\`\`latex ... \`\`\`). No preamble explanations or conversational text. Output full document from \\documentclass to \\end{document}.${skillBankInstruction}`;
 
-    const userMessage = `TARGET JOB DESCRIPTION & REQUIREMENTS:
-${rawJdText && rawJdText.length < 2000 ? `RAW JOB DESCRIPTION:\n${rawJdText}\n\n` : ""}STRUCTURED JD REQUIREMENTS SUMMARY:
-${JSON.stringify(jdData, null, 2)}
-${selectedSkills.length > 0 ? `\nVERIFIED CANDIDATE GITHUB SKILL BANK:\n${JSON.stringify({ skills: selectedSkills, projects: selectedProjects }, null, 2)}` : ""}
+    const skillBankSummary = selectedSkills.length > 0
+      ? `\nVERIFIED CANDIDATE GITHUB SKILLS:\n- Skills: ${selectedSkills.map((s: any) => s.name).join(", ")}\n- Projects: ${selectedProjects.map((p: any) => `${p.name} (${(p.extractedSkills || []).join(", ")})`).join("; ")}\n`
+      : "";
 
+    const userMessage = `TARGET JOB DESCRIPTION & REQUIREMENTS:
+${jdChecklistText}
+${skillBankSummary}
 Original LaTeX (Length: ${latexLength} characters, Target tailored length: <= ${latexLength} characters):
 ${latex}`;
 
@@ -564,48 +567,33 @@ ${latex}`;
         });
 
         // Run all models in parallel, updating progress on key milestones
-        const promises = targetModels.map(async (model) => {
+        const promises = targetModels.map(async (model, index) => {
           try {
+            if (index > 0) {
+              await new Promise((r) => setTimeout(r, index * 300));
+            }
             sendEvent({ modelId: model.id, progress: 15, phase: "Parsing JD" });
             sendEvent({ modelId: model.id, progress: 30, phase: "Tailoring Resume" });
 
-            let tailoredLatex = "";
-            let attempt = 0;
-            const maxAttempts = 3;
-            let currentSystemPrompt = systemPrompt;
-            const maxAllowedBudget = latexLength;
+            let modelTimer: NodeJS.Timeout | null = null;
+            const modelTimeoutPromise = new Promise<never>((_, reject) => {
+              modelTimer = setTimeout(() => reject(new Error(`Model ${model.name} timed out after 600 seconds`)), 600000);
+            });
 
-            let latexResult = "";
-            while (attempt < maxAttempts) {
+            const generatePromise = (async () => {
               const response = await callLLM({
-                systemPrompt: currentSystemPrompt,
+                systemPrompt,
                 userMessage,
                 modelSelection: { primaryModel: model.id },
                 jsonMode: false,
               });
 
-              latexResult = cleanLatexResponse(response.content);
+              return cleanLatexResponse(response.content);
+            })();
 
-              if (latexResult.length <= maxAllowedBudget) {
-                break;
-              }
-
-              const excess = latexResult.length - maxAllowedBudget;
-              currentSystemPrompt = `You are an expert ATS specialist and senior LaTeX editor.
-CRITICAL 1-PAGE CHARACTER LIMIT OVERFLOW (ATTEMPT ${attempt + 1}/${maxAttempts}):
-Your generated LaTeX was ${latexResult.length} characters long, which is ${excess} characters OVER the strict 1-page budget (${maxAllowedBudget} characters).
-
-TO GUARANTEE THE RESUME FITS ON EXACTLY 1 PAGE WHILE RETAINING HIGH CREDIBILITY:
-1. SWAP IN-PLACE & COMPACT: Keep single-line bullets under 80 characters, and 2-line bullets under 145 characters. Remove filler words, but retain key technical achievements. NEVER write robotic meta-phrases like "applied Data Structures, Algorithms" or "conducted task estimation".
-2. PROJECT TECH HEADERS: Keep strictly to 4-5 core JD technologies per project subtitle.
-3. SKILL ROWS: Keep each skill category to 1 single line (max 5-6 core tools, max 55-60 chars). Lead with target JD skills.
-4. SUMMARY: Limit summary to strictly 3 compact, focused lines (~45-50 words).
-5. DO NOT add extra bullets or projects. Keep the exact count as the original template.
-
-You MUST produce the full LaTeX document with total length <= ${maxAllowedBudget} characters.`;
-              attempt++;
-            }
-            tailoredLatex = latexResult;
+            const tailoredLatex = await Promise.race([generatePromise, modelTimeoutPromise]).finally(() => {
+              if (modelTimer) clearTimeout(modelTimer);
+            });
 
             const lengthExceeded = tailoredLatex.length > latexLength;
 
