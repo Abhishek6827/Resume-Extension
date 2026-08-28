@@ -6,7 +6,7 @@ import { ensureLatexSpacing } from "../../../lib/latex-generator";
 import { extractNameFromLatex } from "../../../lib/ai-tailor";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 600;
+export const maxDuration = 300;
 
 const AI_MODELS = [
   { id: "nvidia:moonshotai/kimi-k3", name: "Kimi K3 (Moonshot AI)" },
