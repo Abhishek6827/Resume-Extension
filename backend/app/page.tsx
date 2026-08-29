@@ -8,7 +8,6 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 const RESUME_MODELS = [
   { id: "nvidia:moonshotai/kimi-k3", name: "Kimi K3 (Moonshot AI)", shortName: "Kimi K3", icon: "https://www.google.com/s2/favicons?domain=moonshot.cn&sz=128" },
-  { id: "nvidia:nvidia/nemotron-3-nano-30b-a3b", name: "Nemotron Nano 30B (Fast)", shortName: "Nemotron Nano", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
   { id: "nvidia:nvidia/nemotron-3-super-120b-a12b", name: "Nemotron 120B (Balanced)", shortName: "Nemotron 120B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)", shortName: "Nemotron 550B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
 ];
@@ -982,7 +981,6 @@ const ParallelPipelineVisualizer = ({
 
           const incrementRates: { [key: string]: number } = {
             "nvidia:moonshotai/kimi-k3": 0.45,
-            "nvidia:nvidia/nemotron-3-nano-30b-a3b": 0.35,
             "nvidia:nvidia/nemotron-3-super-120b-a12b": 0.25,
             "nvidia:nvidia/nemotron-3-ultra-550b-a55b": 0.1,
           };

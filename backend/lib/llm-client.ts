@@ -1,7 +1,6 @@
 // ─── Multi-Provider LLM Client ─────────────────────────────
 // Supported providers:
 // NVIDIA NIM:
-//   - nvidia/nemotron-3.5-lightning-30b-a3b (Fast / Thinking)
 //   - nvidia/nemotron-3-super-120b-a12b (Balanced / 120B)
 //   - nvidia/nemotron-3-ultra-550b-a55b (Quality / 550B)
 // Groq:
@@ -124,10 +123,6 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
           requestOptions.temperature = 0.6;
           requestOptions.max_tokens = options.maxTokens ?? 16384;
           requestOptions.seed = 0;
-          requestOptions.stream = true;
-        } else if (modelToUse === "nvidia/nemotron-3-nano-30b-a3b" || modelToUse.includes("nano") || modelToUse.includes("lightning")) {
-          requestOptions.temperature = 0.2;
-          requestOptions.max_tokens = options.maxTokens ?? 16384;
           requestOptions.stream = true;
         } else if (modelToUse === "nvidia/nemotron-3-super-120b-a12b" || modelToUse.includes("120b")) {
           requestOptions.temperature = 0.2;

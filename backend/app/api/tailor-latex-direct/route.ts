@@ -10,7 +10,6 @@ export const maxDuration = 300;
 
 const AI_MODELS = [
   { id: "nvidia:moonshotai/kimi-k3", name: "Kimi K3 (Moonshot AI)" },
-  { id: "nvidia:nvidia/nemotron-3-nano-30b-a3b", name: "Nemotron Nano 30B (Fast)" },
   { id: "nvidia:nvidia/nemotron-3-super-120b-a12b", name: "Nemotron 120B (Balanced)" },
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)" },
 ];
