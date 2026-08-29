@@ -245,6 +245,89 @@ CRITICAL REMINDER: You will be penalized if you drop any experience bullet point
 }
 
 /**
+ * Extract job title from raw Job Description text via regex and pattern matching.
+ */
+export function extractJobTitleFromText(text: string): string {
+  if (!text) return "";
+
+  const cleanRawTitle = (raw: string) => {
+    let t = (raw || "")
+      .replace(/\([^)]*\)/g, " ")
+      .replace(/\[[^\]]*\]/g, " ")
+      .replace(/[#*`_\[\]]/g, "")
+      .trim();
+    // Split on common delimiters (e.g. "Data Engineering Lead / Senior Data Engineer - BCG X Delivery" -> "Data Engineering Lead")
+    const segments = t.split(/\s*[-–—|/,:;]\s*|\s+(?:at|@)\s+/i);
+    let main = (segments[0] || "").trim();
+    if (main.length < 3 && segments.length > 1) {
+      main = segments[1].trim();
+    }
+    // Remove corporate/department/status words
+    main = main
+      .replace(/\b(?:delivery|team|division|department|consulting|contract|full\s*time|part\s*time|remote|hybrid|onsite|urgent|immediate)\b/gi, "")
+      .trim();
+    return main;
+  };
+
+  // 1. Check explicit patterns: "Title: ...", "Job Title: ...", "Role: ...", "Position: ..."
+  const explicitMatch = text.match(/(?:job\s*title|title|role|position|job\s*role|designation)\s*[:\-–]\s*([^\n\r]+)/i);
+  if (explicitMatch && explicitMatch[1]) {
+    const cleaned = cleanRawTitle(explicitMatch[1]);
+    if (cleaned.length >= 2 && cleaned.length <= 50 && !cleaned.toLowerCase().includes("job title")) {
+      return cleaned;
+    }
+  }
+
+  // 2. Check first non-empty lines (often the job heading, e.g. "Senior Full Stack Engineer")
+  const lines = text.split(/\r?\n/).map(l => l.replace(/[#*`_\[\]]/g, "").trim()).filter(Boolean);
+  for (const line of lines.slice(0, 5)) {
+    if (
+      line.length >= 3 && line.length <= 80 &&
+      !line.toLowerCase().startsWith("about") &&
+      !line.toLowerCase().startsWith("http") &&
+      !line.toLowerCase().startsWith("company") &&
+      !line.toLowerCase().startsWith("overview") &&
+      /(?:engineer|developer|architect|lead|manager|specialist|analyst|designer|consultant|programmer|scientist|administrator|intern)/i.test(line)
+    ) {
+      const cleaned = cleanRawTitle(line);
+      if (cleaned.length >= 3 && cleaned.length <= 50) return cleaned;
+    }
+  }
+
+  // 3. Regex for common engineering title mentions anywhere in the first 500 characters
+  const earlyText = text.substring(0, 500);
+  const commonTitleMatch = earlyText.match(/\b((?:Senior|Junior|Lead|Principal|Staff|Full\s*Stack|Frontend|Backend|Software|DevOps|Cloud|Data|AI|ML|Mobile|iOS|Android|Systems|Site\s*Reliability|Security)\s+(?:Software\s+)?(?:Engineer|Developer|Architect|Specialist|Lead|Manager))\b/i);
+  if (commonTitleMatch) {
+    return cleanRawTitle(commonTitleMatch[1]);
+  }
+
+  return "";
+}
+
+/**
+ * Fallback heuristic JD parser when LLM parsing is unavailable or fails.
+ */
+export function fallbackParseJD(rawText: string): JDData {
+  const jobTitle = extractJobTitleFromText(rawText);
+  const commonKeywords = [
+    "Java", "React", "React.js", "MongoDB", "NoSQL", "REST APIs", "REST API", "Microservices",
+    "Agile", "Scalable", "High-performance", "Spring Boot", "TypeScript", "JavaScript",
+    "Node.js", "Docker", "Kubernetes", "AWS", "SQL", "PostgreSQL", "Git", "CI/CD", "Python"
+  ];
+  const lower = rawText.toLowerCase();
+  const matched = commonKeywords.filter(k => lower.includes(k.toLowerCase()));
+
+  return {
+    jobTitle: jobTitle || "",
+    company: "",
+    mustHaveSkills: matched.slice(0, 10),
+    niceToHaveSkills: matched.slice(10),
+    responsibilities: [],
+    keywords: matched,
+  };
+}
+
+/**
  * AI-assisted parse of Job Description text into structured JDData JSON.
  */
 export async function parseJDWithAI(rawText: string, modelSelection?: ModelSelection): Promise<JDData> {
@@ -268,15 +351,19 @@ Return ONLY a valid JSON object matching this exact structure (no markdown wrapp
     const response = await callFastLLM({
       systemPrompt,
       userMessage: `Job Description:\n${rawText}`,
-      modelSelection: { primaryModel: "groq:openai/gpt-oss-120b" },
+      modelSelection: modelSelection || { primaryModel: "groq:openai/gpt-oss-120b" },
       maxTokens: 2048,
     });
 
     const jsonStr = extractJSON(response.content);
-    return JSON.parse(jsonStr) as JDData;
+    const parsed = JSON.parse(jsonStr) as JDData;
+    if (!parsed.jobTitle || parsed.jobTitle.trim() === "" || parsed.jobTitle.toLowerCase() === "job title") {
+      parsed.jobTitle = extractJobTitleFromText(rawText);
+    }
+    return parsed;
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    throw new Error(`Failed to parse job description with AI: ${msg}`);
+    console.warn(`[parseJDWithAI] AI parsing failed, falling back to heuristic parsing:`, err);
+    return fallbackParseJD(rawText);
   }
 }
 

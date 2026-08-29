@@ -202,6 +202,7 @@ interface TailoredResult {
   modelId: string;
   modelName: string;
   candidateName?: string;
+  jobTitle?: string;
   latex: string;
   originalLength: number;
   generatedLength: number;
@@ -608,11 +609,13 @@ ${latex}`;
             const finalScore = Math.max(0, Math.min(100, Math.round(rawScore)));
 
             const candidateName = extractNameFromLatex(tailoredLatex) || extractNameFromLatex(latex) || "";
+            const jobTitle = jdData?.jobTitle || "";
 
             const result: TailoredResult = {
               modelId: model.id,
               modelName: model.name,
               candidateName,
+              jobTitle,
               latex: tailoredLatex,
               originalLength: latexLength,
               generatedLength: tailoredLatex.length,
@@ -633,10 +636,12 @@ ${latex}`;
             console.error(`[Stream Error] Model execution failed for ${model.id}:`, err);
             const errStr = formatApiError(err);
             const candidateName = extractNameFromLatex(latex) || "";
+            const jobTitle = jdData?.jobTitle || "";
             const errorResult: TailoredResult = {
               modelId: model.id,
               modelName: model.name,
               candidateName,
+              jobTitle,
               latex: "",
               originalLength: latexLength,
               generatedLength: 0,

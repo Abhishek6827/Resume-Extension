@@ -127,19 +127,137 @@ function extractCandidateNameFromLatex(latex: string): string {
   return "";
 }
 
+function extractJobTitleFromText(text: string): string {
+  if (!text) return "";
+
+  const cleanRawTitle = (raw: string) => {
+    let t = (raw || "")
+      .replace(/\([^)]*\)/g, " ")
+      .replace(/\[[^\]]*\]/g, " ")
+      .replace(/[#*`_\[\]]/g, "")
+      .trim();
+    // Split on common delimiters (e.g. "Data Engineering Lead / Senior Data Engineer - BCG X Delivery" -> "Data Engineering Lead")
+    const segments = t.split(/\s*[-–—|/,:;]\s*|\s+(?:at|@)\s+/i);
+    let main = (segments[0] || "").trim();
+    if (main.length < 3 && segments.length > 1) {
+      main = segments[1].trim();
+    }
+    // Remove corporate/department/status words
+    main = main
+      .replace(/\b(?:delivery|team|division|department|consulting|contract|full\s*time|part\s*time|remote|hybrid|onsite|urgent|immediate)\b/gi, "")
+      .trim();
+    return main;
+  };
+
+  // 1. Check explicit patterns: "Title: ...", "Job Title: ...", "Role: ...", "Position: ..."
+  const explicitMatch = text.match(/(?:job\s*title|title|role|position|job\s*role|designation)\s*[:\-–]\s*([^\n\r]+)/i);
+  if (explicitMatch && explicitMatch[1]) {
+    const cleaned = cleanRawTitle(explicitMatch[1]);
+    if (cleaned.length >= 2 && cleaned.length <= 50 && !cleaned.toLowerCase().includes("job title")) {
+      return cleaned;
+    }
+  }
+
+  // 2. Check first non-empty lines (often the job heading, e.g. "Senior Full Stack Engineer")
+  const lines = text.split(/\r?\n/).map(l => l.replace(/[#*`_\[\]]/g, "").trim()).filter(Boolean);
+  for (const line of lines.slice(0, 5)) {
+    if (
+      line.length >= 3 && line.length <= 80 &&
+      !line.toLowerCase().startsWith("about") &&
+      !line.toLowerCase().startsWith("http") &&
+      !line.toLowerCase().startsWith("company") &&
+      !line.toLowerCase().startsWith("overview") &&
+      /(?:engineer|developer|architect|lead|manager|specialist|analyst|designer|consultant|programmer|scientist|administrator|intern)/i.test(line)
+    ) {
+      const cleaned = cleanRawTitle(line);
+      if (cleaned.length >= 3 && cleaned.length <= 50) return cleaned;
+    }
+  }
+
+  // 3. Regex for common engineering title mentions anywhere in the first 500 characters
+  const earlyText = text.substring(0, 500);
+  const commonTitleMatch = earlyText.match(/\b((?:Senior|Junior|Lead|Principal|Staff|Full\s*Stack|Frontend|Backend|Software|DevOps|Cloud|Data|AI|ML|Mobile|iOS|Android|Systems|Site\s*Reliability|Security)\s+(?:Software\s+)?(?:Engineer|Developer|Architect|Specialist|Lead|Manager))\b/i);
+  if (commonTitleMatch) {
+    return cleanRawTitle(commonTitleMatch[1]);
+  }
+
+  return "";
+}
+
+function cleanTitleForFilename(rawTitle?: string): string {
+  if (!rawTitle) return "";
+
+  // 1. Remove parenthetical notes (e.g. "(Remote)", "(US Only)")
+  let title = rawTitle.replace(/\([^)]*\)/g, " ").replace(/\[[^\]]*\]/g, " ");
+
+  // 2. Split on common delimiter boundaries (dashes, slashes, pipes, commas, 'at', '@', colons)
+  const segments = title.split(/\s*[-–—|/,:;]\s*|\s+(?:at|@)\s+/i);
+  let mainSegment = (segments[0] || "").trim();
+
+  if (mainSegment.length < 3 && segments.length > 1) {
+    mainSegment = segments[1].trim();
+  }
+
+  // 3. Remove common trailing corporate/department/status noise words
+  mainSegment = mainSegment
+    .replace(/\b(?:delivery|team|division|department|consulting|contract|full\s*time|part\s*time|remote|hybrid|onsite|urgent|immediate)\b/gi, "")
+    .trim();
+
+  // 4. Remove special characters and split into words
+  const words = mainSegment
+    .replace(/[^a-zA-Z0-9\s]/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  // 5. Keep max 3 to 4 core words so filename remains concise and professional
+  const conciseWords = words.slice(0, 4);
+
+  return conciseWords.join("_");
+}
+
+function cleanCandidateForFilename(rawName?: string): string {
+  if (!rawName) return "";
+  const words = rawName
+    .replace(/[^a-zA-Z0-9\s]/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  // Keep first 2 to 3 words (e.g. "Abhishek Tiwari")
+  return words.slice(0, 3).join("_");
+}
+
 function formatResumeFilename(candidateName: string, jobTitle?: string): string {
-  const cleanCandidate = (candidateName || "Candidate")
-    .replace(/[^a-zA-Z0-9]/g, "_")
-    .replace(/_+/g, "_")
-    .replace(/^_+|_+$/g, "");
+  const cleanCandidate = cleanCandidateForFilename(candidateName);
+  const cleanTitle = cleanTitleForFilename(jobTitle);
 
-  const cleanTitle = (jobTitle || "")
-    .replace(/[^a-zA-Z0-9]/g, "_")
-    .replace(/_+/g, "_")
-    .replace(/^_+|_+$/g, "");
+  if (cleanCandidate && cleanTitle) {
+    return `${cleanCandidate}_${cleanTitle}.pdf`;
+  }
+  if (cleanCandidate) {
+    return `${cleanCandidate}.pdf`;
+  }
+  if (cleanTitle) {
+    return `${cleanTitle}.pdf`;
+  }
+  return "Resume.pdf";
+}
 
-  const parts = [cleanCandidate, cleanTitle || "Resume"].filter(Boolean);
-  return `${parts.join("_")}.pdf`;
+function formatCoverLetterFilename(candidateName: string, jobTitle?: string, ext: "pdf" | "txt" = "pdf"): string {
+  const cleanCandidate = cleanCandidateForFilename(candidateName);
+  const cleanTitle = cleanTitleForFilename(jobTitle);
+
+  if (cleanCandidate && cleanTitle) {
+    return `${cleanCandidate}_${cleanTitle}_Cover_Letter.${ext}`;
+  }
+  if (cleanCandidate) {
+    return `${cleanCandidate}_Cover_Letter.${ext}`;
+  }
+  if (cleanTitle) {
+    return `${cleanTitle}_Cover_Letter.${ext}`;
+  }
+  return `Cover_Letter.${ext}`;
 }
 
 const CustomDropdown = ({ value, onChange, options, label, focusColor }: { value: string, onChange: (val: string) => void, options: any[], label: string, focusColor: string }) => {
@@ -1786,12 +1904,17 @@ export default function Home() {
   const handleDownloadCoverLetterPDF = async () => {
     if (!coverLetter) return;
     try {
+      const candidateName = extractCandidateNameFromLatex(latexText) || "Candidate";
+      const jobTitle = parsedJobTitle || extractJobTitleFromText(clJdText || jdText) || "";
+      const clFilename = formatCoverLetterFilename(candidateName, jobTitle, "pdf");
+
       const res = await fetch(`${API_BASE_URL}/api/export-cover-letter-pdf`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: coverLetter,
-          downloadName: "Cover_Letter.pdf"
+          candidateName,
+          downloadName: clFilename
         }),
       });
       if (!res.ok) throw new Error("Failed to export PDF");
@@ -1799,10 +1922,11 @@ export default function Home() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "Cover_Letter.pdf";
+      a.download = clFilename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (err: any) {
       console.error(err);
       setClError(err.message);
@@ -1818,11 +1942,15 @@ export default function Home() {
 
   const handleDownloadCoverLetterTXT = () => {
     if (!coverLetter) return;
+    const candidateName = extractCandidateNameFromLatex(latexText) || "Candidate";
+    const jobTitle = parsedJobTitle || extractJobTitleFromText(clJdText || jdText) || "";
+    const clFilename = formatCoverLetterFilename(candidateName, jobTitle, "txt");
+
     const blob = new Blob([coverLetter], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "Cover_Letter.txt";
+    a.download = clFilename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -1834,7 +1962,8 @@ export default function Home() {
     if (!result || !result.latex) return;
 
     const cand = result.candidateName || extractCandidateNameFromLatex(result.latex || latexText) || "Candidate";
-    setDownloadName(formatResumeFilename(cand, parsedJobTitle));
+    const job = result.jobTitle || parsedJobTitle || extractJobTitleFromText(jdText) || "";
+    setDownloadName(formatResumeFilename(cand, job));
 
     setIsCompilingSelected(true);
     setPdfUrl(null);
@@ -1959,7 +2088,8 @@ export default function Home() {
 
     // Dynamically set download name with candidate name and job title
     const cand = result.candidateName || extractCandidateNameFromLatex(result.latex || latexText) || "Candidate";
-    setDownloadName(formatResumeFilename(cand, parsedJobTitle));
+    const job = result.jobTitle || parsedJobTitle || extractJobTitleFromText(jdText) || "";
+    setDownloadName(formatResumeFilename(cand, job));
 
     await compilePdfForIndex(index, tailoredResumes);
   };
@@ -2070,7 +2200,7 @@ export default function Home() {
         const jdData = await jdRes.json();
 
         const candidateName = extractCandidateNameFromLatex(latexText);
-        const jobTitle = jdData?.jobTitle?.trim() || "";
+        const jobTitle = jdData?.jobTitle?.trim() || extractJobTitleFromText(jdText) || "";
         setParsedJobTitle(jobTitle);
         setDownloadName(formatResumeFilename(candidateName, jobTitle));
 
@@ -2161,7 +2291,8 @@ export default function Home() {
 
         if (bestResult && bestResult.latex) {
           const resCand = bestResult.candidateName || candidateName || extractCandidateNameFromLatex(bestResult.latex) || "Candidate";
-          setDownloadName(formatResumeFilename(resCand, jobTitle));
+          const resJob = bestResult.jobTitle || jobTitle || parsedJobTitle || extractJobTitleFromText(jdText) || "";
+          setDownloadName(formatResumeFilename(resCand, resJob));
 
           setGeneratedLatexLength(bestResult.generatedLength);
           setStatus("compiling");
@@ -2218,7 +2349,7 @@ export default function Home() {
       const tailoredResult = await tailorRes.json();
 
       const candidateName = tailoredResult.tailoredResume?.name?.trim() || extractCandidateNameFromLatex(latexText || "");
-      const jobTitle = jdData?.jobTitle?.trim() || "";
+      const jobTitle = jdData?.jobTitle?.trim() || extractJobTitleFromText(jdText) || "";
       setParsedJobTitle(jobTitle);
       setDownloadName(formatResumeFilename(candidateName, jobTitle));
 

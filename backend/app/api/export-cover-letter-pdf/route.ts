@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   const corsHeaders = getCorsHeaders(request);
 
   try {
-    const { content, candidateName } = await request.json();
+    const { content, candidateName, downloadName } = await request.json();
 
     if (!content) {
       return NextResponse.json(
@@ -22,13 +22,14 @@ export async function POST(request: NextRequest) {
     }
 
     const pdfBuffer = await generateCoverLetterPDF(content, candidateName);
+    const filename = downloadName || "Cover_Letter.pdf";
 
     return new NextResponse(pdfBuffer as unknown as BodyInit, {
       status: 200,
       headers: {
         ...corsHeaders,
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="Cover_Letter.pdf"`,
+        "Content-Disposition": `attachment; filename="${filename}"`,
       },
     });
   } catch (err: unknown) {
