@@ -59,32 +59,32 @@ export default function SkillBankCard({
     : null;
 
   return (
-    <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl transition-all shadow-xl">
+    <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-6 backdrop-blur-xl transition-all shadow-xl">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4 mb-5">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="h-10 w-10 shrink-0 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
             </svg>
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-              GitHub Technical Skill Bank
+            <h3 className="text-base sm:text-lg font-bold text-slate-100 flex flex-wrap items-center gap-2">
+              <span>GitHub Technical Skill Bank</span>
               {skillBank && (
-                <span className="text-xs bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 px-2.5 py-0.5 rounded-full font-medium">
+                <span className="text-[11px] sm:text-xs bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 px-2.5 py-0.5 rounded-full font-medium">
                   {skillBank.skills.length} Skills Extracted from {skillBank.projects?.length || 0} Repos
                 </span>
               )}
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-400 mt-0.5">
               Scan repositories to extract granular skills, frameworks & versions mapped to specific projects.
             </p>
           </div>
         </div>
 
         {skillBank && (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-between md:justify-end gap-3 w-full md:w-auto">
             <label className="flex items-center gap-2 cursor-pointer bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg hover:bg-white/10 transition-all text-xs text-slate-300">
               <input
                 type="checkbox"
@@ -107,10 +107,10 @@ export default function SkillBankCard({
       {/* Input / Scanner Controls */}
       {!skillBank ? (
         <div className="space-y-4">
-          <div className="flex gap-4 border-b border-white/5 pb-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 border-b border-white/5 pb-3">
             <button
               onClick={() => setAuthMode("username")}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${
+              className={`text-xs font-semibold px-3 py-2 rounded-lg transition-all text-center ${
                 authMode === "username"
                   ? "bg-purple-600/30 text-purple-300 border border-purple-500/30"
                   : "text-slate-400 hover:text-slate-200"
@@ -120,7 +120,7 @@ export default function SkillBankCard({
             </button>
             <button
               onClick={() => setAuthMode("token")}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${
+              className={`text-xs font-semibold px-3 py-2 rounded-lg transition-all text-center ${
                 authMode === "token"
                   ? "bg-purple-600/30 text-purple-300 border border-purple-500/30"
                   : "text-slate-400 hover:text-slate-200"
@@ -130,7 +130,7 @@ export default function SkillBankCard({
             </button>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             {authMode === "username" ? (
               <input
                 type="text"
@@ -152,7 +152,7 @@ export default function SkillBankCard({
             <button
               onClick={handleScan}
               disabled={isScanning || (authMode === "username" ? !username.trim() : !token.trim())}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 text-white font-medium text-sm px-6 py-2.5 rounded-xl transition-all shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 text-white font-medium text-sm px-6 py-2.5 rounded-xl transition-all shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2 min-h-[44px]"
             >
               {isScanning ? (
                 <>
@@ -173,28 +173,28 @@ export default function SkillBankCard({
         </div>
       ) : (
         /* Scanned Skill Bank View */
-        <div className="space-y-6">
+        <div className="space-y-5 sm:space-y-6">
           {/* Category & Projects Tabs */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2">
             {(["All", "Languages", "Frameworks", "Databases", "ToolsAndCloud"] as const).map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${
+                className={`text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg transition-all ${
                   activeCategory === cat
                     ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/40"
                     : "bg-white/5 text-slate-400 hover:text-slate-200 border border-white/5"
                 }`}
               >
                 {cat === "ToolsAndCloud" ? "Tools & Cloud" : cat}
-                <span className="ml-1.5 text-[10px] opacity-70">
+                <span className="ml-1 text-[10px] opacity-70">
                   ({cat === "All" ? skillBank.skills.length : skillBank.categorized[cat as keyof typeof skillBank.categorized]?.length || 0})
                 </span>
               </button>
             ))}
             <button
               onClick={() => setActiveCategory("Projects")}
-              className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-all ${
+              className={`text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg transition-all ${
                 activeCategory === "Projects"
                   ? "bg-purple-500/30 text-purple-300 border border-purple-500/50"
                   : "bg-white/5 text-slate-400 hover:text-slate-200 border border-white/5"
@@ -206,22 +206,22 @@ export default function SkillBankCard({
 
           {/* Skill Badges View */}
           {activeCategory !== "Projects" ? (
-            <div className="flex flex-wrap gap-2 max-h-52 overflow-y-auto pr-2 custom-scrollbar">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 max-h-52 overflow-y-auto pr-1 sm:pr-2 custom-scrollbar">
               {skillBank.skills
                 .filter(s => activeCategory === "All" || s.category === activeCategory)
                 .map((item, idx) => (
                   <div
                     key={idx}
                     title={`Project Source: ${item.sourceRepo} | ${item.evidence}`}
-                    className="group relative bg-white/5 border border-white/10 hover:border-purple-500/40 px-3 py-1.5 rounded-xl flex items-center gap-2 text-xs text-slate-200 transition-all hover:bg-purple-500/10 cursor-help"
+                    className="group relative bg-white/5 border border-white/10 hover:border-purple-500/40 px-2.5 sm:px-3 py-1.5 rounded-xl flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-slate-200 transition-all hover:bg-purple-500/10 cursor-help"
                   >
                     <span className="font-medium">{item.name}</span>
                     {item.versionDetails && (
-                      <span className="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/30">
+                      <span className="text-[9px] sm:text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/30">
                         {item.versionDetails}
                       </span>
                     )}
-                    <span className="text-[10px] text-purple-300/80 group-hover:text-purple-200 bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20">
+                    <span className="text-[9px] sm:text-[10px] text-purple-300/80 group-hover:text-purple-200 bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20 truncate max-w-[140px] sm:max-w-[200px]">
                       Project: {item.sourceRepo}
                     </span>
                   </div>
@@ -229,23 +229,23 @@ export default function SkillBankCard({
             </div>
           ) : (
             /* Projects & Skill Mapping Cards */
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-72 overflow-y-auto pr-2 custom-scrollbar">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto pr-1 sm:pr-2 custom-scrollbar">
               {(skillBank.projects || []).map((proj, idx) => (
                 <div key={idx} className="bg-white/5 border border-white/10 rounded-xl p-3 flex flex-col justify-between gap-2">
                   <div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <a
                         href={proj.repoUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-xs font-bold text-indigo-300 hover:text-indigo-200 hover:underline flex items-center gap-1.5"
+                        className="text-xs font-bold text-indigo-300 hover:text-indigo-200 hover:underline flex items-center gap-1.5 truncate"
                       >
-                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
                           <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
                         </svg>
-                        {proj.name}
+                        <span className="truncate">{proj.name}</span>
                       </a>
-                      <span className="text-[10px] text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/10">
+                      <span className="text-[10px] text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/10 shrink-0">
                         {proj.primaryLanguage}
                       </span>
                     </div>
@@ -270,8 +270,8 @@ export default function SkillBankCard({
 
           {/* JD Match Matrix (If JD is pasted) */}
           {matchResult && (
-            <div className="mt-4 p-4 rounded-xl bg-purple-500/5 border border-purple-500/15 space-y-4">
-              <div className="flex items-center justify-between">
+            <div className="mt-4 p-3.5 sm:p-4 rounded-xl bg-purple-500/5 border border-purple-500/15 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold text-purple-300">JD vs. Skill Bank Match Matrix</span>
                 </div>
@@ -285,7 +285,7 @@ export default function SkillBankCard({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                 {/* Matched Skills */}
                 <div className="space-y-2">
                   <div className="text-[11px] font-semibold text-emerald-400 flex items-center gap-1.5">
@@ -296,10 +296,10 @@ export default function SkillBankCard({
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {matchResult.matchedKeywords.map((m, i) => (
-                      <span key={i} className="text-[11px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                      <span key={i} className="text-[10px] sm:text-[11px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-lg flex items-center gap-1">
                         <span>{m.skill}</span>
                         {m.sourceRepo && (
-                          <span className="text-[9px] opacity-70 bg-emerald-500/20 px-1 py-0.2 rounded">
+                          <span className="text-[9px] opacity-70 bg-emerald-500/20 px-1 py-0.2 rounded truncate max-w-[100px]">
                             {m.sourceRepo}
                           </span>
                         )}
@@ -319,7 +319,7 @@ export default function SkillBankCard({
                   <div className="flex flex-wrap gap-1.5">
                     {matchResult.missingGaps.length > 0 ? (
                       matchResult.missingGaps.map((gap, i) => (
-                        <span key={i} className="text-[11px] bg-rose-500/10 border border-rose-500/20 text-rose-300 px-2 py-0.5 rounded-lg">
+                        <span key={i} className="text-[10px] sm:text-[11px] bg-rose-500/10 border border-rose-500/20 text-rose-300 px-2 py-0.5 rounded-lg">
                           {gap}
                         </span>
                       ))
@@ -336,14 +336,14 @@ export default function SkillBankCard({
                   <div className="text-[11px] font-semibold text-indigo-300 flex items-center gap-1.5">
                     📁 Relevant GitHub Projects for Target JD ({matchResult.relevantProjects.length})
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {matchResult.relevantProjects.map((p, pIdx) => (
                       <div key={pIdx} className="bg-white/5 border border-purple-500/20 rounded-lg p-2.5 text-xs space-y-1">
-                        <div className="flex items-center justify-between font-bold text-purple-200">
-                          <a href={p.repoUrl} target="_blank" rel="noreferrer" className="hover:underline flex items-center gap-1">
-                            {p.name}
+                        <div className="flex items-center justify-between font-bold text-purple-200 gap-2">
+                          <a href={p.repoUrl} target="_blank" rel="noreferrer" className="hover:underline flex items-center gap-1 truncate">
+                            <span className="truncate">{p.name}</span>
                           </a>
-                          <span className="text-[9px] bg-purple-500/20 px-1.5 py-0.5 rounded text-purple-300">{p.primaryLanguage}</span>
+                          <span className="text-[9px] bg-purple-500/20 px-1.5 py-0.5 rounded text-purple-300 shrink-0">{p.primaryLanguage}</span>
                         </div>
                         <p className="text-[10px] text-slate-400 line-clamp-1">{p.description}</p>
                         {p.extractedSkills && p.extractedSkills.length > 0 && (
