@@ -1853,11 +1853,6 @@ export default function Home() {
       setClError("Please provide a Job Description for your Cover Letter.");
       return;
     }
-    if (!latexText.trim() && !file) {
-      setClError("Please provide a Resume (LaTeX or file).");
-      return;
-    }
-
     setIsGeneratingCL(true);
     setClError("");
 
@@ -1867,19 +1862,13 @@ export default function Home() {
         modelSelection: { primaryModel: coverLetterModel },
       };
 
-      if (latexText.trim()) {
-        bodyPayload.resumeText = latexText;
-        bodyPayload.candidateName = extractCandidateNameFromLatex(latexText) || "Candidate";
-      } else if (file) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("primaryModel", primaryModel);
-        const parseRes = await fetch(`${API_BASE_URL}/api/parse-resume`, {
-          method: "POST",
-          body: formData,
-        });
-        if (!parseRes.ok) throw new Error("Failed to parse resume file.");
-        bodyPayload.resumeData = await parseRes.json();
+      // Use tailored resume if available; otherwise JD-only cover letter
+      const selectedTailored = tailoredResumes[selectedResultIndex];
+      const tailoredLatex = selectedTailored?.latex?.trim();
+
+      if (tailoredLatex) {
+        bodyPayload.resumeText = tailoredLatex;
+        bodyPayload.candidateName = selectedTailored.candidateName || extractCandidateNameFromLatex(tailoredLatex) || "Candidate";
       }
 
       const clRes = await fetch(`${API_BASE_URL}/api/generate-cover-letter`, {

@@ -52,15 +52,17 @@ CRITICAL TRUTHFULNESS & ANTI-HALLUCINATION RULES:
    - Closing Paragraph: Formally express enthusiasm and availability for a 1-on-1 interview or completing a technical assessment.`;
 
   const jdSection = formatJdSection(jd);
+  const hasResume = typeof resume === "string" ? resume.trim().length > 0 : true;
   const { text: resumeSection, name } = formatResumeSection(resume, candidateName || "Candidate");
+
+  const resumeBlock = hasResume
+    ? `\n--- CANDIDATE RESUME (${name}) ---\n${resumeSection}\n`
+    : "";
 
   const userMessage = `
 --- JOB DESCRIPTION ---
 ${jdSection}
-
---- CANDIDATE RESUME (${name}) ---
-${resumeSection}
-
+${resumeBlock}
 Please write the cover letter now. Only output the cover letter text, no other conversation.
 `;
 

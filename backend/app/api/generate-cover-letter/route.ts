@@ -14,17 +14,17 @@ export async function POST(request: NextRequest) {
   try {
     const { resumeData, resumeText, jdData, rawJdText, modelSelection, candidateName } = await request.json();
 
-    const resumeInput = resumeText || resumeData;
+    const resumeInput = resumeText || resumeData || "";
     const jdInput = jdData || rawJdText;
 
-    if (!resumeInput || !jdInput) {
+    if (!jdInput) {
       return NextResponse.json(
-        { error: "Missing resume or job description" },
+        { error: "Missing job description" },
         { status: 400, headers: corsHeaders }
       );
     }
 
-    // Call LLM for cover letter
+    // Call LLM for cover letter (resume may be empty for JD-only mode)
     const content = await generateCoverLetter(resumeInput, jdInput, modelSelection, candidateName);
 
     return NextResponse.json({ content }, { headers: corsHeaders });
