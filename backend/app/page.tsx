@@ -1667,6 +1667,18 @@ export default function Home() {
   const [clError, setClError] = useState<string>("");
   const [hasCopiedCL, setHasCopiedCL] = useState<boolean>(false);
 
+  // Voice notification on resume generation completion (works even when Chrome is minimized)
+  const speakNotification = (message: string) => {
+    try {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel(); // cancel any prior utterance
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.rate = 1;
+      utterance.volume = 1;
+      window.speechSynthesis.speak(utterance);
+    } catch (_) { /* silent fallback — not critical */ }
+  };
+
   // Load all persisted states on mount
   useEffect(() => {
     const savedActiveTab = localStorage.getItem("activeTab");
@@ -2065,6 +2077,8 @@ export default function Home() {
         next.delete(modelId);
         if (next.size === 0) {
           setStatus("success");
+          const modelName = ALL_MODELS.find(m => m.id === modelId)?.shortName || "selected model";
+          speakNotification(`Your resume has been generated using ${modelName}.`);
         }
         return next;
       });
@@ -2305,6 +2319,8 @@ export default function Home() {
         }
 
         setStatus("success");
+        const bestModelName = bestResult ? (ALL_MODELS.find(m => m.id === bestResult.modelId)?.shortName || "selected model") : "selected model";
+        speakNotification(`Your resume has been generated using ${bestModelName}.`);
         return;
       }
 
@@ -2360,6 +2376,8 @@ export default function Home() {
       const url = URL.createObjectURL(blob);
       setPdfUrl(url);
       setStatus("success");
+      const modelName = ALL_MODELS.find(m => m.id === primaryModel)?.shortName || "selected model";
+      speakNotification(`Your resume has been generated using ${modelName}.`);
     } catch (err: any) {
       if (err.name === "AbortError") return;
       console.error(err);
