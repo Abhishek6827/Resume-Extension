@@ -1668,14 +1668,33 @@ export default function Home() {
   const [hasCopiedCL, setHasCopiedCL] = useState<boolean>(false);
 
   // Voice notification on resume generation completion (works even when Chrome is minimized)
+  // ponytail: keeps utterance ref alive to dodge Chrome GC bug; retries once if voices aren't loaded yet
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const speakNotification = (message: string) => {
     try {
-      if (!window.speechSynthesis) return;
-      window.speechSynthesis.cancel(); // cancel any prior utterance
-      const utterance = new SpeechSynthesisUtterance(message);
-      utterance.rate = 1;
-      utterance.volume = 1;
-      window.speechSynthesis.speak(utterance);
+      const synth = window.speechSynthesis;
+      if (!synth) return;
+      synth.cancel();
+
+      const speak = () => {
+        const utterance = new SpeechSynthesisUtterance(message);
+        utterance.rate = 1;
+        utterance.volume = 1;
+        utteranceRef.current = utterance; // prevent GC before speech completes
+        synth.speak(utterance);
+      };
+
+      // Chrome lazy-loads voices; if empty, wait for onvoiceschanged then retry
+      if (synth.getVoices().length === 0) {
+        synth.onvoiceschanged = () => {
+          synth.onvoiceschanged = null;
+          speak();
+        };
+        // fallback timeout: if voices never load, still try after 500ms
+        setTimeout(() => { synth.onvoiceschanged = null; speak(); }, 500);
+      } else {
+        speak();
+      }
     } catch (_) { /* silent fallback — not critical */ }
   };
 
@@ -2052,6 +2071,12 @@ export default function Home() {
                 setParallelPhases(prev => ({ ...prev, [evtModelId]: phase }));
 
                 if (result) {
+                  const retryModelName = ALL_MODELS.find(m => m.id === evtModelId)?.shortName || "retried model";
+                  if (result.error) {
+                    speakNotification(`${retryModelName} retry failed.`);
+                  } else {
+                    speakNotification(`${retryModelName} retry finished.`);
+                  }
                   setTailoredResumes(prev => {
                     const next = [...prev];
                     next[idx] = result;
@@ -2077,8 +2102,6 @@ export default function Home() {
         next.delete(modelId);
         if (next.size === 0) {
           setStatus("success");
-          const modelName = ALL_MODELS.find(m => m.id === modelId)?.shortName || "selected model";
-          speakNotification(`Your resume has been generated using ${modelName}.`);
         }
         return next;
       });
@@ -2268,6 +2291,13 @@ export default function Home() {
                       accumulatedResults[existingIdx] = result;
                     } else {
                       accumulatedResults.push(result);
+                      // Announce each model as it completes
+                      const modelName = ALL_MODELS.find(m => m.id === modelId)?.shortName || "a model";
+                      if (result.error) {
+                        speakNotification(`${modelName} failed.`);
+                      } else {
+                        speakNotification(`${modelName} has finished generating your resume.`);
+                      }
                     }
 
                     // Update React state in real-time so completed models display immediately
@@ -2319,8 +2349,6 @@ export default function Home() {
         }
 
         setStatus("success");
-        const bestModelName = bestResult ? (ALL_MODELS.find(m => m.id === bestResult.modelId)?.shortName || "selected model") : "selected model";
-        speakNotification(`Your resume has been generated using ${bestModelName}.`);
         return;
       }
 
