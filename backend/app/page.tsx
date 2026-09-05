@@ -3035,7 +3035,7 @@ export default function Home() {
               )}
 
               {/* Initial state Generate Button */}
-              {status !== "success" && tailoredResumes.length === 0 && (
+              {!["success", "parsing", "tailoring", "compiling"].includes(status) && tailoredResumes.length === 0 && (
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full justify-center mt-4">
                   <button
                     type="button"
