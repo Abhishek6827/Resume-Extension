@@ -580,18 +580,53 @@ ${latex}`;
               modelTimer = setTimeout(() => reject(new Error(`Model ${model.name} timed out after 600 seconds`)), 600000);
             });
 
-            const generatePromise = (async () => {
-              const response = await callLLM({
-                systemPrompt,
-                userMessage,
-                modelSelection: { primaryModel: model.id },
-                jsonMode: false,
-              });
+            const generateWithRetry = async (): Promise<string> => {
+              const maxAttempts = 3;
+              let currentPrompt = systemPrompt;
+              let tailored = "";
 
-              return cleanLatexResponse(response.content);
-            })();
+              for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                const response = await callLLM({
+                  systemPrompt: currentPrompt,
+                  userMessage,
+                  modelSelection: { primaryModel: model.id },
+                  jsonMode: false,
+                });
 
-            const tailoredLatex = await Promise.race([generatePromise, modelTimeoutPromise]).finally(() => {
+                tailored = cleanLatexResponse(response.content);
+
+                if (tailored.length <= latexLength) {
+                  break;
+                }
+
+                // Last attempt — no point building a retry prompt
+                if (attempt >= maxAttempts - 1) break;
+
+                const excess = tailored.length - latexLength;
+                console.warn(`[Stream Retry] Model ${model.name} exceeded budget by ${excess} chars (${tailored.length}/${latexLength}). Attempt ${attempt + 2}/${maxAttempts}...`);
+
+                sendEvent({ modelId: model.id, progress: 30 + (attempt + 1) * 15, phase: `Compacting (retry ${attempt + 1})` });
+
+                currentPrompt = `You are an expert ATS specialist and senior LaTeX editor.
+CRITICAL 1-PAGE CHARACTER LIMIT OVERFLOW (ATTEMPT ${attempt + 2}/${maxAttempts}):
+Your generated LaTeX was ${tailored.length} characters long, which is ${excess} characters OVER the strict 1-page budget (${latexLength} characters).
+
+TO GUARANTEE THE RESUME FITS ON EXACTLY 1 PAGE WHILE RETAINING HIGH CREDIBILITY:
+1. SWAP IN-PLACE & COMPACT: Keep single-line bullets under 80 characters, and 2-line bullets under 145 characters. Remove filler words, but retain key technical achievements. NEVER write robotic meta-phrases like "applied Data Structures, Algorithms" or "conducted task estimation".
+2. PROJECT TECH HEADERS: Keep strictly to 4-5 core JD technologies per project subtitle.
+3. SKILL ROWS: Keep each skill category to 1 single line (max 5-6 core tools, max 55-60 chars). Lead with target JD skills.
+4. SUMMARY: Limit summary to strictly 3 compact, focused lines (~45-50 words).
+5. DO NOT add extra bullets or projects. Keep the exact count as the original template.
+6. DO NOT alter preamble, geometry, margins, packages, or vertical spacing.
+
+You MUST produce the full LaTeX document with total length <= ${latexLength} characters.
+Return ONLY the raw tailored LaTeX string from \\documentclass to \\end{document}. No markdown fences, no explanations.`;
+              }
+
+              return tailored;
+            };
+
+            const tailoredLatex = await Promise.race([generateWithRetry(), modelTimeoutPromise]).finally(() => {
               if (modelTimer) clearTimeout(modelTimer);
             });
 
