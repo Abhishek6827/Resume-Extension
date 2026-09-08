@@ -1699,6 +1699,47 @@ export default function Home() {
     } catch (_) { /* silent fallback — not critical */ }
   };
 
+  // Warmup NVIDIA models with TTS announcements
+  const warmedModelsRef = useRef<Set<string>>(new Set());
+  const triggerWarmup = (specificModelId?: string) => {
+    // If specific model is already warmed up, skip
+    if (specificModelId && warmedModelsRef.current.has(specificModelId)) return;
+    // If auto run and all models are warmed up, skip
+    if (!specificModelId && warmedModelsRef.current.size >= RESUME_MODELS.length) return;
+
+    (async () => {
+      try {
+        const url = specificModelId
+          ? `${API_BASE_URL}/api/warmup?model=${encodeURIComponent(specificModelId)}`
+          : `${API_BASE_URL}/api/warmup`;
+        const res = await fetch(url);
+        if (!res.ok || !res.body) return;
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = "";
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, { stream: true });
+          const lines = buf.split("\n");
+          buf = lines.pop() || "";
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+              const event = JSON.parse(line);
+              if (event.done) break;
+              if (event.status === "ready") {
+                warmedModelsRef.current.add(event.model);
+                if (specificModelId) warmedModelsRef.current.add(specificModelId);
+                speakNotification(`${event.model} is warmed up.`);
+              }
+            } catch (_) { /* skip malformed lines */ }
+          }
+        }
+      } catch (_) { /* warmup is best-effort */ }
+    })();
+  };
+
   // Load all persisted states on mount
   useEffect(() => {
     const savedActiveTab = localStorage.getItem("activeTab");
@@ -1862,6 +1903,7 @@ export default function Home() {
       setFileKey((prev) => prev + 1);
       setIsEditingJd(false);
       localStorage.removeItem("jdText");
+      warmedModelsRef.current.clear();
     }
 
     // Clear persisted result/status data in localStorage
@@ -1877,6 +1919,9 @@ export default function Home() {
   const handleJdChange = (val: string) => {
     setJdText(val);
     handleReset(false);
+    if (val.trim().length >= 50) {
+      triggerWarmup(isAutoRun ? undefined : primaryModel);
+    }
   };
 
   const handleGenerateCoverLetter = async () => {
@@ -2505,7 +2550,8 @@ export default function Home() {
                   <label className="block text-xs sm:text-sm font-semibold text-slate-300 mb-2">2. Paste Job Description</label>
                   <textarea
                     value={jdText}
-                    onChange={(e) => setJdText(e.target.value)}
+                    onChange={(e) => handleJdChange(e.target.value)}
+                    onPaste={() => triggerWarmup(isAutoRun ? undefined : primaryModel)}
                     placeholder="Paste the target job description here..."
                     rows={6}
                     className="w-full bg-white/5 border border-white/10 rounded-xl p-3.5 sm:p-4 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"
@@ -2635,6 +2681,7 @@ export default function Home() {
                     <textarea
                       value={jdText}
                       onChange={(e) => handleJdChange(e.target.value)}
+                      onPaste={() => triggerWarmup(isAutoRun ? undefined : primaryModel)}
                       placeholder="Paste the target job description here..."
                       rows={10}
                       className="w-full flex-1 bg-white/5 border border-white/10 rounded-xl p-3.5 sm:p-4 text-slate-200 placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-y min-h-[180px] md:min-h-[300px]"
@@ -2651,7 +2698,13 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-4 mb-4">
                 <button
                   type="button"
-                  onClick={() => { if (!isAutoRun) { setIsAutoRun(true); handleReset(false); } }}
+                  onClick={() => {
+                    if (!isAutoRun) {
+                      setIsAutoRun(true);
+                      handleReset(false);
+                      triggerWarmup();
+                    }
+                  }}
                   className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center justify-center gap-2 ${isAutoRun ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'}`}
                 >
                   <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
@@ -2659,7 +2712,13 @@ export default function Home() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => { if (isAutoRun) { setIsAutoRun(false); handleReset(false); } }}
+                  onClick={() => {
+                    if (isAutoRun) {
+                      setIsAutoRun(false);
+                      handleReset(false);
+                      triggerWarmup(primaryModel);
+                    }
+                  }}
                   className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center justify-center gap-2 ${!isAutoRun ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'}`}
                 >
                   <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
@@ -2676,6 +2735,7 @@ export default function Home() {
                       if (val !== primaryModel) {
                         setPrimaryModel(val);
                         handleReset(false);
+                        triggerWarmup(val);
                       }
                     }}
                     options={RESUME_MODELS}
