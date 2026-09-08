@@ -5,7 +5,6 @@ import {
   TextRun,
   AlignmentType,
   HeadingLevel,
-  ThematicBreak,
   BorderStyle,
 } from "docx";
 import type { ResumeData } from "./types";

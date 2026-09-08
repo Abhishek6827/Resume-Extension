@@ -140,7 +140,7 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
           requestOptions.max_tokens = options.maxTokens ?? 16384;
           requestOptions.seed = 42;
           requestOptions.stream = false;
-          requestOptions.extra_body = { chat_template_kwargs: { thinking: false } };
+          requestOptions.chat_template_kwargs = { thinking: false };
         }
 
         let content = "";
