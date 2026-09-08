@@ -12,6 +12,7 @@ const AI_MODELS = [
   { id: "nvidia:moonshotai/kimi-k3", name: "Kimi K3 (Moonshot AI)" },
   { id: "nvidia:nvidia/nemotron-3-super-120b-a12b", name: "Nemotron 120B (Balanced)" },
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)" },
+  { id: "nvidia:deepseek-ai/deepseek-v4-pro-0813", name: "DeepSeek V4 Pro (Quality)" },
 ];
 
 export async function OPTIONS(request: NextRequest) {

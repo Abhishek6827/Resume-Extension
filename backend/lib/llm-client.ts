@@ -3,6 +3,7 @@
 // NVIDIA NIM:
 //   - nvidia/nemotron-3-super-120b-a12b (Balanced / 120B)
 //   - nvidia/nemotron-3-ultra-550b-a55b (Quality / 550B)
+//   - deepseek-ai/deepseek-v4-pro-0813 (Quality / DeepSeek V4)
 // Groq:
 //   - qwen/qwen3.6-27b (Fast / Cover Letter)
 //   - openai/gpt-oss-120b (Quality / Cover Letter)
@@ -133,6 +134,13 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
           requestOptions.top_p = 0.95;
           requestOptions.max_tokens = options.maxTokens ?? 16384;
           requestOptions.stream = false;
+        } else if (modelToUse === "deepseek-ai/deepseek-v4-pro-0813" || modelToUse.includes("deepseek-v4")) {
+          requestOptions.temperature = 1;
+          requestOptions.top_p = 0.95;
+          requestOptions.max_tokens = options.maxTokens ?? 16384;
+          requestOptions.seed = 42;
+          requestOptions.stream = false;
+          requestOptions.extra_body = { chat_template_kwargs: { thinking: false } };
         }
 
         let content = "";

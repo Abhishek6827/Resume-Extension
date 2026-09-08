@@ -10,6 +10,7 @@ const RESUME_MODELS = [
   { id: "nvidia:moonshotai/kimi-k3", name: "Kimi K3 (Moonshot AI)", shortName: "Kimi K3", icon: "https://www.google.com/s2/favicons?domain=moonshot.cn&sz=128" },
   { id: "nvidia:nvidia/nemotron-3-super-120b-a12b", name: "Nemotron 120B (Balanced)", shortName: "Nemotron 120B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)", shortName: "Nemotron 550B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
+  { id: "nvidia:deepseek-ai/deepseek-v4-pro-0813", name: "DeepSeek V4 Pro (Quality)", shortName: "DeepSeek V4", icon: "https://www.google.com/s2/favicons?domain=deepseek.com&sz=128" },
 ];
 
 const COVER_LETTER_MODELS = [
