@@ -2203,8 +2203,9 @@ export default function Home() {
       setTailoredResumes([]);
       setSelectedResultIndex(0);
 
-      const initialProgress = RESUME_MODELS.reduce((acc, m) => ({ ...acc, [m.id]: 0 }), {});
-      const initialPhases = RESUME_MODELS.reduce((acc, m) => ({ ...acc, [m.id]: "Queued" }), {});
+      const modelsForInit = isAutoRun ? RESUME_MODELS : RESUME_MODELS.filter(m => m.id === primaryModel);
+      const initialProgress = modelsForInit.reduce((acc, m) => ({ ...acc, [m.id]: 0 }), {});
+      const initialPhases = modelsForInit.reduce((acc, m) => ({ ...acc, [m.id]: "Queued" }), {});
       setParallelProgress(initialProgress);
       setParallelPhases(initialPhases);
 
@@ -2786,7 +2787,7 @@ export default function Home() {
                 <div className="flex flex-col items-center gap-4 sm:gap-6 w-full mt-4">
                   {status === "success" && (
                     <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs sm:text-sm font-medium text-center w-full">
-                      Success! Tailored resumes generated using {RESUME_MODELS.length} models and analyzed by ATS Scoring Engine.
+                      Success! Tailored {tailoredResumes.length === 1 ? 'resume' : 'resumes'} generated using {tailoredResumes.length} {tailoredResumes.length === 1 ? 'model' : 'models'} and analyzed by ATS Scoring Engine.
                     </div>
                   )}
 
