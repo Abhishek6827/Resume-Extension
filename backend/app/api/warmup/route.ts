@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
   const nvidia = new OpenAI({
     baseURL: "https://integrate.api.nvidia.com/v1",
     apiKey,
-    timeout: 10000,
+    timeout: 15000,
     maxRetries: 0,
   });
 
@@ -58,9 +58,12 @@ export async function GET(request: NextRequest) {
         sendEvent({ model: m.name, status: "warming" });
       });
 
-      // Run target models in parallel with a strict 10s timeout so warmup never hangs
+      // Run target models with light staggering and 429/503 backoff
       await Promise.allSettled(
-        targetModels.map(async (model) => {
+        targetModels.map(async (model, idx) => {
+          if (idx > 0) {
+            await new Promise((r) => setTimeout(r, idx * 200));
+          }
           const requestOptions: any = {
             model: model.id,
             messages: [{ role: "user", content: "hi" }],
@@ -89,9 +92,10 @@ export async function GET(request: NextRequest) {
               lastErr = err;
               const msg = err?.message || "";
               const is503 = err?.status === 503 || msg.includes("503") || msg.includes("overloaded");
-              if (is503 && attempt === 1) {
-                // Quick 800ms backoff for momentary NVIDIA 503 overload spikes
-                await new Promise((r) => setTimeout(r, 800));
+              const is429 = err?.status === 429 || msg.includes("429") || msg.includes("rate_limit") || msg.includes("Too Many Requests");
+              if ((is503 || is429) && attempt === 1) {
+                // Backoff for momentary NVIDIA concurrency / overload spikes
+                await new Promise((r) => setTimeout(r, 1500));
                 continue;
               }
               break;

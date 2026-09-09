@@ -1135,16 +1135,22 @@ const ParallelPipelineVisualizer = ({
     if (status === "success") {
       setVisualProgress(() => {
         const state: { [key: string]: number } = {};
-        targetModels.forEach((m: any) => state[m.id] = 100);
+        targetModels.forEach((m: any) => {
+          const res = tailoredResumes.find((r: any) => r.modelId === m.id);
+          state[m.id] = res?.error ? 0 : 100;
+        });
         return state;
       });
       setVisualPhases(() => {
         const state: { [key: string]: string } = {};
-        targetModels.forEach((m: any) => state[m.id] = "Ready");
+        targetModels.forEach((m: any) => {
+          const res = tailoredResumes.find((r: any) => r.modelId === m.id);
+          state[m.id] = res?.error ? "Error" : "Ready";
+        });
         return state;
       });
     }
-  }, [status, targetModels]);
+  }, [status, targetModels, tailoredResumes]);
 
   useEffect(() => {
     const updateCoords = () => {
@@ -1210,14 +1216,14 @@ const ParallelPipelineVisualizer = ({
   const pVal = visualProgress[selectedTab] || 0;
   const isFinished = status === "success";
   const isCompiling = status === "compiling";
-  const isModelError = visualPhases[selectedTab] === "Error";
-
   const activeResult = tailoredResumes.find(r => r.modelId === selectedTab) || tailoredResumes[selectedResultIndex];
+  const isModelError = visualPhases[selectedTab] === "Error" || visualPhases[selectedTab] === "Failed" || !!activeResult?.error;
+
   const isNodeSuccess = (visualPhases[selectedTab] === "Ready" || pVal === 100 || status === "success") && activeResult && !activeResult.error;
 
   const getBranchState = (branch: "summary" | "experience" | "projects" | "skills" | "matchScore") => {
     if (isModelError) {
-      return { active: false, done: false, failed: true, ready: false, log: "Generation failed.", progress: 0 };
+      return { active: false, done: false, failed: true, ready: false, log: activeResult?.error || "Generation failed.", progress: 0 };
     }
     if (isFinished) return { active: false, done: true, ready: false, log: "Completed.", progress: 100 };
     if (isCompiling) return { active: false, done: true, ready: false, log: "Completed.", progress: 100 };
@@ -1292,9 +1298,11 @@ const ParallelPipelineVisualizer = ({
         {targetModels.map((model) => {
           const isSelected = model.id === selectedTab;
           const progressVal = Math.round(visualProgress[model.id] || 0);
-          const phase = visualPhases[model.id] || "Queued";
-          const isReady = phase === "Ready";
-          const isError = phase === "Error";
+          const modelRes = tailoredResumes.find((r: any) => r.modelId === model.id);
+          const hasError = !!modelRes?.error || visualPhases[model.id] === "Error" || visualPhases[model.id] === "Failed";
+          const phase = hasError ? "Error" : (visualPhases[model.id] || "Queued");
+          const isReady = phase === "Ready" && !hasError;
+          const isError = hasError;
 
           return (
             <button
@@ -1320,7 +1328,7 @@ const ParallelPipelineVisualizer = ({
                   ? 'bg-red-500/20 text-red-400 font-bold'
                   : 'bg-indigo-500/20 text-indigo-400 animate-pulse font-mono'
                 }`}>
-                {isReady ? "Ready" : isError ? "Error" : `${progressVal}%`}
+                {isReady ? "Ready" : isError ? "FAIL" : `${progressVal}%`}
               </span>
             </button>
           );
@@ -1333,9 +1341,11 @@ const ParallelPipelineVisualizer = ({
           <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-1 sm:mb-2">
             <svg className="w-6 h-6 sm:w-8 sm:h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
           </div>
-          <h3 className="text-lg sm:text-xl font-bold text-slate-200">Model Execution Failed</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-slate-200">
+            {targetModels.find((m: any) => m.id === selectedTab)?.shortName || "Model"} Execution Failed
+          </h3>
           <p className="text-xs sm:text-sm text-slate-400 max-w-md">
-            The {targetModels.find((m: any) => m.id === selectedTab)?.name || "selected"} model encountered an error during resume tailoring. This could be due to rate limits or API timeouts.
+            {activeResult?.error || `The selected model encountered an error during resume tailoring (NVIDIA Rate Limit 429 or API timeout).`}
           </p>
         </div>
       ) : (

@@ -571,7 +571,7 @@ ${latex}`;
         const promises = targetModels.map(async (model, index) => {
           try {
             if (index > 0) {
-              await new Promise((r) => setTimeout(r, index * 300));
+              await new Promise((r) => setTimeout(r, index * 600));
             }
             sendEvent({ modelId: model.id, progress: 15, phase: "Parsing JD" });
             sendEvent({ modelId: model.id, progress: 30, phase: "Tailoring Resume" });

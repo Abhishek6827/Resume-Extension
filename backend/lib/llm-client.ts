@@ -104,7 +104,7 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
       maxRetries: 2,
     });
 
-    const maxRetries = keys.length === 1 ? 3 : 1;
+    const maxRetries = keys.length === 1 ? 4 : 2;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -123,7 +123,6 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
         if (modelToUse === "moonshotai/kimi-k3" || modelToUse.includes("kimi")) {
           requestOptions.temperature = 0.6;
           requestOptions.max_tokens = options.maxTokens ?? 16384;
-          requestOptions.seed = 0;
           requestOptions.stream = true;
         } else if (modelToUse === "nvidia/nemotron-3-super-120b-a12b" || modelToUse.includes("120b")) {
           requestOptions.temperature = 0.2;
@@ -163,15 +162,16 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
       } catch (err: any) {
         lastError = err;
         const msg = err?.message || String(err);
-        const is429 = err?.status === 429 || msg.includes("429") || msg.includes("rate_limit") || msg.includes("concurrency");
+        const is429 = err?.status === 429 || msg.includes("429") || msg.includes("rate_limit") || msg.includes("concurrency") || msg.includes("Too Many Requests");
+        const is503 = err?.status === 503 || msg.includes("503") || msg.includes("overloaded");
 
-        if (is429) {
+        if (is429 || is503) {
           if (keys.length > 1 && keyIdx < keys.length - 1) {
-            console.warn(`[NVIDIA] Key ${keyIdx + 1} concurrency limit on ${modelToUse}. Rotating to key ${keyIdx + 2}...`);
+            console.warn(`[NVIDIA] Key ${keyIdx + 1} rate limit / overload on ${modelToUse}. Rotating to key ${keyIdx + 2}...`);
             break; // Try next key
           } else if (attempt < maxRetries) {
-            const delay = attempt * 2500;
-            console.warn(`[NVIDIA] Concurrency limit (429) on ${modelToUse}. Retrying in ${delay}ms (attempt ${attempt}/${maxRetries})...`);
+            const delay = attempt * 3500;
+            console.warn(`[NVIDIA] Rate limit / overload (${err?.status || 'transient'}) on ${modelToUse}. Retrying in ${delay}ms (attempt ${attempt}/${maxRetries})...`);
             await new Promise((r) => setTimeout(r, delay));
             continue;
           }
