@@ -2600,7 +2600,7 @@ export default function Home() {
                         file:text-xs sm:file:text-sm file:font-semibold
                         file:bg-indigo-50 dark:file:bg-indigo-500/10 file:text-indigo-600 dark:file:text-indigo-400
                         hover:file:bg-indigo-100 dark:hover:file:bg-indigo-500/20 file:transition-colors
-                        cursor-pointer bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-300 dark:border-white/10 focus:outline-none focus:border-indigo-500/50"
+                        cursor-pointer bg-white dark:bg-white/5 rounded-xl border border-slate-300 dark:border-white/10 focus:outline-none focus:border-indigo-500/50"
                     />
                   </div>
                 </div>
@@ -2612,7 +2612,7 @@ export default function Home() {
                     onPaste={() => triggerWarmup(isAutoRun ? undefined : primaryModel)}
                     placeholder="Paste the target job description here..."
                     rows={6}
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-xs sm:text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"
+                    className="w-full bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-xs sm:text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"
                   ></textarea>
                 </div>
               </div>
@@ -2653,9 +2653,9 @@ export default function Home() {
                       <span className="truncate">Candidate: {extractCandidateNameFromLatex(latexText) || "LaTeX Document"}</span>
                     </div>
 
-                    <div className="bg-slate-900/90 dark:bg-black/30 rounded-xl p-3 font-mono text-[11px] text-slate-200 dark:text-slate-300 max-h-24 overflow-hidden relative border border-slate-200 dark:border-white/5">
+                    <div className="bg-white dark:bg-black/30 rounded-xl p-3 font-mono text-[11px] text-slate-800 dark:text-slate-300 max-h-24 overflow-hidden relative border border-emerald-200/80 dark:border-white/5 shadow-sm">
                       {latexText.split('\n').slice(0, 4).join('\n')}
-                      <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-slate-900/90 dark:from-black/80 to-transparent"></div>
+                      <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white dark:from-black/80 to-transparent"></div>
                     </div>
                   </div>
                 ) : (
@@ -2677,7 +2677,7 @@ export default function Home() {
                       onChange={(e) => handleLatexChange(e.target.value)}
                       placeholder="Paste your raw LaTeX resume code here..."
                       rows={10}
-                      className="w-full flex-1 bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 font-mono text-xs sm:text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-y min-h-[180px] md:min-h-[300px]"
+                      className="w-full flex-1 bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 font-mono text-xs sm:text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-y min-h-[180px] md:min-h-[300px]"
                     ></textarea>
                   </div>
                 )}
@@ -2717,9 +2717,9 @@ export default function Home() {
                       <span>{jdText.split(/\s+/).filter(Boolean).length} words</span>
                     </div>
 
-                    <div className="bg-slate-900/90 dark:bg-black/30 rounded-xl p-3 font-sans text-[11px] text-slate-200 dark:text-slate-300 max-h-24 overflow-hidden relative border border-slate-200 dark:border-white/5">
+                    <div className="bg-white dark:bg-black/30 rounded-xl p-3 font-sans text-[11px] text-slate-800 dark:text-slate-300 max-h-24 overflow-hidden relative border border-indigo-200/80 dark:border-white/5 shadow-sm">
                       {jdText.slice(0, 200)}...
-                      <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-slate-900/90 dark:from-black/80 to-transparent"></div>
+                      <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white dark:from-black/80 to-transparent"></div>
                     </div>
                   </div>
                 ) : (
@@ -2742,7 +2742,7 @@ export default function Home() {
                       onPaste={() => triggerWarmup(isAutoRun ? undefined : primaryModel)}
                       placeholder="Paste the target job description here..."
                       rows={10}
-                      className="w-full flex-1 bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-y min-h-[180px] md:min-h-[300px]"
+                      className="w-full flex-1 bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-y min-h-[180px] md:min-h-[300px]"
                     ></textarea>
                   </div>
                 )}
@@ -2975,7 +2975,7 @@ export default function Home() {
                             <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300">
                               This model failed to generate a tailored resume due to an API error or rate limit exhaustion:
                             </p>
-                            <div className="p-3.5 sm:p-4 bg-slate-900 dark:bg-black/40 rounded-xl font-mono text-xs text-red-400 dark:text-red-300 border border-red-200 dark:border-red-500/10 break-words">
+                            <div className="p-3.5 sm:p-4 bg-white dark:bg-black/40 rounded-xl font-mono text-xs text-red-600 dark:text-red-300 border border-red-200 dark:border-red-500/10 break-words shadow-sm">
                               {activeResult.error}
                             </div>
                             <p className="text-xs text-slate-500 leading-relaxed">
