@@ -267,29 +267,29 @@ const CustomDropdown = ({ value, onChange, options, label, focusColor }: { value
 
   return (
     <div>
-      <span className="text-xs text-slate-400 mb-1 block">{label}</span>
+      <span className="text-xs text-slate-700 dark:text-slate-400 mb-1 block font-medium">{label}</span>
       <div className="relative">
         <div
           onClick={() => setIsOpen(!isOpen)}
-          className={`flex items-center gap-2.5 sm:gap-3 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 cursor-pointer transition-colors min-h-[44px] ${isOpen ? focusColor : 'hover:bg-white/10'}`}
+          className={`flex items-center gap-2.5 sm:gap-3 bg-slate-100/90 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl px-3 py-2.5 cursor-pointer transition-colors min-h-[44px] shadow-sm ${isOpen ? focusColor : 'hover:bg-slate-200 dark:hover:bg-white/10'}`}
         >
           <img src={selectedModel?.icon} alt="icon" className="w-5 h-5 rounded shrink-0" onError={(e) => e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><circle cx="12" cy="12" r="10"></circle></svg>'} />
-          <span className="text-xs sm:text-sm text-slate-200 flex-1 truncate">{selectedModel?.name}</span>
-          <svg className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+          <span className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 flex-1 truncate font-medium">{selectedModel?.name}</span>
+          <svg className={`w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
         </div>
 
         {isOpen && (
           <>
             <div className="fixed inset-0 z-30" onClick={() => setIsOpen(false)}></div>
-            <div className="absolute top-full left-0 right-0 mt-2 bg-[#121324] border border-white/10 rounded-xl shadow-xl z-40 overflow-hidden max-h-60 overflow-y-auto backdrop-blur-xl">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#121324] border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl z-40 overflow-hidden max-h-60 overflow-y-auto backdrop-blur-xl">
               {options.map((m: any) => (
                 <div
                   key={m.id}
                   onClick={() => { onChange(m.id); setIsOpen(false); }}
-                  className={`flex items-center gap-2.5 sm:gap-3 px-3 py-2.5 cursor-pointer transition-colors hover:bg-white/10 min-h-[40px] ${value === m.id ? 'bg-indigo-500/10' : ''}`}
+                  className={`flex items-center gap-2.5 sm:gap-3 px-3 py-2.5 cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-white/10 min-h-[40px] ${value === m.id ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''}`}
                 >
                   <img src={m.icon} alt="icon" className="w-5 h-5 rounded shrink-0" onError={(e) => e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400"><circle cx="12" cy="12" r="10"></circle></svg>'} />
-                  <span className={`text-xs sm:text-sm truncate ${value === m.id ? 'text-indigo-300 font-medium' : 'text-slate-300'}`}>{m.name}</span>
+                  <span className={`text-xs sm:text-sm truncate ${value === m.id ? 'text-indigo-600 dark:text-indigo-300 font-semibold' : 'text-slate-700 dark:text-slate-300'}`}>{m.name}</span>
                 </div>
               ))}
             </div>
@@ -508,7 +508,7 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
   };
 
   return (
-    <div ref={containerRef} className="w-full mt-4 flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 bg-slate-900/60 border border-white/10 rounded-2xl relative overflow-hidden backdrop-blur-xl">
+    <div ref={containerRef} className="w-full mt-4 flex flex-col gap-4 sm:gap-6 p-4 sm:p-6 bg-slate-50/90 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 rounded-2xl relative overflow-hidden backdrop-blur-xl shadow-md">
       <style>{`
         .active-glow-summary { border-color: rgba(129, 140, 248, 0.5) !important; box-shadow: 0 0 15px rgba(129, 140, 248, 0.15); }
         .active-glow-experience { border-color: rgba(167, 139, 250, 0.5) !important; box-shadow: 0 0 15px rgba(167, 139, 250, 0.15); }
@@ -533,8 +533,8 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
             </defs>
 
             {/* 1. Summary Traces and Sparkles */}
-            <path d={getPathD(coords.source, coords.summaryLeft)} fill="none" stroke={summary.ready || summary.done ? "rgba(129, 140, 248, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
-            <path d={getPathD(coords.summaryRight, coords.compile)} fill="none" stroke={summary.ready || summary.done ? "rgba(129, 140, 248, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            <path d={getPathD(coords.source, coords.summaryLeft)} fill="none" stroke={summary.ready || summary.done ? "rgba(129, 140, 248, 0.4)" : "rgba(100, 116, 139, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            <path d={getPathD(coords.summaryRight, coords.compile)} fill="none" stroke={summary.ready || summary.done ? "rgba(129, 140, 248, 0.4)" : "rgba(100, 116, 139, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
             {(status === "tailoring" || isFinished) && (
               <circle r="4.5" fill="#818cf8" filter="url(#sparkle-glow)">
                 <animateMotion
@@ -557,10 +557,10 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
             )}
 
             {/* 2. Experience Traces and Sparkles */}
-            <path d={getPathD(coords.source, coords.experienceLeft)} fill="none" stroke={experience.ready || experience.done ? "rgba(167, 139, 250, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
-            <path d={getPathD(coords.experienceRight, coords.compile)} fill="none" stroke={experience.ready || experience.done ? "rgba(167, 139, 250, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
-            {((status === "tailoring" && ticks >= 2) || isFinished) && (
-              <circle r="4.5" fill="#c084fc" filter="url(#sparkle-glow)">
+            <path d={getPathD(coords.source, coords.experienceLeft)} fill="none" stroke={experience.ready || experience.done ? "rgba(167, 139, 250, 0.4)" : "rgba(100, 116, 139, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            <path d={getPathD(coords.experienceRight, coords.compile)} fill="none" stroke={experience.ready || experience.done ? "rgba(167, 139, 250, 0.4)" : "rgba(100, 116, 139, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            {(status === "tailoring" || isFinished) && (
+              <circle r="4.5" fill="#a78bfa" filter="url(#sparkle-glow)">
                 <animateMotion
                   key={`exp-left-${experience.active ? "fast" : "slow"}`}
                   dur={experience.active ? "1.4s" : "2.8s"}
@@ -570,7 +570,7 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
               </circle>
             )}
             {((status === "tailoring" && experience.ready) || isFinished) && (
-              <circle r="4.5" fill="#c084fc" filter="url(#sparkle-glow)">
+              <circle r="4.5" fill="#a78bfa" filter="url(#sparkle-glow)">
                 <animateMotion
                   key={`exp-right-${isFinished ? "fast" : "slow"}`}
                   dur={isFinished ? "1.4s" : "2.8s"}
@@ -581,9 +581,9 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
             )}
 
             {/* 3. Projects Traces and Sparkles */}
-            <path d={getPathD(coords.source, coords.projectsLeft)} fill="none" stroke={projects.ready || projects.done ? "rgba(244, 114, 182, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
-            <path d={getPathD(coords.projectsRight, coords.compile)} fill="none" stroke={projects.ready || projects.done ? "rgba(244, 114, 182, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
-            {((status === "tailoring" && ticks >= 3) || isFinished) && (
+            <path d={getPathD(coords.source, coords.projectsLeft)} fill="none" stroke={projects.ready || projects.done ? "rgba(244, 114, 182, 0.4)" : "rgba(100, 116, 139, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            <path d={getPathD(coords.projectsRight, coords.compile)} fill="none" stroke={projects.ready || projects.done ? "rgba(244, 114, 182, 0.4)" : "rgba(100, 116, 139, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            {((status === "tailoring" && ticks >= 2) || isFinished) && (
               <circle r="4.5" fill="#f472b6" filter="url(#sparkle-glow)">
                 <animateMotion
                   key={`proj-left-${projects.active ? "fast" : "slow"}`}
@@ -605,8 +605,8 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
             )}
 
             {/* 4. Skills Traces and Sparkles */}
-            <path d={getPathD(coords.source, coords.skillsLeft)} fill="none" stroke={skills.ready || skills.done ? "rgba(45, 212, 191, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
-            <path d={getPathD(coords.skillsRight, coords.compile)} fill="none" stroke={skills.ready || skills.done ? "rgba(45, 212, 191, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            <path d={getPathD(coords.source, coords.skillsLeft)} fill="none" stroke={skills.ready || skills.done ? "rgba(45, 212, 191, 0.4)" : "rgba(100, 116, 139, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            <path d={getPathD(coords.skillsRight, coords.compile)} fill="none" stroke={skills.ready || skills.done ? "rgba(45, 212, 191, 0.4)" : "rgba(100, 116, 139, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
             {((status === "tailoring" && ticks >= 4) || isFinished) && (
               <circle r="4.5" fill="#2dd4bf" filter="url(#sparkle-glow)">
                 <animateMotion
@@ -629,8 +629,8 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
             )}
 
             {/* 5. Match & Score Traces and Sparkles */}
-            <path d={getPathD(coords.source, coords.matchScoreLeft)} fill="none" stroke={matchScore.done ? "rgba(168, 85, 247, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
-            <path d={getPathD(coords.matchScoreRight, coords.compile)} fill="none" stroke={matchScore.done ? "rgba(168, 85, 247, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            <path d={getPathD(coords.source, coords.matchScoreLeft)} fill="none" stroke={matchScore.done ? "rgba(168, 85, 247, 0.4)" : "rgba(100, 116, 139, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
+            <path d={getPathD(coords.matchScoreRight, coords.compile)} fill="none" stroke={matchScore.done ? "rgba(168, 85, 247, 0.4)" : "rgba(100, 116, 139, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
             {((status === "tailoring" && ticks >= 8) || isFinished) && (
               <circle r="4.5" fill="#a855f7" filter="url(#sparkle-glow)">
                 <animateMotion
@@ -659,15 +659,15 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
 
         {/* 1. Source Node */}
         <div className="w-full md:w-[15%] max-w-full sm:max-w-[200px] flex flex-col items-center justify-center">
-          <div ref={sourceRef} className={`p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-white/10 flex flex-col items-center gap-2 text-center w-full max-w-[180px] sm:max-w-[160px] transition-all duration-500 ${status === "parsing" ? "border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.2)]" : "border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.05)]"}`}>
-            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${status === "parsing" ? "bg-indigo-500/20 text-indigo-400 animate-pulse" : "bg-emerald-500/20 text-emerald-400"}`}>
+          <div ref={sourceRef} className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-white/10 flex flex-col items-center gap-2 text-center w-full max-w-[180px] sm:max-w-[160px] transition-all duration-500 shadow-sm ${status === "parsing" ? "border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.2)]" : "border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.05)]"}`}>
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${status === "parsing" ? "bg-indigo-500/20 text-indigo-500 dark:text-indigo-400 animate-pulse" : "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"}`}>
               {status === "parsing" ? (
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
               ) : (
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
               )}
             </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Data Source</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">Data Source</span>
             <span className="text-[10px] text-slate-500 leading-tight">Resume & JD Loaded</span>
           </div>
         </div>
@@ -676,115 +676,115 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
         <div className="w-full md:w-[45%] flex flex-col gap-2.5 sm:gap-3 px-0 sm:px-2">
 
           {/* Branch A: Summary */}
-          <div ref={summaryRef} className={`rounded-xl bg-slate-950/70 border overflow-hidden transition-all duration-300 ${summary.done ? "border-emerald-500/20" : summary.ready ? "border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.05)]" : summary.active ? "active-glow-summary" : "border-white/5"}`}>
+          <div ref={summaryRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm ${summary.done ? "border-emerald-500/30" : summary.ready ? "border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.05)]" : summary.active ? "active-glow-summary" : "border-slate-200 dark:border-white/5"}`}>
             <div className="p-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${summary.done ? "bg-emerald-500/25 text-emerald-400" : summary.ready ? "bg-indigo-500/25 text-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.2)]" : summary.active ? "bg-indigo-500/20 text-indigo-400" : "bg-white/5 text-slate-600"}`}>
+                <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${summary.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : summary.ready ? "bg-indigo-500/25 text-indigo-600 dark:text-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.2)]" : summary.active ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-600"}`}>
                   {summary.done || summary.ready ? "✓" : "A"}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className={`text-xs font-bold truncate ${summary.done ? "text-slate-200" : summary.ready ? "text-indigo-300" : summary.active ? "text-indigo-300" : "text-slate-200"}`}>Summary Tailoring</span>
-                  <span className={`text-[10px] truncate ${summary.ready ? "text-indigo-400/80" : "text-slate-500"}`}>{summary.log}</span>
+                  <span className={`text-xs font-bold truncate ${summary.done ? "text-slate-800 dark:text-slate-200" : summary.ready ? "text-indigo-600 dark:text-indigo-300" : summary.active ? "text-indigo-600 dark:text-indigo-300" : "text-slate-700 dark:text-slate-200"}`}>Summary Tailoring</span>
+                  <span className={`text-[10px] truncate ${summary.ready ? "text-indigo-500 dark:text-indigo-400/80" : "text-slate-500"}`}>{summary.log}</span>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
                 {summary.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{summary.progress}%</span>}
-                {summary.active && <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-ping"></span>}
-                {summary.ready && !summary.done && <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 shadow-[0_0_4px_#818cf8]"></span>}
+                {summary.active && <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-ping"></span>}
+                {summary.ready && !summary.done && <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 shadow-[0_0_4px_#818cf8]"></span>}
               </div>
             </div>
-            <div className="h-[2px] w-full bg-white/5">
-              <div className={`h-full transition-all duration-700 ease-out ${summary.done ? "bg-emerald-500" : summary.ready ? "bg-indigo-400" : "bg-gradient-to-r from-indigo-500 to-purple-500"}`} style={{ width: `${summary.progress}%` }} />
+            <div className="h-[2px] w-full bg-slate-200 dark:bg-white/5">
+              <div className={`h-full transition-all duration-700 ease-out ${summary.done ? "bg-emerald-500" : summary.ready ? "bg-indigo-500" : "bg-gradient-to-r from-indigo-500 to-purple-500"}`} style={{ width: `${summary.progress}%` }} />
             </div>
           </div>
 
           {/* Branch B: Experience */}
-          <div ref={experienceRef} className={`rounded-xl bg-slate-950/70 border overflow-hidden transition-all duration-300 ${experience.done ? "border-emerald-500/20" : experience.ready ? "border-purple-500/30 shadow-[0_0_10px_rgba(167,139,250,0.05)]" : experience.active ? "active-glow-experience" : "border-white/5"}`}>
+          <div ref={experienceRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm ${experience.done ? "border-emerald-500/30" : experience.ready ? "border-purple-500/30 shadow-[0_0_10px_rgba(167,139,250,0.05)]" : experience.active ? "active-glow-experience" : "border-slate-200 dark:border-white/5"}`}>
             <div className="p-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${experience.done ? "bg-emerald-500/25 text-emerald-400" : experience.ready ? "bg-purple-500/25 text-purple-400 shadow-[0_0_8px_rgba(167,139,250,0.2)]" : experience.active ? "bg-purple-500/20 text-purple-400" : "bg-white/5 text-slate-600"}`}>
+                <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${experience.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : experience.ready ? "bg-purple-500/25 text-purple-600 dark:text-purple-400 shadow-[0_0_8px_rgba(167,139,250,0.2)]" : experience.active ? "bg-purple-500/20 text-purple-600 dark:text-purple-400" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-600"}`}>
                   {experience.done || experience.ready ? "✓" : "B"}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className={`text-xs font-bold truncate ${experience.done ? "text-slate-200" : experience.ready ? "text-purple-300" : experience.active ? "text-purple-300" : "text-slate-200"}`}>Experience Alignment</span>
-                  <span className={`text-[10px] truncate ${experience.ready ? "text-purple-400/80" : "text-slate-500"}`}>{experience.log}</span>
+                  <span className={`text-xs font-bold truncate ${experience.done ? "text-slate-800 dark:text-slate-200" : experience.ready ? "text-purple-600 dark:text-purple-300" : experience.active ? "text-purple-600 dark:text-purple-300" : "text-slate-700 dark:text-slate-200"}`}>Experience Alignment</span>
+                  <span className={`text-[10px] truncate ${experience.ready ? "text-purple-500 dark:text-purple-400/80" : "text-slate-500"}`}>{experience.log}</span>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
                 {experience.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{experience.progress}%</span>}
-                {experience.active && <span className="h-1.5 w-1.5 rounded-full bg-purple-400 animate-ping"></span>}
-                {experience.ready && !experience.done && <span className="h-1.5 w-1.5 rounded-full bg-purple-400 shadow-[0_0_4px_#a78bfa]"></span>}
+                {experience.active && <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-ping"></span>}
+                {experience.ready && !experience.done && <span className="h-1.5 w-1.5 rounded-full bg-purple-500 shadow-[0_0_4px_#a78bfa]"></span>}
               </div>
             </div>
-            <div className="h-[2px] w-full bg-white/5">
-              <div className={`h-full transition-all duration-700 ease-out ${experience.done ? "bg-emerald-500" : experience.ready ? "bg-purple-400" : "bg-gradient-to-r from-purple-500 to-pink-500"}`} style={{ width: `${experience.progress}%` }} />
+            <div className="h-[2px] w-full bg-slate-200 dark:bg-white/5">
+              <div className={`h-full transition-all duration-700 ease-out ${experience.done ? "bg-emerald-500" : experience.ready ? "bg-purple-500" : "bg-gradient-to-r from-purple-500 to-pink-500"}`} style={{ width: `${experience.progress}%` }} />
             </div>
           </div>
 
           {/* Branch C: Projects */}
-          <div ref={projectsRef} className={`rounded-xl bg-slate-950/70 border overflow-hidden transition-all duration-300 ${projects.done ? "border-emerald-500/20" : projects.ready ? "border-pink-500/30 shadow-[0_0_10px_rgba(244,114,182,0.05)]" : projects.active ? "active-glow-projects" : "border-white/5"}`}>
+          <div ref={projectsRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm ${projects.done ? "border-emerald-500/30" : projects.ready ? "border-pink-500/30 shadow-[0_0_10px_rgba(244,114,182,0.05)]" : projects.active ? "active-glow-projects" : "border-slate-200 dark:border-white/5"}`}>
             <div className="p-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${projects.done ? "bg-emerald-500/25 text-emerald-400" : projects.ready ? "bg-pink-500/25 text-pink-400 shadow-[0_0_8px_rgba(244,114,182,0.2)]" : projects.active ? "bg-pink-500/20 text-pink-400" : "bg-white/5 text-slate-600"}`}>
+                <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${projects.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : projects.ready ? "bg-pink-500/25 text-pink-600 dark:text-pink-400 shadow-[0_0_8px_rgba(244,114,182,0.2)]" : projects.active ? "bg-pink-500/20 text-pink-600 dark:text-pink-400" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-600"}`}>
                   {projects.done || projects.ready ? "✓" : "C"}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className={`text-xs font-bold truncate ${projects.done ? "text-slate-200" : projects.ready ? "text-pink-300" : projects.active ? "text-pink-300" : "text-slate-200"}`}>Project Optimization</span>
-                  <span className={`text-[10px] truncate ${projects.ready ? "text-pink-400/80" : "text-slate-500"}`}>{projects.log}</span>
+                  <span className={`text-xs font-bold truncate ${projects.done ? "text-slate-800 dark:text-slate-200" : projects.ready ? "text-pink-600 dark:text-pink-300" : projects.active ? "text-pink-600 dark:text-pink-300" : "text-slate-700 dark:text-slate-200"}`}>Project Optimization</span>
+                  <span className={`text-[10px] truncate ${projects.ready ? "text-pink-500 dark:text-pink-400/80" : "text-slate-500"}`}>{projects.log}</span>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
                 {projects.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{projects.progress}%</span>}
-                {projects.active && <span className="h-1.5 w-1.5 rounded-full bg-pink-400 animate-ping"></span>}
-                {projects.ready && !projects.done && <span className="h-1.5 w-1.5 rounded-full bg-pink-400 shadow-[0_0_4px_#f472b6]"></span>}
+                {projects.active && <span className="h-1.5 w-1.5 rounded-full bg-pink-500 animate-ping"></span>}
+                {projects.ready && !projects.done && <span className="h-1.5 w-1.5 rounded-full bg-pink-500 shadow-[0_0_4px_#f472b6]"></span>}
               </div>
             </div>
-            <div className="h-[2px] w-full bg-white/5">
-              <div className={`h-full transition-all duration-700 ease-out ${projects.done ? "bg-emerald-500" : projects.ready ? "bg-pink-400" : "bg-gradient-to-r from-pink-500 to-rose-500"}`} style={{ width: `${projects.progress}%` }} />
+            <div className="h-[2px] w-full bg-slate-200 dark:bg-white/5">
+              <div className={`h-full transition-all duration-700 ease-out ${projects.done ? "bg-emerald-500" : projects.ready ? "bg-pink-500" : "bg-gradient-to-r from-pink-500 to-rose-500"}`} style={{ width: `${projects.progress}%` }} />
             </div>
           </div>
 
           {/* Branch D: Skills */}
-          <div ref={skillsRef} className={`rounded-xl bg-slate-950/70 border overflow-hidden transition-all duration-300 ${skills.done ? "border-emerald-500/20" : skills.ready ? "border-teal-500/30 shadow-[0_0_10px_rgba(45,212,191,0.05)]" : skills.active ? "active-glow-skills" : "border-white/5"}`}>
+          <div ref={skillsRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm ${skills.done ? "border-emerald-500/30" : skills.ready ? "border-teal-500/30 shadow-[0_0_10px_rgba(45,212,191,0.05)]" : skills.active ? "active-glow-skills" : "border-slate-200 dark:border-white/5"}`}>
             <div className="p-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${skills.done ? "bg-emerald-500/25 text-emerald-400" : skills.ready ? "bg-teal-500/25 text-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.2)]" : skills.active ? "bg-teal-500/20 text-teal-400" : "bg-white/5 text-slate-600"}`}>
+                <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${skills.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : skills.ready ? "bg-teal-500/25 text-teal-600 dark:text-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.2)]" : skills.active ? "bg-teal-500/20 text-teal-600 dark:text-teal-400" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-600"}`}>
                   {skills.done || skills.ready ? "✓" : "D"}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className={`text-xs font-bold truncate ${skills.done ? "text-slate-200" : skills.ready ? "text-teal-300" : skills.active ? "text-teal-300" : "text-slate-200"}`}>Skills Prioritization</span>
-                  <span className={`text-[10px] truncate ${skills.ready ? "text-teal-400/80" : "text-slate-500"}`}>{skills.log}</span>
+                  <span className={`text-xs font-bold truncate ${skills.done ? "text-slate-800 dark:text-slate-200" : skills.ready ? "text-teal-600 dark:text-teal-300" : skills.active ? "text-teal-600 dark:text-teal-300" : "text-slate-700 dark:text-slate-200"}`}>Skills Prioritization</span>
+                  <span className={`text-[10px] truncate ${skills.ready ? "text-teal-500 dark:text-teal-400/80" : "text-slate-500"}`}>{skills.log}</span>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
                 {skills.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{skills.progress}%</span>}
-                {skills.active && <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-ping"></span>}
-                {skills.ready && !skills.done && <span className="h-1.5 w-1.5 rounded-full bg-teal-400 shadow-[0_0_4px_#2dd4bf]"></span>}
+                {skills.active && <span className="h-1.5 w-1.5 rounded-full bg-teal-500 animate-ping"></span>}
+                {skills.ready && !skills.done && <span className="h-1.5 w-1.5 rounded-full bg-teal-500 shadow-[0_0_4px_#2dd4bf]"></span>}
               </div>
             </div>
-            <div className="h-[2px] w-full bg-white/5">
-              <div className={`h-full transition-all duration-700 ease-out ${skills.done ? "bg-emerald-500" : skills.ready ? "bg-teal-400" : "bg-gradient-to-r from-teal-500 to-cyan-500"}`} style={{ width: `${skills.progress}%` }} />
+            <div className="h-[2px] w-full bg-slate-200 dark:bg-white/5">
+              <div className={`h-full transition-all duration-700 ease-out ${skills.done ? "bg-emerald-500" : skills.ready ? "bg-teal-500" : "bg-gradient-to-r from-teal-500 to-cyan-500"}`} style={{ width: `${skills.progress}%` }} />
             </div>
           </div>
 
           {/* Branch E: Match & Score */}
-          <div ref={matchScoreRef} className={`rounded-xl bg-slate-950/70 border overflow-hidden transition-all duration-300 ${matchScore.done ? "border-emerald-500/20" : matchScore.active ? "active-glow-matchScore" : "border-white/5"}`}>
+          <div ref={matchScoreRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm ${matchScore.done ? "border-emerald-500/30" : matchScore.active ? "active-glow-matchScore" : "border-slate-200 dark:border-white/5"}`}>
             <div className="p-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${matchScore.done ? "bg-emerald-500/25 text-emerald-400" : matchScore.active ? "bg-purple-500/25 text-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.2)]" : "bg-white/5 text-slate-600"}`}>
+                <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${matchScore.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : matchScore.active ? "bg-purple-500/25 text-purple-600 dark:text-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.2)]" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-600"}`}>
                   {matchScore.done ? "✓" : "E"}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className={`text-xs font-bold truncate ${matchScore.done ? "text-slate-200" : matchScore.active ? "text-purple-300" : "text-slate-200"}`}>Match & Score Analysis</span>
-                  <span className={`text-[10px] truncate ${matchScore.active ? "text-purple-400/80" : "text-slate-500"}`}>{matchScore.log}</span>
+                  <span className={`text-xs font-bold truncate ${matchScore.done ? "text-slate-800 dark:text-slate-200" : matchScore.active ? "text-purple-600 dark:text-purple-300" : "text-slate-700 dark:text-slate-200"}`}>Match & Score Analysis</span>
+                  <span className={`text-[10px] truncate ${matchScore.active ? "text-purple-500 dark:text-purple-400/80" : "text-slate-500"}`}>{matchScore.log}</span>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
                 {matchScore.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{matchScore.progress}%</span>}
-                {matchScore.active && !matchScore.done && <span className="h-1.5 w-1.5 rounded-full bg-purple-400 animate-ping"></span>}
+                {matchScore.active && !matchScore.done && <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-ping"></span>}
               </div>
             </div>
-            <div className="h-[2px] w-full bg-white/5">
+            <div className="h-[2px] w-full bg-slate-200 dark:bg-white/5">
               <div className={`h-full transition-all duration-700 ease-out ${matchScore.done ? "bg-emerald-500" : "bg-gradient-to-r from-purple-500 to-pink-500"}`} style={{ width: `${matchScore.progress}%` }} />
             </div>
           </div>
@@ -793,15 +793,15 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
 
         {/* 3. Output Node */}
         <div className="w-full md:w-[15%] max-w-full sm:max-w-[200px] flex flex-col items-center justify-center">
-          <div ref={compileRef} className={`p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-white/10 flex flex-col items-center gap-2 text-center w-full max-w-[180px] sm:max-w-[160px] transition-all duration-500 ${status === "compiling" ? "border-pink-500/50 shadow-[0_0_20px_rgba(244,114,182,0.2)]" : status === "success" ? "border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "opacity-40"}`}>
-            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${status === "compiling" ? "bg-pink-500/20 text-pink-400" : status === "success" ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-slate-500"}`}>
+          <div ref={compileRef} className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-white/10 flex flex-col items-center gap-2 text-center w-full max-w-[180px] sm:max-w-[160px] transition-all duration-500 shadow-sm ${status === "compiling" ? "border-pink-500/50 shadow-[0_0_20px_rgba(244,114,182,0.2)]" : status === "success" ? "border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "opacity-40"}`}>
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${status === "compiling" ? "bg-pink-500/20 text-pink-500 dark:text-pink-400" : status === "success" ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-slate-100 dark:bg-white/5 text-slate-500"}`}>
               {status === "compiling" ? (
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
               ) : (
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H20" /></svg>
               )}
             </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">PDF Compile</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">PDF Compile</span>
             <span className="text-[10px] text-slate-500 leading-tight">
               {status === "compiling" ? "Compiling LaTeX..." : status === "success" ? "Ready to Download" : "Awaiting Merges"}
             </span>
@@ -859,7 +859,7 @@ const CoverLetterPipelineVisualizer = ({
   const totalProgress = !isGenerating ? 100 : Math.min(98, Math.round((ticks / 12) * 100));
 
   return (
-    <div className="w-full bg-slate-950/80 border border-indigo-500/25 rounded-2xl p-4 sm:p-6 relative overflow-hidden backdrop-blur-xl flex flex-col gap-4 sm:gap-6 shadow-[0_0_30px_rgba(99,102,241,0.12)] transition-all duration-500">
+    <div className="w-full bg-white/95 dark:bg-slate-950/80 border border-slate-200 dark:border-indigo-500/25 rounded-2xl p-4 sm:p-6 relative overflow-hidden backdrop-blur-xl flex flex-col gap-4 sm:gap-6 shadow-xl dark:shadow-[0_0_30px_rgba(99,102,241,0.12)] transition-all duration-500">
       <style>{`
         @keyframes clLaserScan {
           0% { top: 0%; opacity: 0; }
@@ -877,7 +877,7 @@ const CoverLetterPipelineVisualizer = ({
       <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
 
       {/* Top Header Status */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-white/5 pb-4 relative z-10">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-white/5 pb-4 relative z-10">
         <div className="flex items-center gap-3">
           <div className="relative shrink-0">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center shadow-lg shadow-indigo-500/10">
@@ -890,18 +890,18 @@ const CoverLetterPipelineVisualizer = ({
           </div>
           <div className="flex flex-col">
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <span className="text-xs sm:text-sm font-bold text-slate-100">Generating Cover Letter</span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 font-semibold">
+              <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">Generating Cover Letter</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/10 dark:bg-indigo-500/15 border border-indigo-500/20 dark:border-indigo-500/30 text-indigo-700 dark:text-indigo-300 font-semibold">
                 {activeModel.shortName}
               </span>
             </div>
-            <span className="text-[11px] sm:text-xs text-slate-400">Neural Executive Letter Synthesis in Progress</span>
+            <span className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400">Neural Executive Letter Synthesis in Progress</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto bg-indigo-500/10 border border-indigo-500/20 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl">
-          <div className="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></div>
-          <span className="text-xs font-mono font-bold text-indigo-300">
+        <div className="flex items-center gap-2 self-start sm:self-auto bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl">
+          <div className="w-2 h-2 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-ping"></div>
+          <span className="text-xs font-mono font-bold text-indigo-700 dark:text-indigo-300">
             {totalProgress}%
           </span>
         </div>
@@ -910,78 +910,78 @@ const CoverLetterPipelineVisualizer = ({
       {/* 3-Step Pipeline Flow Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 relative z-10">
         {/* Stage 1 */}
-        <div className={`p-3.5 sm:p-4 rounded-xl border transition-all duration-300 ${step1.active ? "bg-indigo-500/10 border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.15)]" : step1.done ? "bg-slate-900/60 border-emerald-500/30" : "bg-slate-950/40 border-white/5 opacity-60"}`}>
+        <div className={`p-3.5 sm:p-4 rounded-xl border transition-all duration-300 ${step1.active ? "bg-indigo-50 dark:bg-indigo-500/10 border-indigo-300 dark:border-indigo-500/40 shadow-sm dark:shadow-[0_0_15px_rgba(99,102,241,0.15)]" : step1.done ? "bg-emerald-50 dark:bg-slate-900/60 border-emerald-300 dark:border-emerald-500/30" : "bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-white/5 opacity-60"}`}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${step1.done ? "bg-emerald-500/20 text-emerald-400" : step1.active ? "bg-indigo-500/20 text-indigo-300 animate-pulse" : "bg-white/5 text-slate-500"}`}>
+              <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${step1.done ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : step1.active ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 animate-pulse" : "bg-slate-200 dark:bg-white/5 text-slate-500"}`}>
                 {step1.done ? "✓" : "1"}
               </span>
-              <span className="text-xs font-bold text-slate-200">Context Extraction</span>
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Context Extraction</span>
             </div>
-            <span className="text-[10px] font-mono text-slate-400">{step1.progress}%</span>
+            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">{step1.progress}%</span>
           </div>
-          <p className="text-[11px] text-slate-400 leading-tight mb-2">{step1.log}</p>
-          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-            <div className={`h-full transition-all duration-500 ${step1.done ? "bg-emerald-400" : "bg-indigo-500 animate-pulse"}`} style={{ width: `${step1.progress}%` }}></div>
+          <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-tight mb-2">{step1.log}</p>
+          <div className="h-1 w-full bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
+            <div className={`h-full transition-all duration-500 ${step1.done ? "bg-emerald-500 dark:bg-emerald-400" : "bg-indigo-500 animate-pulse"}`} style={{ width: `${step1.progress}%` }}></div>
           </div>
         </div>
 
         {/* Stage 2 */}
-        <div className={`p-3.5 sm:p-4 rounded-xl border transition-all duration-300 ${step2.active ? "bg-purple-500/10 border-purple-500/40 shadow-[0_0_15px_rgba(168,85,247,0.15)]" : step2.done ? "bg-slate-900/60 border-emerald-500/30" : "bg-slate-950/40 border-white/5 opacity-60"}`}>
+        <div className={`p-3.5 sm:p-4 rounded-xl border transition-all duration-300 ${step2.active ? "bg-purple-50 dark:bg-purple-500/10 border-purple-300 dark:border-purple-500/40 shadow-sm dark:shadow-[0_0_15px_rgba(168,85,247,0.15)]" : step2.done ? "bg-emerald-50 dark:bg-slate-900/60 border-emerald-300 dark:border-emerald-500/30" : "bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-white/5 opacity-60"}`}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${step2.done ? "bg-emerald-500/20 text-emerald-400" : step2.active ? "bg-purple-500/20 text-purple-300 animate-pulse" : "bg-white/5 text-slate-500"}`}>
+              <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${step2.done ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : step2.active ? "bg-purple-500/20 text-purple-600 dark:text-purple-300 animate-pulse" : "bg-slate-200 dark:bg-white/5 text-slate-500"}`}>
                 {step2.done ? "✓" : "2"}
               </span>
-              <span className="text-xs font-bold text-slate-200">Narrative Alignment</span>
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Narrative Alignment</span>
             </div>
-            <span className="text-[10px] font-mono text-slate-400">{step2.progress}%</span>
+            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">{step2.progress}%</span>
           </div>
-          <p className="text-[11px] text-slate-400 leading-tight mb-2">{step2.log}</p>
-          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-            <div className={`h-full transition-all duration-500 ${step2.done ? "bg-emerald-400" : "bg-purple-500 animate-pulse"}`} style={{ width: `${step2.progress}%` }}></div>
+          <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-tight mb-2">{step2.log}</p>
+          <div className="h-1 w-full bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
+            <div className={`h-full transition-all duration-500 ${step2.done ? "bg-emerald-500 dark:bg-emerald-400" : "bg-purple-500 animate-pulse"}`} style={{ width: `${step2.progress}%` }}></div>
           </div>
         </div>
 
         {/* Stage 3 */}
-        <div className={`p-3.5 sm:p-4 rounded-xl border transition-all duration-300 ${step3.active ? "bg-emerald-500/10 border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]" : step3.done ? "bg-slate-900/60 border-emerald-500/30" : "bg-slate-950/40 border-white/5 opacity-60"}`}>
+        <div className={`p-3.5 sm:p-4 rounded-xl border transition-all duration-300 ${step3.active ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/40 shadow-sm dark:shadow-[0_0_15px_rgba(16,185,129,0.15)]" : step3.done ? "bg-emerald-50 dark:bg-slate-900/60 border-emerald-300 dark:border-emerald-500/30" : "bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-white/5 opacity-60"}`}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${step3.done ? "bg-emerald-500/20 text-emerald-400" : step3.active ? "bg-emerald-500/20 text-emerald-300 animate-pulse" : "bg-white/5 text-slate-500"}`}>
+              <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${step3.done ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : step3.active ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 animate-pulse" : "bg-slate-200 dark:bg-white/5 text-slate-500"}`}>
                 {step3.done ? "✓" : "3"}
               </span>
-              <span className="text-xs font-bold text-slate-200">Letter Synthesis</span>
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Letter Synthesis</span>
             </div>
-            <span className="text-[10px] font-mono text-slate-400">{step3.progress}%</span>
+            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">{step3.progress}%</span>
           </div>
-          <p className="text-[11px] text-slate-400 leading-tight mb-2">{step3.log}</p>
-          <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-            <div className={`h-full transition-all duration-500 ${step3.done ? "bg-emerald-400" : "bg-emerald-500 animate-pulse"}`} style={{ width: `${step3.progress}%` }}></div>
+          <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-tight mb-2">{step3.log}</p>
+          <div className="h-1 w-full bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
+            <div className={`h-full transition-all duration-500 ${step3.done ? "bg-emerald-500 dark:bg-emerald-400" : "bg-emerald-500 animate-pulse"}`} style={{ width: `${step3.progress}%` }}></div>
           </div>
         </div>
       </div>
 
       {/* Holographic Document Laser-Scanning Preview Skeleton */}
-      <div className="relative w-full h-[150px] sm:h-[190px] bg-slate-950/60 border border-white/10 rounded-xl p-4 sm:p-5 overflow-hidden flex flex-col gap-3">
+      <div className="relative w-full h-[150px] sm:h-[190px] bg-slate-50/80 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 rounded-xl p-4 sm:p-5 overflow-hidden flex flex-col gap-3">
         {/* Sweeping Laser Beam */}
-        <div className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-indigo-400 to-transparent shadow-[0_0_12px_#818cf8] cl-laser-scan"></div>
+        <div className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-indigo-500 dark:via-indigo-400 to-transparent shadow-[0_0_12px_#818cf8] cl-laser-scan"></div>
 
         {/* Shimmering Skeletons */}
-        <div className="w-1/4 h-3 bg-white/10 rounded animate-pulse"></div>
-        <div className="w-1/3 h-2.5 bg-white/5 rounded animate-pulse"></div>
-        <div className="w-full h-[1px] bg-white/5 my-1"></div>
+        <div className="w-1/4 h-3 bg-slate-300/60 dark:bg-white/10 rounded animate-pulse"></div>
+        <div className="w-1/3 h-2.5 bg-slate-200/80 dark:bg-white/5 rounded animate-pulse"></div>
+        <div className="w-full h-[1px] bg-slate-200 dark:bg-white/5 my-1"></div>
         
         <div className="flex flex-col gap-2">
-          <div className="w-full h-2.5 bg-gradient-to-r from-white/10 via-white/5 to-white/10 rounded animate-pulse"></div>
-          <div className="w-[92%] h-2.5 bg-gradient-to-r from-white/10 via-white/5 to-white/10 rounded animate-pulse"></div>
-          <div className="w-[96%] h-2.5 bg-gradient-to-r from-white/10 via-white/5 to-white/10 rounded animate-pulse"></div>
-          <div className="w-[84%] h-2.5 bg-gradient-to-r from-white/10 via-white/5 to-white/10 rounded animate-pulse"></div>
+          <div className="w-full h-2.5 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 dark:from-white/10 dark:via-white/5 dark:to-white/10 rounded animate-pulse"></div>
+          <div className="w-[92%] h-2.5 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 dark:from-white/10 dark:via-white/5 dark:to-white/10 rounded animate-pulse"></div>
+          <div className="w-[96%] h-2.5 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 dark:from-white/10 dark:via-white/5 dark:to-white/10 rounded animate-pulse"></div>
+          <div className="w-[84%] h-2.5 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 dark:from-white/10 dark:via-white/5 dark:to-white/10 rounded animate-pulse"></div>
         </div>
 
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-950/40 backdrop-blur-[1px] p-3">
-          <div className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-slate-900/90 border border-indigo-500/30 flex items-center gap-2.5 sm:gap-3 shadow-xl backdrop-blur-md max-w-full">
-            <svg className="w-4 h-4 text-indigo-400 animate-spin shrink-0" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
-            <span className="text-[11px] sm:text-xs font-semibold text-slate-200 text-center truncate">
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/10 dark:bg-slate-950/40 backdrop-blur-[1px] p-3">
+          <div className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-white/95 dark:bg-slate-900/90 border border-slate-200 dark:border-indigo-500/30 flex items-center gap-2.5 sm:gap-3 shadow-xl backdrop-blur-md max-w-full">
+            <svg className="w-4 h-4 text-indigo-600 dark:text-indigo-400 animate-spin shrink-0" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
+            <span className="text-[11px] sm:text-xs font-semibold text-slate-800 dark:text-slate-200 text-center truncate">
               {ticks < 4 ? "Analyzing Job Profile & Candidate Achievements..." : ticks < 9 ? "Drafting Executive Value Proposition with Groq..." : "Finalizing ATS-Friendly Formatting & CTA..."}
             </span>
           </div>
@@ -1273,7 +1273,7 @@ const ParallelPipelineVisualizer = ({
   };
 
   return (
-    <div ref={containerRef} className="w-full mt-4 flex flex-col gap-3 sm:gap-4 p-4 sm:p-6 bg-slate-900/60 border border-white/10 rounded-2xl relative overflow-hidden backdrop-blur-xl">
+    <div ref={containerRef} className="w-full mt-4 flex flex-col gap-3 sm:gap-4 p-4 sm:p-6 bg-slate-50/90 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 rounded-2xl relative overflow-hidden backdrop-blur-xl transition-all duration-300">
       <style>{`
         .active-glow-summary { border-color: rgba(129, 140, 248, 0.5) !important; box-shadow: 0 0 15px rgba(129, 140, 248, 0.15); }
         .active-glow-experience { border-color: rgba(167, 139, 250, 0.5) !important; box-shadow: 0 0 15px rgba(167, 139, 250, 0.15); }
@@ -1286,15 +1286,15 @@ const ParallelPipelineVisualizer = ({
       {candidateName && (
         <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 mb-2 sm:mb-3 text-xs text-center">
           <span className="text-slate-500">Candidate:</span>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 font-bold max-w-full truncate">
-            <svg className="w-3 h-3 text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-bold max-w-full truncate">
+            <svg className="w-3 h-3 text-indigo-500 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
             <span className="truncate">{candidateName}</span>
           </span>
         </div>
       )}
 
       {/* Model tabs at the top */}
-      <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4 justify-center border-b border-white/5 pb-3 relative z-20">
+      <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4 justify-center border-b border-slate-200 dark:border-white/5 pb-3 relative z-20">
         {targetModels.map((model) => {
           const isSelected = model.id === selectedTab;
           const progressVal = Math.round(visualProgress[model.id] || 0);
@@ -1316,17 +1316,17 @@ const ParallelPipelineVisualizer = ({
                 }
               }}
               className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl border text-[11px] sm:text-xs font-semibold transition-all ${isSelected
-                ? 'bg-indigo-500/10 border-indigo-500 text-indigo-300'
-                : 'bg-white/5 border-white/10 text-slate-400 hover:text-slate-300'
+                ? 'bg-indigo-500/10 border-indigo-500 text-indigo-700 dark:text-indigo-300 shadow-sm'
+                : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300'
                 }`}
             >
               <img src={model.icon} alt="icon" className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded shrink-0" onError={(e) => e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>'} />
               <span className="truncate max-w-[120px] sm:max-w-none">{model.shortName || model.name}</span>
               <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.2 rounded-md ${isReady
-                ? 'bg-emerald-500/20 text-emerald-400 font-bold'
+                ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold'
                 : isError
-                  ? 'bg-red-500/20 text-red-400 font-bold'
-                  : 'bg-indigo-500/20 text-indigo-400 animate-pulse font-mono'
+                  ? 'bg-red-500/20 text-red-500 dark:text-red-400 font-bold'
+                  : 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 animate-pulse font-mono'
                 }`}>
                 {isReady ? "Ready" : isError ? "FAIL" : `${progressVal}%`}
               </span>
@@ -1337,14 +1337,14 @@ const ParallelPipelineVisualizer = ({
 
       {/* Pipeline View: Error Card or Flowchart Graph */}
       {isModelError ? (
-        <div className="w-full p-6 sm:p-12 bg-slate-950/80 border border-red-500/20 rounded-2xl flex flex-col items-center justify-center gap-3 sm:gap-4 relative overflow-hidden backdrop-blur-xl z-10 transition-all duration-500 text-center">
+        <div className="w-full p-6 sm:p-12 bg-white/90 dark:bg-slate-950/80 border border-red-500/20 rounded-2xl flex flex-col items-center justify-center gap-3 sm:gap-4 relative overflow-hidden backdrop-blur-xl z-10 transition-all duration-500 text-center">
           <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-1 sm:mb-2">
-            <svg className="w-6 h-6 sm:w-8 sm:h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <svg className="w-6 h-6 sm:w-8 sm:h-8 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
           </div>
-          <h3 className="text-lg sm:text-xl font-bold text-slate-200">
+          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-200">
             {targetModels.find((m: any) => m.id === selectedTab)?.shortName || "Model"} Execution Failed
           </h3>
-          <p className="text-xs sm:text-sm text-slate-400 max-w-md">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-md">
             {activeResult?.error || `The selected model encountered an error during resume tailoring (NVIDIA Rate Limit 429 or API timeout).`}
           </p>
         </div>
@@ -1365,8 +1365,8 @@ const ParallelPipelineVisualizer = ({
                 </defs>
 
                 {/* 1. Summary Traces and Sparkles */}
-                <path d={getPathD(coords.source, coords.summaryLeft)} fill="none" stroke={summary.ready || summary.done ? "rgba(129, 140, 248, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
-                <path d={getPathD(coords.summaryRight, coords.compile)} fill="none" stroke={summary.ready || summary.done ? "rgba(129, 140, 248, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+                <path d={getPathD(coords.source, coords.summaryLeft)} fill="none" stroke={summary.ready || summary.done ? "rgba(129, 140, 248, 0.4)" : "rgba(148, 163, 184, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
+                <path d={getPathD(coords.summaryRight, coords.compile)} fill="none" stroke={summary.ready || summary.done ? "rgba(129, 140, 248, 0.4)" : "rgba(148, 163, 184, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
                 {(!isFinished && pVal > 0) && (
                   <circle r="4.5" fill="#818cf8" filter="url(#sparkle-glow)">
                     <animateMotion
@@ -1389,8 +1389,8 @@ const ParallelPipelineVisualizer = ({
                 )}
 
                 {/* 2. Experience Traces and Sparkles */}
-                <path d={getPathD(coords.source, coords.experienceLeft)} fill="none" stroke={experience.ready || experience.done ? "rgba(167, 139, 250, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
-                <path d={getPathD(coords.experienceRight, coords.compile)} fill="none" stroke={experience.ready || experience.done ? "rgba(167, 139, 250, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+                <path d={getPathD(coords.source, coords.experienceLeft)} fill="none" stroke={experience.ready || experience.done ? "rgba(167, 139, 250, 0.4)" : "rgba(148, 163, 184, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
+                <path d={getPathD(coords.experienceRight, coords.compile)} fill="none" stroke={experience.ready || experience.done ? "rgba(167, 139, 250, 0.4)" : "rgba(148, 163, 184, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
                 {(!isFinished && pVal >= 20) && (
                   <circle r="4.5" fill="#c084fc" filter="url(#sparkle-glow)">
                     <animateMotion
@@ -1413,8 +1413,8 @@ const ParallelPipelineVisualizer = ({
                 )}
 
                 {/* 3. Projects Traces and Sparkles */}
-                <path d={getPathD(coords.source, coords.projectsLeft)} fill="none" stroke={projects.ready || projects.done ? "rgba(244, 114, 182, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
-                <path d={getPathD(coords.projectsRight, coords.compile)} fill="none" stroke={projects.ready || projects.done ? "rgba(244, 114, 182, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+                <path d={getPathD(coords.source, coords.projectsLeft)} fill="none" stroke={projects.ready || projects.done ? "rgba(244, 114, 182, 0.4)" : "rgba(148, 163, 184, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
+                <path d={getPathD(coords.projectsRight, coords.compile)} fill="none" stroke={projects.ready || projects.done ? "rgba(244, 114, 182, 0.4)" : "rgba(148, 163, 184, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
                 {(!isFinished && pVal >= 40) && (
                   <circle r="4.5" fill="#f472b6" filter="url(#sparkle-glow)">
                     <animateMotion
@@ -1437,8 +1437,8 @@ const ParallelPipelineVisualizer = ({
                 )}
 
                 {/* 4. Skills Traces and Sparkles */}
-                <path d={getPathD(coords.source, coords.skillsLeft)} fill="none" stroke={skills.ready || skills.done ? "rgba(45, 212, 191, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
-                <path d={getPathD(coords.skillsRight, coords.compile)} fill="none" stroke={skills.ready || skills.done ? "rgba(45, 212, 191, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+                <path d={getPathD(coords.source, coords.skillsLeft)} fill="none" stroke={skills.ready || skills.done ? "rgba(45, 212, 191, 0.4)" : "rgba(148, 163, 184, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
+                <path d={getPathD(coords.skillsRight, coords.compile)} fill="none" stroke={skills.ready || skills.done ? "rgba(45, 212, 191, 0.4)" : "rgba(148, 163, 184, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
                 {(!isFinished && pVal >= 60) && (
                   <circle r="4.5" fill="#2dd4bf" filter="url(#sparkle-glow)">
                     <animateMotion
@@ -1461,8 +1461,8 @@ const ParallelPipelineVisualizer = ({
                 )}
 
                 {/* 5. Match & Score Traces and Sparkles */}
-                <path d={getPathD(coords.source, coords.matchScoreLeft)} fill="none" stroke={matchScore.done ? "rgba(168, 85, 247, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
-                <path d={getPathD(coords.matchScoreRight, coords.compile)} fill="none" stroke={matchScore.done ? "rgba(168, 85, 247, 0.35)" : "rgba(255,255,255,0.04)"} strokeWidth="2.5" className="transition-colors duration-500" />
+                <path d={getPathD(coords.source, coords.matchScoreLeft)} fill="none" stroke={matchScore.done ? "rgba(168, 85, 247, 0.4)" : "rgba(148, 163, 184, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
+                <path d={getPathD(coords.matchScoreRight, coords.compile)} fill="none" stroke={matchScore.done ? "rgba(168, 85, 247, 0.4)" : "rgba(148, 163, 184, 0.15)"} strokeWidth="2.5" className="transition-colors duration-500" />
                 {(!isFinished && pVal >= 80) && (
                   <circle r="4.5" fill="#a855f7" filter="url(#sparkle-glow)">
                     <animateMotion
@@ -1480,15 +1480,15 @@ const ParallelPipelineVisualizer = ({
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 min-h-[auto] md:min-h-[500px] md:px-8 w-full">
             {/* 1. Source Node */}
             <div className="w-full md:w-[15%] max-w-full sm:max-w-[200px] flex flex-col items-center justify-center">
-              <div ref={sourceRef} className={`p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-white/10 flex flex-col items-center gap-2 text-center w-full max-w-[180px] sm:max-w-[160px] transition-all duration-500 ${!isFinished ? "border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.2)]" : "border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.05)]"}`}>
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${!isFinished ? "bg-indigo-500/20 text-indigo-400 animate-pulse" : "bg-emerald-500/20 text-emerald-400"}`}>
+              <div ref={sourceRef} className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-white/10 flex flex-col items-center gap-2 text-center w-full max-w-[180px] sm:max-w-[160px] transition-all duration-500 ${!isFinished ? "border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.2)]" : "border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.05)]"}`}>
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${!isFinished ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 animate-pulse" : "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"}`}>
                   {!isFinished ? (
                     <svg className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
                   ) : (
                     <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                   )}
                 </div>
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Data Source</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">Data Source</span>
                 <span className="text-[10px] text-slate-500 leading-tight">Resume & JD Loaded</span>
               </div>
             </div>
@@ -1496,115 +1496,115 @@ const ParallelPipelineVisualizer = ({
             {/* 2. Middle Parallel Branches */}
             <div className="w-full md:w-[45%] flex flex-col gap-2.5 sm:gap-3 px-0 sm:px-2">
               {/* Branch A: Summary */}
-              <div ref={summaryRef} className={`rounded-xl bg-slate-950/70 border overflow-hidden transition-all duration-300 ${summary.done ? "border-emerald-500/20" : summary.ready ? "border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.05)]" : summary.active ? "active-glow-summary" : "border-white/5"}`}>
+              <div ref={summaryRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 ${summary.done ? "border-emerald-500/20" : summary.ready ? "border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.05)]" : summary.active ? "active-glow-summary" : "border-slate-200 dark:border-white/5"}`}>
                 <div className="p-2.5 flex items-center justify-between">
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${summary.done ? "bg-emerald-500/25 text-emerald-400" : summary.ready ? "bg-indigo-500/25 text-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.2)]" : summary.active ? "bg-indigo-500/20 text-indigo-400" : "bg-white/5 text-slate-600"}`}>
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${summary.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : summary.ready ? "bg-indigo-500/25 text-indigo-600 dark:text-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.2)]" : summary.active ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400" : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600"}`}>
                       {summary.done || summary.ready ? "✓" : "A"}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className={`text-xs font-bold truncate ${summary.done ? "text-slate-200" : summary.ready ? "text-indigo-300" : summary.active ? "text-indigo-300" : "text-slate-200"}`}>Summary Tailoring</span>
-                      <span className={`text-[10px] truncate ${summary.ready ? "text-indigo-400/80" : "text-slate-500"}`}>{summary.log}</span>
+                      <span className={`text-xs font-bold truncate ${summary.done ? "text-slate-800 dark:text-slate-200" : summary.ready ? "text-indigo-600 dark:text-indigo-300" : summary.active ? "text-indigo-600 dark:text-indigo-300" : "text-slate-800 dark:text-slate-200"}`}>Summary Tailoring</span>
+                      <span className={`text-[10px] truncate ${summary.ready ? "text-indigo-600/80 dark:text-indigo-400/80" : "text-slate-500"}`}>{summary.log}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
                     {summary.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{summary.progress}%</span>}
-                    {summary.active && <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-ping"></span>}
-                    {summary.ready && !summary.done && <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 shadow-[0_0_4px_#818cf8]"></span>}
+                    {summary.active && <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-ping"></span>}
+                    {summary.ready && !summary.done && <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 shadow-[0_0_4px_#818cf8]"></span>}
                   </div>
                 </div>
-                <div className="h-[2px] w-full bg-white/5">
+                <div className="h-[2px] w-full bg-slate-100 dark:bg-white/5">
                   <div className={`h-full transition-all duration-700 ease-out ${summary.done ? "bg-emerald-500" : summary.ready ? "bg-indigo-400" : "bg-gradient-to-r from-indigo-500 to-purple-500"}`} style={{ width: `${summary.progress}%` }} />
                 </div>
               </div>
 
               {/* Branch B: Experience */}
-              <div ref={experienceRef} className={`rounded-xl bg-slate-950/70 border overflow-hidden transition-all duration-300 ${experience.done ? "border-emerald-500/20" : experience.ready ? "border-purple-500/30 shadow-[0_0_10px_rgba(167,139,250,0.05)]" : experience.active ? "active-glow-experience" : "border-white/5"}`}>
+              <div ref={experienceRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 ${experience.done ? "border-emerald-500/20" : experience.ready ? "border-purple-500/30 shadow-[0_0_10px_rgba(167,139,250,0.05)]" : experience.active ? "active-glow-experience" : "border-slate-200 dark:border-white/5"}`}>
                 <div className="p-2.5 flex items-center justify-between">
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${experience.done ? "bg-emerald-500/25 text-emerald-400" : experience.ready ? "bg-purple-500/25 text-purple-400 shadow-[0_0_8px_rgba(167,139,250,0.2)]" : experience.active ? "bg-purple-500/20 text-purple-400" : "bg-white/5 text-slate-600"}`}>
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${experience.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : experience.ready ? "bg-purple-500/25 text-purple-600 dark:text-purple-400 shadow-[0_0_8px_rgba(167,139,250,0.2)]" : experience.active ? "bg-purple-500/20 text-purple-600 dark:text-purple-400" : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600"}`}>
                       {experience.done || experience.ready ? "✓" : "B"}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className={`text-xs font-bold truncate ${experience.done ? "text-slate-200" : experience.ready ? "text-purple-300" : experience.active ? "text-purple-300" : "text-slate-200"}`}>Experience Alignment</span>
-                      <span className={`text-[10px] truncate ${experience.ready ? "text-purple-400/80" : "text-slate-500"}`}>{experience.log}</span>
+                      <span className={`text-xs font-bold truncate ${experience.done ? "text-slate-800 dark:text-slate-200" : experience.ready ? "text-purple-600 dark:text-purple-300" : experience.active ? "text-purple-600 dark:text-purple-300" : "text-slate-800 dark:text-slate-200"}`}>Experience Alignment</span>
+                      <span className={`text-[10px] truncate ${experience.ready ? "text-purple-600/80 dark:text-purple-400/80" : "text-slate-500"}`}>{experience.log}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
                     {experience.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{experience.progress}%</span>}
-                    {experience.active && <span className="h-1.5 w-1.5 rounded-full bg-purple-400 animate-ping"></span>}
-                    {experience.ready && !experience.done && <span className="h-1.5 w-1.5 rounded-full bg-purple-400 shadow-[0_0_4px_#a78bfa]"></span>}
+                    {experience.active && <span className="h-1.5 w-1.5 rounded-full bg-purple-500 dark:bg-purple-400 animate-ping"></span>}
+                    {experience.ready && !experience.done && <span className="h-1.5 w-1.5 rounded-full bg-purple-500 dark:bg-purple-400 shadow-[0_0_4px_#a78bfa]"></span>}
                   </div>
                 </div>
-                <div className="h-[2px] w-full bg-white/5">
+                <div className="h-[2px] w-full bg-slate-100 dark:bg-white/5">
                   <div className={`h-full transition-all duration-700 ease-out ${experience.done ? "bg-emerald-500" : experience.ready ? "bg-purple-400" : "bg-gradient-to-r from-purple-500 to-pink-500"}`} style={{ width: `${experience.progress}%` }} />
                 </div>
               </div>
 
               {/* Branch C: Projects */}
-              <div ref={projectsRef} className={`rounded-xl bg-slate-950/70 border overflow-hidden transition-all duration-300 ${projects.done ? "border-emerald-500/20" : projects.ready ? "border-pink-500/30 shadow-[0_0_10px_rgba(244,114,182,0.05)]" : projects.active ? "active-glow-projects" : "border-white/5"}`}>
+              <div ref={projectsRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 ${projects.done ? "border-emerald-500/20" : projects.ready ? "border-pink-500/30 shadow-[0_0_10px_rgba(244,114,182,0.05)]" : projects.active ? "active-glow-projects" : "border-slate-200 dark:border-white/5"}`}>
                 <div className="p-2.5 flex items-center justify-between">
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${projects.done ? "bg-emerald-500/25 text-emerald-400" : projects.ready ? "bg-pink-500/25 text-pink-400 shadow-[0_0_8px_rgba(244,114,182,0.2)]" : projects.active ? "bg-pink-500/20 text-pink-400" : "bg-white/5 text-slate-600"}`}>
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${projects.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : projects.ready ? "bg-pink-500/25 text-pink-600 dark:text-pink-400 shadow-[0_0_8px_rgba(244,114,182,0.2)]" : projects.active ? "bg-pink-500/20 text-pink-600 dark:text-pink-400" : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600"}`}>
                       {projects.done || projects.ready ? "✓" : "C"}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className={`text-xs font-bold truncate ${projects.done ? "text-slate-200" : projects.ready ? "text-pink-300" : projects.active ? "text-pink-300" : "text-slate-200"}`}>Project Optimization</span>
-                      <span className={`text-[10px] truncate ${projects.ready ? "text-pink-400/80" : "text-slate-500"}`}>{projects.log}</span>
+                      <span className={`text-xs font-bold truncate ${projects.done ? "text-slate-800 dark:text-slate-200" : projects.ready ? "text-pink-600 dark:text-pink-300" : projects.active ? "text-pink-600 dark:text-pink-300" : "text-slate-800 dark:text-slate-200"}`}>Project Optimization</span>
+                      <span className={`text-[10px] truncate ${projects.ready ? "text-pink-600/80 dark:text-pink-400/80" : "text-slate-500"}`}>{projects.log}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
                     {projects.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{projects.progress}%</span>}
-                    {projects.active && <span className="h-1.5 w-1.5 rounded-full bg-pink-400 animate-ping"></span>}
-                    {projects.ready && !projects.done && <span className="h-1.5 w-1.5 rounded-full bg-pink-400 shadow-[0_0_4px_#f472b6]"></span>}
+                    {projects.active && <span className="h-1.5 w-1.5 rounded-full bg-pink-500 dark:bg-pink-400 animate-ping"></span>}
+                    {projects.ready && !projects.done && <span className="h-1.5 w-1.5 rounded-full bg-pink-500 dark:bg-pink-400 shadow-[0_0_4px_#f472b6]"></span>}
                   </div>
                 </div>
-                <div className="h-[2px] w-full bg-white/5">
+                <div className="h-[2px] w-full bg-slate-100 dark:bg-white/5">
                   <div className={`h-full transition-all duration-700 ease-out ${projects.done ? "bg-emerald-500" : projects.ready ? "bg-pink-400" : "bg-gradient-to-r from-pink-500 to-rose-500"}`} style={{ width: `${projects.progress}%` }} />
                 </div>
               </div>
 
               {/* Branch D: Skills */}
-              <div ref={skillsRef} className={`rounded-xl bg-slate-950/70 border overflow-hidden transition-all duration-300 ${skills.done ? "border-emerald-500/20" : skills.ready ? "border-teal-500/30 shadow-[0_0_10px_rgba(45,212,191,0.05)]" : skills.active ? "active-glow-skills" : "border-white/5"}`}>
+              <div ref={skillsRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 ${skills.done ? "border-emerald-500/20" : skills.ready ? "border-teal-500/30 shadow-[0_0_10px_rgba(45,212,191,0.05)]" : skills.active ? "active-glow-skills" : "border-slate-200 dark:border-white/5"}`}>
                 <div className="p-2.5 flex items-center justify-between">
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${skills.done ? "bg-emerald-500/25 text-emerald-400" : skills.ready ? "bg-teal-500/25 text-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.2)]" : skills.active ? "bg-teal-500/20 text-teal-400" : "bg-white/5 text-slate-600"}`}>
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${skills.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : skills.ready ? "bg-teal-500/25 text-teal-600 dark:text-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.2)]" : skills.active ? "bg-teal-500/20 text-teal-600 dark:text-teal-400" : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600"}`}>
                       {skills.done || skills.ready ? "✓" : "D"}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className={`text-xs font-bold truncate ${skills.done ? "text-slate-200" : skills.ready ? "text-teal-300" : skills.active ? "text-teal-300" : "text-slate-200"}`}>Skills Prioritization</span>
-                      <span className={`text-[10px] truncate ${skills.ready ? "text-teal-400/80" : "text-slate-500"}`}>{skills.log}</span>
+                      <span className={`text-xs font-bold truncate ${skills.done ? "text-slate-800 dark:text-slate-200" : skills.ready ? "text-teal-600 dark:text-teal-300" : skills.active ? "text-teal-600 dark:text-teal-300" : "text-slate-800 dark:text-slate-200"}`}>Skills Prioritization</span>
+                      <span className={`text-[10px] truncate ${skills.ready ? "text-teal-600/80 dark:text-teal-400/80" : "text-slate-500"}`}>{skills.log}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
                     {skills.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{skills.progress}%</span>}
-                    {skills.active && <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-ping"></span>}
-                    {skills.ready && !skills.done && <span className="h-1.5 w-1.5 rounded-full bg-teal-400 shadow-[0_0_4px_#2dd4bf]"></span>}
+                    {skills.active && <span className="h-1.5 w-1.5 rounded-full bg-teal-500 dark:bg-teal-400 animate-ping"></span>}
+                    {skills.ready && !skills.done && <span className="h-1.5 w-1.5 rounded-full bg-teal-500 dark:bg-teal-400 shadow-[0_0_4px_#2dd4bf]"></span>}
                   </div>
                 </div>
-                <div className="h-[2px] w-full bg-white/5">
+                <div className="h-[2px] w-full bg-slate-100 dark:bg-white/5">
                   <div className={`h-full transition-all duration-700 ease-out ${skills.done ? "bg-emerald-500" : skills.ready ? "bg-teal-400" : "bg-gradient-to-r from-teal-500 to-emerald-500"}`} style={{ width: `${skills.progress}%` }} />
                 </div>
               </div>
 
               {/* Branch E: Match & Score */}
-              <div ref={matchScoreRef} className={`rounded-xl bg-slate-950/70 border overflow-hidden transition-all duration-300 ${matchScore.done ? "border-emerald-500/20" : matchScore.active ? "active-glow-matchScore" : "border-white/5"}`}>
+              <div ref={matchScoreRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 ${matchScore.done ? "border-emerald-500/20" : matchScore.active ? "active-glow-matchScore" : "border-slate-200 dark:border-white/5"}`}>
                 <div className="p-2.5 flex items-center justify-between">
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${matchScore.done ? "bg-emerald-500/25 text-emerald-400" : matchScore.active ? "bg-purple-500/25 text-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.2)]" : "bg-white/5 text-slate-600"}`}>
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${matchScore.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : matchScore.active ? "bg-purple-500/25 text-purple-600 dark:text-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.2)]" : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600"}`}>
                       {matchScore.done ? "✓" : "E"}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className={`text-xs font-bold truncate ${matchScore.done ? "text-slate-200" : matchScore.active ? "text-purple-300" : "text-slate-200"}`}>Match & Score Analysis</span>
-                      <span className={`text-[10px] truncate ${matchScore.active ? "text-purple-400/80" : "text-slate-500"}`}>{matchScore.log}</span>
+                      <span className={`text-xs font-bold truncate ${matchScore.done ? "text-slate-800 dark:text-slate-200" : matchScore.active ? "text-purple-600 dark:text-purple-300" : "text-slate-800 dark:text-slate-200"}`}>Match & Score Analysis</span>
+                      <span className={`text-[10px] truncate ${matchScore.active ? "text-purple-600/80 dark:text-purple-400/80" : "text-slate-500"}`}>{matchScore.log}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
                     {matchScore.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{matchScore.progress}%</span>}
-                    {matchScore.active && !matchScore.done && <span className="h-1.5 w-1.5 rounded-full bg-purple-400 animate-ping"></span>}
+                    {matchScore.active && !matchScore.done && <span className="h-1.5 w-1.5 rounded-full bg-purple-500 dark:bg-purple-400 animate-ping"></span>}
                   </div>
                 </div>
-                <div className="h-[2px] w-full bg-white/5">
+                <div className="h-[2px] w-full bg-slate-100 dark:bg-white/5">
                   <div className={`h-full transition-all duration-700 ease-out ${matchScore.done ? "bg-emerald-500" : "bg-gradient-to-r from-purple-500 to-pink-500"}`} style={{ width: `${matchScore.progress}%` }} />
                 </div>
               </div>
@@ -1613,8 +1613,8 @@ const ParallelPipelineVisualizer = ({
 
             {/* 3. Output Node */}
             <div className="w-full md:w-[15%] max-w-full sm:max-w-[200px] flex flex-col items-center justify-center">
-              <div ref={compileRef} className={`p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-white/10 flex flex-col items-center gap-2 text-center w-full max-w-[180px] sm:max-w-[160px] transition-all duration-500 ${isModelError ? "border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.2)]" : isCompiling ? "border-pink-500/50 shadow-[0_0_20px_rgba(244,114,182,0.2)]" : (isFinished || pVal === 100) ? "border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "opacity-40"}`}>
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${isModelError ? "bg-red-500/20 text-red-400" : isCompiling ? "bg-pink-500/20 text-pink-400" : (isFinished || pVal === 100) ? "bg-emerald-500/20 text-emerald-400" : "bg-white/5 text-slate-500"}`}>
+              <div ref={compileRef} className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-white/10 flex flex-col items-center gap-2 text-center w-full max-w-[180px] sm:max-w-[160px] transition-all duration-500 ${isModelError ? "border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.2)]" : isCompiling ? "border-pink-500/50 shadow-[0_0_20px_rgba(244,114,182,0.2)]" : (isFinished || pVal === 100) ? "border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "opacity-40"}`}>
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${isModelError ? "bg-red-500/20 text-red-600 dark:text-red-400" : isCompiling ? "bg-pink-500/20 text-pink-600 dark:text-pink-400" : (isFinished || pVal === 100) ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-slate-100 dark:bg-white/5 text-slate-500"}`}>
                   {isModelError ? (
                     <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                   ) : isCompiling ? (
@@ -1623,7 +1623,7 @@ const ParallelPipelineVisualizer = ({
                     <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H20" /></svg>
                   )}
                 </div>
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-300">PDF Compile</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">PDF Compile</span>
                 <span className="text-[10px] text-slate-500 leading-tight">
                   {isModelError ? "Generation Failed" : isCompiling ? "Compiling LaTeX..." : (isFinished || pVal === 100) ? "Ready to Compile" : "Awaiting Merges"}
                 </span>
@@ -1637,6 +1637,30 @@ const ParallelPipelineVisualizer = ({
 };
 
 export default function Home() {
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("rt_theme") as "dark" | "light" | null;
+      const initialTheme = saved || (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+      setTheme(initialTheme);
+      document.documentElement.classList.toggle("dark", initialTheme === "dark");
+    } catch {
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    try {
+      localStorage.setItem("rt_theme", next);
+    } catch {
+      // ignore
+    }
+    document.documentElement.classList.toggle("dark", next === "dark");
+  };
+
   const [activeTab, setActiveTab] = useState<"file" | "latex">("file");
   const [file, setFile] = useState<File | null>(null);
   const [jdText, setJdText] = useState("");
@@ -2472,20 +2496,43 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-radial from-[#121324] via-[#090a10] to-[#040408] text-slate-100 font-sans antialiased">
+    <div className="min-h-screen flex flex-col justify-between bg-slate-100 dark:bg-radial dark:from-[#121324] dark:via-[#090a10] dark:to-[#040408] text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
       {/* Navbar */}
       <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
             <span className="font-bold text-base sm:text-lg text-white tracking-wider">RT</span>
           </div>
-          <span className="font-bold text-lg sm:text-xl tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
+          <span className="font-bold text-lg sm:text-xl tracking-tight bg-gradient-to-r from-slate-900 via-slate-700 to-indigo-600 dark:from-white dark:via-slate-200 dark:to-indigo-300 bg-clip-text text-transparent">
             Resume Tailor
           </span>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/10 shadow-sm transition-all cursor-pointer"
+            aria-label="Toggle theme"
+            title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+          >
+            {theme === "dark" ? (
+              <>
+                <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <span className="hidden sm:inline">Light</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4 text-indigo-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+                <span className="hidden sm:inline">Dark</span>
+              </>
+            )}
+          </button>
+          <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
             API Live
           </span>
         </div>
@@ -2494,19 +2541,19 @@ export default function Home() {
       {/* Main Hero & Tool */}
       <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-12 flex flex-col items-center">
         <div className="text-center mb-6 sm:mb-10">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-3 sm:mb-4 bg-gradient-to-b from-white to-slate-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-3 sm:mb-4 bg-gradient-to-b from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
             Perfect LaTeX Resumes,{" "}
             <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-500 bg-clip-text text-transparent">
               Zero Code.
             </span>
           </h1>
-          <p className="text-sm sm:text-base md:text-lg text-slate-400 max-w-2xl mx-auto px-2">
+          <p className="text-sm sm:text-base md:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto px-2">
             Upload your resume, paste the job description, and instantly download a 1-page, beautifully formatted ATS-friendly PDF.
           </p>
         </div>
 
         {/* Generator Tool */}
-        <div className="w-full max-w-4xl bg-white/5 border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 backdrop-blur-xl shadow-2xl">
+        <div className="w-full max-w-4xl bg-white/95 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 backdrop-blur-xl shadow-xl dark:shadow-2xl transition-all">
           <div className="flex flex-col gap-4 sm:gap-6">
 
             {/* GitHub Skill Bank Card */}
@@ -2520,18 +2567,18 @@ export default function Home() {
             />
 
             {/* Input Method Tabs */}
-            <div className="grid grid-cols-2 sm:flex sm:gap-4 border-b border-white/10 pb-2 gap-2">
+            <div className="grid grid-cols-2 sm:flex sm:gap-4 border-b border-slate-200 dark:border-white/10 pb-2 gap-2">
               <button
                 type="button"
                 onClick={() => { setActiveTab("file"); handleReset(false); }}
-                className={`py-2 px-2 sm:px-4 font-semibold text-xs sm:text-sm border-b-2 text-center transition-all ${activeTab === "file" ? "border-indigo-500 text-indigo-400" : "border-transparent text-slate-400 hover:text-slate-300"}`}
+                className={`py-2 px-2 sm:px-4 font-semibold text-xs sm:text-sm border-b-2 text-center transition-all ${activeTab === "file" ? "border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400" : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-300"}`}
               >
                 Tailor Resume (File + JD)
               </button>
               <button
                 type="button"
                 onClick={() => { setActiveTab("latex"); handleReset(false); }}
-                className={`py-2 px-2 sm:px-4 font-semibold text-xs sm:text-sm border-b-2 text-center transition-all ${activeTab === "latex" ? "border-indigo-500 text-indigo-400" : "border-transparent text-slate-400 hover:text-slate-300"}`}
+                className={`py-2 px-2 sm:px-4 font-semibold text-xs sm:text-sm border-b-2 text-center transition-all ${activeTab === "latex" ? "border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400" : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-300"}`}
               >
                 Compile LaTeX Directly
               </button>
@@ -2540,32 +2587,32 @@ export default function Home() {
             {activeTab === "file" ? (
               <div className="flex flex-col gap-4 sm:gap-6">
                 <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-slate-300 mb-2">1. Upload Base Resume (PDF/DOCX)</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">1. Upload Base Resume (PDF/DOCX)</label>
                   <div className="relative">
                     <input
                       key={fileKey}
                       type="file"
                       accept=".pdf,.docx"
                       onChange={handleFileChange}
-                      className="block w-full text-xs sm:text-sm text-slate-400
+                      className="block w-full text-xs sm:text-sm text-slate-600 dark:text-slate-400
                         file:mr-3 sm:file:mr-4 file:py-2.5 sm:file:py-3 file:px-4 sm:file:px-6
                         file:rounded-xl file:border-0
                         file:text-xs sm:file:text-sm file:font-semibold
-                        file:bg-indigo-500/10 file:text-indigo-400
-                        hover:file:bg-indigo-500/20 file:transition-colors
-                        cursor-pointer bg-white/5 rounded-xl border border-white/10 focus:outline-none focus:border-indigo-500/50"
+                        file:bg-indigo-50 dark:file:bg-indigo-500/10 file:text-indigo-600 dark:file:text-indigo-400
+                        hover:file:bg-indigo-100 dark:hover:file:bg-indigo-500/20 file:transition-colors
+                        cursor-pointer bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-300 dark:border-white/10 focus:outline-none focus:border-indigo-500/50"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-slate-300 mb-2">2. Paste Job Description</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">2. Paste Job Description</label>
                   <textarea
                     value={jdText}
                     onChange={(e) => handleJdChange(e.target.value)}
                     onPaste={() => triggerWarmup(isAutoRun ? undefined : primaryModel)}
                     placeholder="Paste the target job description here..."
                     rows={6}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3.5 sm:p-4 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-xs sm:text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"
                   ></textarea>
                 </div>
               </div>
@@ -2573,17 +2620,17 @@ export default function Home() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {/* LaTeX Input / Saved Card */}
                 {latexText && !isEditingLatex ? (
-                  <div className="flex flex-col gap-2.5 sm:gap-3 p-4 sm:p-5 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 backdrop-blur-md">
+                  <div className="flex flex-col gap-2.5 sm:gap-3 p-4 sm:p-5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-500/5 border border-emerald-200 dark:border-emerald-500/20 backdrop-blur-md">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
-                        <span className="text-xs sm:text-sm font-semibold text-emerald-300">Base LaTeX Code Saved</span>
+                        <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></div>
+                        <span className="text-xs sm:text-sm font-semibold text-emerald-700 dark:text-emerald-300">Base LaTeX Code Saved</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => setIsEditingLatex(true)}
-                          className="text-xs bg-white/10 hover:bg-white/20 text-slate-200 px-2.5 sm:px-3 py-1.5 rounded-lg border border-white/10 transition-all flex items-center gap-1.5"
+                          className="text-xs bg-white dark:bg-white/10 hover:bg-slate-100 dark:hover:bg-white/20 text-slate-700 dark:text-slate-200 px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-300 dark:border-white/10 transition-all flex items-center gap-1.5 shadow-sm"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -2593,33 +2640,33 @@ export default function Home() {
                         <button
                           type="button"
                           onClick={() => handleLatexChange("")}
-                          className="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 transition-colors"
+                          className="text-xs text-rose-500 dark:text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 px-2 py-1 transition-colors"
                         >
                           Clear
                         </button>
                       </div>
                     </div>
 
-                    <div className="text-[11px] sm:text-xs text-slate-400 font-mono flex flex-wrap items-center gap-2 sm:gap-3">
+                    <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-mono flex flex-wrap items-center gap-2 sm:gap-3">
                       <span>{latexText.length} characters</span>
                       <span>•</span>
                       <span className="truncate">Candidate: {extractCandidateNameFromLatex(latexText) || "LaTeX Document"}</span>
                     </div>
 
-                    <div className="bg-black/30 rounded-xl p-3 font-mono text-[11px] text-slate-300 max-h-24 overflow-hidden relative border border-white/5">
+                    <div className="bg-slate-900/90 dark:bg-black/30 rounded-xl p-3 font-mono text-[11px] text-slate-200 dark:text-slate-300 max-h-24 overflow-hidden relative border border-slate-200 dark:border-white/5">
                       {latexText.split('\n').slice(0, 4).join('\n')}
-                      <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-black/80 to-transparent"></div>
+                      <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-slate-900/90 dark:from-black/80 to-transparent"></div>
                     </div>
                   </div>
                 ) : (
                   <div className="flex flex-col">
                     <div className="flex justify-between items-end mb-2 min-h-[24px]">
-                      <label className="block text-xs sm:text-sm font-semibold text-slate-300">1. Paste Base LaTeX Code</label>
+                      <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">1. Paste Base LaTeX Code</label>
                       {latexText && (
                         <button
                           type="button"
                           onClick={() => setIsEditingLatex(false)}
-                          className="text-xs text-indigo-400 hover:text-indigo-300 underline"
+                          className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 underline"
                         >
                           Done Editing
                         </button>
@@ -2630,24 +2677,24 @@ export default function Home() {
                       onChange={(e) => handleLatexChange(e.target.value)}
                       placeholder="Paste your raw LaTeX resume code here..."
                       rows={10}
-                      className="w-full flex-1 bg-white/5 border border-white/10 rounded-xl p-3.5 sm:p-4 text-slate-200 placeholder-slate-500 font-mono text-xs sm:text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-y min-h-[180px] md:min-h-[300px]"
+                      className="w-full flex-1 bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 font-mono text-xs sm:text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-y min-h-[180px] md:min-h-[300px]"
                     ></textarea>
                   </div>
                 )}
 
                 {/* Job Description Input / Saved Card */}
                 {jdText && !isEditingJd ? (
-                  <div className="flex flex-col gap-2.5 sm:gap-3 p-4 sm:p-5 rounded-2xl bg-indigo-500/5 border border-indigo-500/20 backdrop-blur-md">
+                  <div className="flex flex-col gap-2.5 sm:gap-3 p-4 sm:p-5 rounded-2xl bg-indigo-50/80 dark:bg-indigo-500/5 border border-indigo-200 dark:border-indigo-500/20 backdrop-blur-md">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="h-2.5 w-2.5 rounded-full bg-indigo-400 animate-pulse"></div>
-                        <span className="text-xs sm:text-sm font-semibold text-indigo-300">Target Job Description Saved</span>
+                        <div className="h-2.5 w-2.5 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-pulse"></div>
+                        <span className="text-xs sm:text-sm font-semibold text-indigo-700 dark:text-indigo-300">Target Job Description Saved</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => setIsEditingJd(true)}
-                          className="text-xs bg-white/10 hover:bg-white/20 text-slate-200 px-2.5 sm:px-3 py-1.5 rounded-lg border border-white/10 transition-all flex items-center gap-1.5"
+                          className="text-xs bg-white dark:bg-white/10 hover:bg-slate-100 dark:hover:bg-white/20 text-slate-700 dark:text-slate-200 px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-300 dark:border-white/10 transition-all flex items-center gap-1.5 shadow-sm"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -2657,33 +2704,33 @@ export default function Home() {
                         <button
                           type="button"
                           onClick={() => handleJdChange("")}
-                          className="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 transition-colors"
+                          className="text-xs text-rose-500 dark:text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 px-2 py-1 transition-colors"
                         >
                           Clear
                         </button>
                       </div>
                     </div>
 
-                    <div className="text-[11px] sm:text-xs text-slate-400 font-mono flex flex-wrap items-center gap-2 sm:gap-3">
+                    <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-mono flex flex-wrap items-center gap-2 sm:gap-3">
                       <span>{jdText.length} characters</span>
                       <span>•</span>
                       <span>{jdText.split(/\s+/).filter(Boolean).length} words</span>
                     </div>
 
-                    <div className="bg-black/30 rounded-xl p-3 font-sans text-[11px] text-slate-300 max-h-24 overflow-hidden relative border border-white/5">
+                    <div className="bg-slate-900/90 dark:bg-black/30 rounded-xl p-3 font-sans text-[11px] text-slate-200 dark:text-slate-300 max-h-24 overflow-hidden relative border border-slate-200 dark:border-white/5">
                       {jdText.slice(0, 200)}...
-                      <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-black/80 to-transparent"></div>
+                      <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-slate-900/90 dark:from-black/80 to-transparent"></div>
                     </div>
                   </div>
                 ) : (
                   <div className="flex flex-col">
                     <div className="flex justify-between items-end mb-2 min-h-[24px]">
-                      <label className="block text-xs sm:text-sm font-semibold text-slate-300">2. Paste Job Description</label>
+                      <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">2. Paste Job Description</label>
                       {jdText && (
                         <button
                           type="button"
                           onClick={() => setIsEditingJd(false)}
-                          className="text-xs text-indigo-400 hover:text-indigo-300 underline"
+                          className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 underline"
                         >
                           Done Editing
                         </button>
@@ -2695,7 +2742,7 @@ export default function Home() {
                       onPaste={() => triggerWarmup(isAutoRun ? undefined : primaryModel)}
                       placeholder="Paste the target job description here..."
                       rows={10}
-                      className="w-full flex-1 bg-white/5 border border-white/10 rounded-xl p-3.5 sm:p-4 text-slate-200 placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-y min-h-[180px] md:min-h-[300px]"
+                      className="w-full flex-1 bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-y min-h-[180px] md:min-h-[300px]"
                     ></textarea>
                   </div>
                 )}
@@ -2704,7 +2751,7 @@ export default function Home() {
 
             {/* Always Visible: AI Model Selection and Run Mode */}
             <div>
-              <label className="block text-xs sm:text-sm font-semibold text-slate-300 mb-2">3. Execution Mode</label>
+              <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">3. Execution Mode</label>
 
               <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-4 mb-4">
                 <button
@@ -2716,7 +2763,7 @@ export default function Home() {
                       triggerWarmup();
                     }
                   }}
-                  className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center justify-center gap-2 ${isAutoRun ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'}`}
+                  className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center justify-center gap-2 ${isAutoRun ? 'bg-indigo-50 dark:bg-indigo-500/20 border-indigo-400 dark:border-indigo-500/50 text-indigo-700 dark:text-indigo-300 shadow-sm dark:shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'bg-white dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/10'}`}
                 >
                   <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                   <span>Auto Run (All {RESUME_MODELS.length} Models)</span>
@@ -2730,7 +2777,7 @@ export default function Home() {
                       triggerWarmup(primaryModel);
                     }
                   }}
-                  className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center justify-center gap-2 ${!isAutoRun ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'}`}
+                  className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center justify-center gap-2 ${!isAutoRun ? 'bg-emerald-50 dark:bg-emerald-500/20 border-emerald-400 dark:border-emerald-500/50 text-emerald-700 dark:text-emerald-300 shadow-sm dark:shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'bg-white dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/10'}`}
                 >
                   <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
                   <span>Manual Run (Selected Model)</span>
@@ -2755,12 +2802,12 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-4 animate-in fade-in slide-in-from-top-4 duration-300">
-                  <div className="p-3 sm:p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 text-slate-300 text-xs flex items-center justify-between">
+                  <div className="p-3 sm:p-4 rounded-xl bg-indigo-50/80 dark:bg-indigo-500/5 border border-indigo-200 dark:border-indigo-500/10 text-slate-700 dark:text-slate-300 text-xs flex items-center justify-between">
                     <span className="flex items-center gap-2">
-                      <svg className="w-4 h-4 text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                      <svg className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                       Parallel tailoring using all models with dynamic ATS scoring
                     </span>
-                    <span className="font-mono text-[10px] bg-indigo-500/10 text-indigo-300 px-2 py-0.5 rounded border border-indigo-500/20 shrink-0">
+                    <span className="font-mono text-[10px] bg-indigo-100 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded border border-indigo-300 dark:border-indigo-500/20 shrink-0 font-bold">
                       PARALLEL MODE
                     </span>
                   </div>
@@ -2796,7 +2843,7 @@ export default function Home() {
               {tailoredResumes.length > 0 && (
                 <div className="flex flex-col items-center gap-4 sm:gap-6 w-full mt-4">
                   {status === "success" && (
-                    <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs sm:text-sm font-medium text-center w-full">
+                    <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs sm:text-sm font-medium text-center w-full">
                       Success! Tailored {tailoredResumes.length === 1 ? 'resume' : 'resumes'} generated using {tailoredResumes.length} {tailoredResumes.length === 1 ? 'model' : 'models'} and analyzed by ATS Scoring Engine.
                     </div>
                   )}
@@ -2808,22 +2855,22 @@ export default function Home() {
                       return (
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3">
                           <div>
-                            <h3 className="text-base sm:text-lg font-bold text-slate-200 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-200 flex flex-wrap items-center gap-1.5 sm:gap-2">
                               <span>ATS Match Leaderboard</span>
                               {displayCandidate && (
-                                <span className="text-indigo-400 font-normal text-sm sm:text-base">• {displayCandidate}</span>
+                                <span className="text-indigo-600 dark:text-indigo-400 font-normal text-sm sm:text-base">• {displayCandidate}</span>
                               )}
                             </h3>
-                            <p className="text-[11px] sm:text-xs text-slate-400">
+                            <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400">
                               {status === "success"
                                 ? "Click any model below to preview its ATS report and download its PDF."
                                 : "Models are tailoring in parallel. You can click any finished model below to compile and download its resume immediately."}
                             </p>
                           </div>
                           {displayCandidate && (
-                            <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 self-start sm:self-auto shrink-0">
-                              <svg className="w-3.5 h-3.5 text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                              <span className="truncate">Candidate: <strong className="text-white">{displayCandidate}</strong></span>
+                            <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/20 self-start sm:self-auto shrink-0">
+                              <svg className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                              <span className="truncate">Candidate: <strong className="text-slate-900 dark:text-white">{displayCandidate}</strong></span>
                             </div>
                           )}
                         </div>
@@ -2838,41 +2885,41 @@ export default function Home() {
                         const cardCandidate = result.candidateName || extractCandidateNameFromLatex(latexText) || "Candidate";
 
                         const scoreColor = hasError
-                          ? "text-red-400 border-red-500/30 bg-red-500/5"
+                          ? "text-red-500 dark:text-red-400 border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/5"
                           : result.score >= 85
-                            ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/5"
+                            ? "text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/5"
                             : result.score >= 70
-                              ? "text-yellow-400 border-yellow-500/30 bg-yellow-500/5"
-                              : "text-red-400 border-red-500/30 bg-red-500/5";
+                              ? "text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-500/30 bg-yellow-50 dark:bg-yellow-500/5"
+                              : "text-red-500 dark:text-red-400 border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-500/5";
 
                         return (
                           <div
                             key={result.modelId}
                             onClick={() => handleSelectModel(idx)}
                             className={`flex flex-col gap-2.5 p-3.5 sm:p-4 rounded-xl border cursor-pointer transition-all ${isSelected
-                              ? 'border-indigo-500 bg-indigo-500/10 shadow-lg shadow-indigo-500/10 scale-[1.02]'
+                              ? 'border-indigo-500 bg-indigo-50/80 dark:bg-indigo-500/10 shadow-lg shadow-indigo-500/10 scale-[1.02]'
                               : hasError
-                                ? 'border-red-500/10 bg-red-500/5 opacity-60 hover:opacity-100 hover:bg-red-500/10'
-                                : 'border-white/10 bg-white/5 hover:bg-white/10'
+                                ? 'border-red-200 dark:border-red-500/10 bg-red-50 dark:bg-red-500/5 opacity-70 hover:opacity-100 hover:bg-red-100 dark:hover:bg-red-500/10'
+                                : 'border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 shadow-sm'
                               }`}
                           >
                             <div className="flex justify-between items-center">
-                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rank {idx + 1}</span>
+                              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Rank {idx + 1}</span>
                               {hasError ? (
                                 <div className="flex items-center gap-1">
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-red-500/10 text-red-400 border border-red-500/20 font-bold">FAIL</span>
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 font-bold">FAIL</span>
                                   <button
                                     type="button"
                                     onClick={(e) => handleRetryModel(e, result.modelId, idx)}
                                     disabled={retryingModels.has(result.modelId)}
-                                    className="text-[9px] px-1.5 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/40 transition-colors font-bold disabled:opacity-50"
+                                    className="text-[9px] px-1.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 hover:bg-indigo-100 dark:hover:bg-indigo-500/40 transition-colors font-bold disabled:opacity-50"
                                     title="Retry this model"
                                   >
                                     {retryingModels.has(result.modelId) ? "..." : "RETRY"}
                                   </button>
                                 </div>
                               ) : (
-                                <span className={`text-[10px] px-1.5 py-0.5 rounded-md border font-mono ${scoreColor}`}>
+                                <span className={`text-[10px] px-1.5 py-0.5 rounded-md border font-mono font-bold ${scoreColor}`}>
                                   {result.score}%
                                 </span>
                               )}
@@ -2880,30 +2927,30 @@ export default function Home() {
 
                             {/* Candidate Name before resume model */}
                             <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
-                              <svg className="w-3.5 h-3.5 text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                              <span className="text-xs font-bold text-slate-100 truncate" title={cardCandidate}>
+                              <svg className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                              <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate" title={cardCandidate}>
                                 {cardCandidate}
                               </span>
                             </div>
 
                             <div className="flex items-center gap-2 min-w-0">
                               <img src={ALL_MODELS.find(m => m.id === result.modelId)?.icon} className="w-3.5 h-3.5 rounded shrink-0" onError={(e) => e.currentTarget.style.display = 'none'} />
-                              <span className="text-[11px] font-medium text-slate-400 truncate">
+                              <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 truncate">
                                 {ALL_MODELS.find(m => m.id === result.modelId)?.shortName || result.modelName}
                               </span>
                             </div>
 
                             {!hasError && (
-                              <div className="flex flex-col gap-1 mt-1 border-t border-white/5 pt-2 text-[10px]">
+                              <div className="flex flex-col gap-1 mt-1 border-t border-slate-200 dark:border-white/5 pt-2 text-[10px]">
                                 <div className="flex justify-between">
                                   <span className="text-slate-500">Length check:</span>
-                                  <span className={result.lengthCheck.status === "fit" ? "text-emerald-400 font-bold" : "text-amber-400 font-bold"}>
+                                  <span className={result.lengthCheck.status === "fit" ? "text-emerald-600 dark:text-emerald-400 font-bold" : "text-amber-600 dark:text-amber-400 font-bold"}>
                                     {result.lengthCheck.status === "fit" ? "Fit" : "Over"}
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
                                   <span className="text-slate-500">Characters:</span>
-                                  <span className="text-slate-300 font-mono">{result.lengthCheck.length} / {result.lengthCheck.maxLength}</span>
+                                  <span className="text-slate-700 dark:text-slate-300 font-mono">{result.lengthCheck.length} / {result.lengthCheck.maxLength}</span>
                                 </div>
                               </div>
                             )}
@@ -2920,15 +2967,15 @@ export default function Home() {
 
                       if (activeResult.error) {
                         return (
-                          <div className="p-4 sm:p-6 bg-red-500/5 border border-red-500/10 rounded-2xl flex flex-col gap-3 sm:gap-4 relative overflow-hidden">
-                            <div className="flex items-center gap-3 text-red-400">
+                          <div className="p-4 sm:p-6 bg-red-50 dark:bg-red-500/5 border border-red-200 dark:border-red-500/10 rounded-2xl flex flex-col gap-3 sm:gap-4 relative overflow-hidden">
+                            <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
                               <svg className="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                               <h4 className="font-bold text-sm sm:text-base truncate">Model Execution Failed ({activeResult.modelName})</h4>
                             </div>
-                            <p className="text-xs sm:text-sm text-slate-300">
+                            <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300">
                               This model failed to generate a tailored resume due to an API error or rate limit exhaustion:
                             </p>
-                            <div className="p-3.5 sm:p-4 bg-black/40 rounded-xl font-mono text-xs text-red-300 border border-red-500/10 break-words">
+                            <div className="p-3.5 sm:p-4 bg-slate-900 dark:bg-black/40 rounded-xl font-mono text-xs text-red-400 dark:text-red-300 border border-red-200 dark:border-red-500/10 break-words">
                               {activeResult.error}
                             </div>
                             <p className="text-xs text-slate-500 leading-relaxed">
@@ -2939,22 +2986,22 @@ export default function Home() {
                       }
 
                       return (
-                        <div className="p-4 sm:p-6 bg-slate-900/60 border border-white/10 rounded-2xl flex flex-col md:flex-row gap-4 sm:gap-6 relative overflow-hidden">
+                        <div className="p-4 sm:p-6 bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 rounded-2xl flex flex-col md:flex-row gap-4 sm:gap-6 relative overflow-hidden shadow-lg">
                           {/* Left Panel: Score and Compile status */}
-                          <div className="flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-white/10 pb-4 sm:pb-6 md:pb-0 md:pr-6 min-w-0 md:min-w-[200px]">
+                          <div className="flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-slate-200 dark:border-white/10 pb-4 sm:pb-6 md:pb-0 md:pr-6 min-w-0 md:min-w-[200px]">
                             {/* Candidate Badge on Scorecard */}
-                            <div className="flex items-center gap-1.5 mb-2 px-2.5 sm:px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full max-w-full">
-                              <svg className="w-3.5 h-3.5 text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                              <span className="text-xs font-bold text-indigo-200 truncate max-w-[150px]" title={activeCandidate}>
+                            <div className="flex items-center gap-1.5 mb-2 px-2.5 sm:px-3 py-1 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-full max-w-full">
+                              <svg className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                              <span className="text-xs font-bold text-indigo-700 dark:text-indigo-200 truncate max-w-[150px]" title={activeCandidate}>
                                 {activeCandidate}
                               </span>
                             </div>
 
-                            <span className="text-[10px] text-slate-400 uppercase font-semibold mb-1">ATS Match Score</span>
-                            <div className={`text-4xl sm:text-5xl font-black mb-1 ${activeResult.score >= 85 ? 'text-emerald-400' : activeResult.score >= 70 ? 'text-yellow-400' : 'text-red-400'}`}>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-semibold mb-1">ATS Match Score</span>
+                            <div className={`text-4xl sm:text-5xl font-black mb-1 ${activeResult.score >= 85 ? 'text-emerald-600 dark:text-emerald-400' : activeResult.score >= 70 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}>
                               {activeResult.score}%
                             </div>
-                            <span className="text-xs font-medium text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 sm:px-3 py-0.5 rounded-full text-center max-w-full truncate mb-3 sm:mb-4">
+                            <span className="text-xs font-medium text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 px-2.5 sm:px-3 py-0.5 rounded-full text-center max-w-full truncate mb-3 sm:mb-4 font-semibold">
                               {activeResult.modelName}
                             </span>
 
@@ -2962,7 +3009,7 @@ export default function Home() {
                             {isCompilingSelected ? (
                               <div className="flex flex-col items-center gap-2 mt-2">
                                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500"></div>
-                                <span className="text-xs text-slate-400">Compiling PDF...</span>
+                                <span className="text-xs text-slate-500 dark:text-slate-400">Compiling PDF...</span>
                               </div>
                             ) : pdfUrl ? (
                               <div className="flex flex-col gap-2 sm:gap-2.5 w-full mt-1">
@@ -2970,14 +3017,14 @@ export default function Home() {
                                   href={pdfUrl || undefined}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="px-4 sm:px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center w-full min-h-[42px] flex items-center justify-center"
+                                  className="px-4 sm:px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center w-full min-h-[42px] flex items-center justify-center"
                                 >
                                   View PDF
                                 </a>
                                 <a
                                   href={pdfUrl || undefined}
                                   download={downloadName}
-                                  className="px-4 sm:px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-center w-full min-h-[42px] flex items-center justify-center"
+                                  className="px-4 sm:px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-center w-full min-h-[42px] flex items-center justify-center"
                                 >
                                   Download PDF
                                 </a>
@@ -2986,7 +3033,7 @@ export default function Home() {
                               <button
                                 type="button"
                                 onClick={() => compilePdfForIndex(selectedResultIndex, tailoredResumes)}
-                                className="px-4 sm:px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center w-full min-h-[42px] flex items-center justify-center"
+                                className="px-4 sm:px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center w-full min-h-[42px] flex items-center justify-center cursor-pointer"
                               >
                                 Compile PDF
                               </button>
@@ -2996,21 +3043,21 @@ export default function Home() {
                           {/* Right Panel: ATS Feedback */}
                           <div className="flex-1 flex flex-col gap-3 sm:gap-4">
                             <div>
-                              <h4 className="text-xs sm:text-sm font-bold text-slate-300">ATS Feedback Reasoning</h4>
-                              <p className="text-xs sm:text-sm text-slate-400 mt-1 leading-relaxed">{activeResult.reasoning}</p>
+                              <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-300">ATS Feedback Reasoning</h4>
+                              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{activeResult.reasoning}</p>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-2">
                               {/* Matched Keywords */}
                               <div>
-                                <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5 mb-2">
+                                <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 mb-2">
                                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
                                   Matched Keywords ({activeResult.matchedKeywords.length})
                                 </span>
                                 <div className="flex flex-wrap gap-1.5">
                                   {activeResult.matchedKeywords.length > 0 ? (
                                     activeResult.matchedKeywords.map((kw: string) => (
-                                      <span key={kw} className="text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                                      <span key={kw} className="text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 px-2 py-0.5 rounded-md">
                                         {kw}
                                       </span>
                                     ))
@@ -3022,14 +3069,14 @@ export default function Home() {
 
                               {/* Missing Keywords */}
                               <div>
-                                <span className="text-xs font-semibold text-amber-400 flex items-center gap-1.5 mb-2">
+                                <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1.5 mb-2">
                                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                                   Areas for Improvement ({activeResult.missingKeywords.length})
                                 </span>
                                 <div className="flex flex-wrap gap-1.5">
                                   {activeResult.missingKeywords.length > 0 ? (
                                     activeResult.missingKeywords.map((kw: string) => (
-                                      <span key={kw} className="text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-md">
+                                      <span key={kw} className="text-[10px] font-semibold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 px-2 py-0.5 rounded-md">
                                         {kw}
                                       </span>
                                     ))
@@ -3050,14 +3097,14 @@ export default function Home() {
                       type="button"
                       onClick={handleGenerate}
                       disabled={["parsing", "tailoring", "compiling"].includes(status)}
-                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-xs sm:text-sm rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-center"
+                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-xs sm:text-sm rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-center cursor-pointer"
                     >
                       Regenerate
                     </button>
                     <button
                       type="button"
                       onClick={() => handleReset(true)}
-                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm rounded-xl transition-all text-center cursor-pointer"
+                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-800 dark:text-white font-bold text-xs sm:text-sm rounded-xl transition-all text-center cursor-pointer shadow-sm"
                     >
                       Clear All
                     </button>
@@ -3068,7 +3115,7 @@ export default function Home() {
               {/* Single Model (File Flow) Success View */}
               {status === "success" && tailoredResumes.length === 0 && (
                 <div className="flex flex-col items-center gap-4 sm:gap-6 w-full mt-4">
-                  <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs sm:text-sm font-medium text-center w-full">
+                  <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs sm:text-sm font-medium text-center w-full">
                     Success! Your resume has been tailored and compiled successfully.
                   </div>
 
@@ -3077,28 +3124,28 @@ export default function Home() {
                       href={pdfUrl || undefined}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center"
+                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center"
                     >
                       View PDF
                     </a>
                     <a
                       href={pdfUrl || undefined}
                       download={downloadName}
-                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-center"
+                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-center"
                     >
                       Download PDF
                     </a>
                     <button
                       type="button"
                       onClick={handleGenerate}
-                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center"
+                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center cursor-pointer"
                     >
                       Regenerate
                     </button>
                     <button
                       type="button"
                       onClick={() => handleReset(true)}
-                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-bold rounded-xl transition-all text-center cursor-pointer"
+                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-800 dark:text-white text-xs sm:text-sm font-bold rounded-xl transition-all text-center cursor-pointer shadow-sm"
                     >
                       Clear All
                     </button>
@@ -3113,7 +3160,7 @@ export default function Home() {
                     type="button"
                     onClick={handleGenerate}
                     disabled={["parsing", "tailoring", "compiling"].includes(status)}
-                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-center"
+                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-center cursor-pointer"
                   >
                     {["parsing", "tailoring", "compiling"].includes(status) ? "Processing..." : "Generate Tailored PDF"}
                   </button>
@@ -3121,7 +3168,7 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => handleReset(true)}
-                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs sm:text-sm font-bold rounded-xl transition-all text-center cursor-pointer"
+                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 text-slate-800 dark:text-white text-xs sm:text-sm font-bold rounded-xl transition-all text-center cursor-pointer shadow-sm"
                     >
                       Clear All
                     </button>
@@ -3133,20 +3180,20 @@ export default function Home() {
           </div>
 
           {/* Cover Letter Generator Section */}
-          <div className="w-full mt-6 sm:mt-8 p-4 sm:p-6 bg-slate-900/40 border border-white/5 rounded-2xl sm:rounded-3xl relative overflow-hidden flex flex-col gap-4 sm:gap-6">
-            <h2 className="text-lg sm:text-xl font-black tracking-tight text-white flex items-center gap-2">
-              <svg className="w-5 h-5 text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" /></svg>
+          <div className="w-full mt-6 sm:mt-8 p-4 sm:p-6 bg-slate-50/90 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 rounded-2xl sm:rounded-3xl relative overflow-hidden flex flex-col gap-4 sm:gap-6 shadow-md">
+            <h2 className="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+              <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" /></svg>
               <span>Cover Letter Generator</span>
             </h2>
 
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Cover Letter Job Description</label>
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-400 uppercase tracking-wider">Cover Letter Job Description</label>
               <textarea
                 value={clJdText}
                 onChange={(e) => setClJdText(e.target.value)}
                 placeholder="Paste the Job Description specifically for your Cover Letter here..."
                 rows={4}
-                className="w-full bg-slate-950/50 border border-white/10 rounded-xl p-3.5 sm:p-4 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 resize-y"
+                className="w-full bg-white dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-xs sm:text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 resize-y"
               ></textarea>
             </div>
 
@@ -3164,7 +3211,7 @@ export default function Home() {
                 type="button"
                 onClick={handleGenerateCoverLetter}
                 disabled={isGeneratingCL || !clJdText || (!latexText && !file)}
-                className="w-full sm:w-auto px-5 sm:px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-5 sm:px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isGeneratingCL ? (
                   <><svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg> <span>Generating...</span></>
@@ -3173,7 +3220,7 @@ export default function Home() {
             </div>
 
             {clError && (
-              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-2.5 sm:gap-3 text-red-400">
+              <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl flex items-start gap-2.5 sm:gap-3 text-red-600 dark:text-red-400">
                 <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                 <div className="flex flex-col">
                   <span className="text-xs sm:text-sm font-semibold">Generation Error</span>
@@ -3192,11 +3239,11 @@ export default function Home() {
 
             <div className="flex flex-col gap-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
                   <span>Cover Letter Content</span>
                   {coverLetter && !isGeneratingCL && (
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-mono lowercase flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-mono lowercase flex items-center gap-1 font-semibold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400"></span>
                       ready ({coverLetter.trim().split(/\s+/).filter(Boolean).length} words)
                     </span>
                   )}
@@ -3205,12 +3252,12 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={handleCopyCoverLetter}
-                    className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     {hasCopiedCL ? (
                       <>
-                        <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                        <span className="text-emerald-400">Copied!</span>
+                        <svg className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        <span className="text-emerald-600 dark:text-emerald-400">Copied!</span>
                       </>
                     ) : (
                       <>
@@ -3226,7 +3273,7 @@ export default function Home() {
                 onChange={(e) => setCoverLetter(e.target.value)}
                 placeholder="Your generated cover letter will appear here. You can manually edit it before downloading."
                 rows={10}
-                className="w-full bg-slate-950/50 border border-white/10 rounded-xl p-3.5 sm:p-4 text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 font-mono leading-relaxed resize-y min-h-[180px] sm:min-h-[260px]"
+                className="w-full bg-white dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-xs sm:text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 font-mono leading-relaxed resize-y min-h-[180px] sm:min-h-[260px]"
               ></textarea>
             </div>
 
@@ -3235,12 +3282,12 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={handleCopyCoverLetter}
-                  className="w-full sm:w-auto px-5 sm:px-6 py-2.5 bg-white/10 hover:bg-white/15 text-white text-xs sm:text-sm font-bold rounded-xl transition-all border border-white/10 flex items-center justify-center gap-2 cursor-pointer min-h-[42px]"
+                  className="w-full sm:w-auto px-5 sm:px-6 py-2.5 bg-white dark:bg-white/10 hover:bg-slate-100 dark:hover:bg-white/15 text-slate-800 dark:text-white text-xs sm:text-sm font-bold rounded-xl transition-all border border-slate-300 dark:border-white/10 flex items-center justify-center gap-2 cursor-pointer min-h-[42px] shadow-sm"
                 >
                   {hasCopiedCL ? (
                     <>
-                      <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                      <span className="text-emerald-400">Copied to Clipboard!</span>
+                      <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      <span className="text-emerald-600 dark:text-emerald-400">Copied to Clipboard!</span>
                     </>
                   ) : (
                     <>
@@ -3254,7 +3301,7 @@ export default function Home() {
                 type="button"
                 onClick={handleDownloadCoverLetterTXT}
                 disabled={!coverLetter || isGeneratingCL}
-                className="w-full sm:w-auto px-5 sm:px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer min-h-[42px]"
+                className="w-full sm:w-auto px-5 sm:px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer min-h-[42px]"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                 <span>Download TXT</span>
@@ -3263,7 +3310,7 @@ export default function Home() {
                 type="button"
                 onClick={handleDownloadCoverLetterPDF}
                 disabled={!coverLetter || isGeneratingCL}
-                className="w-full sm:w-auto px-5 sm:px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer min-h-[42px]"
+                className="w-full sm:w-auto px-5 sm:px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer min-h-[42px]"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                 <span>Download PDF</span>
@@ -3274,7 +3321,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-xs text-slate-500 text-center sm:text-left">
+      <footer className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 border-t border-slate-200 dark:border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-xs text-slate-500 dark:text-slate-500 text-center sm:text-left">
         <p>&copy; {new Date().getFullYear()} Resume Tailor. All rights reserved.</p>
         <div className="flex gap-4 sm:gap-6">
           <span>Powered by Multi-Provider AI & LaTeX.</span>
