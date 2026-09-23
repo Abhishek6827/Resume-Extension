@@ -1032,7 +1032,7 @@ const ParallelPipelineVisualizer = ({
     if (tailoredResumes && tailoredResumes[selectedResultIndex]) {
       setSelectedTab(tailoredResumes[selectedResultIndex].modelId);
     }
-  }, [selectedResultIndex, tailoredResumes]);
+  }, [selectedResultIndex, status]);
 
   const [visualProgress, setVisualProgress] = useState<{ [key: string]: number }>(() => {
     const state: { [key: string]: number } = {};
@@ -1216,7 +1216,7 @@ const ParallelPipelineVisualizer = ({
   const pVal = visualProgress[selectedTab] || 0;
   const isFinished = status === "success";
   const isCompiling = status === "compiling";
-  const activeResult = tailoredResumes.find(r => r.modelId === selectedTab) || tailoredResumes[selectedResultIndex];
+  const activeResult = tailoredResumes.find(r => r.modelId === selectedTab);
   const isModelError = visualPhases[selectedTab] === "Error" || visualPhases[selectedTab] === "Failed" || !!activeResult?.error;
 
   const isNodeSuccess = (visualPhases[selectedTab] === "Ready" || pVal === 100 || status === "success") && activeResult && !activeResult.error;
