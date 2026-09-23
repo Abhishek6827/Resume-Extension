@@ -5,7 +5,7 @@
 //   - nvidia/nemotron-3-ultra-550b-a55b (Quality / 550B)
 //   - deepseek-ai/deepseek-v4-pro-0813 (Quality / DeepSeek V4)
 // Groq:
-//   - qwen/qwen3.6-27b (Fast / Cover Letter)
+//   - qwen/qwen3.8-27b (Fast / Cover Letter)
 //   - openai/gpt-oss-120b (Quality / Cover Letter)
 
 import OpenAI from "openai";
@@ -43,7 +43,7 @@ export function extractJSON(text: string): string {
   if (jsonMatch) {
     return jsonMatch[0].replace(/,\s*([\}\]])/g, "$1");
   }
-  
+
   const firstBrace = cleaned.indexOf("{");
   if (firstBrace !== -1) {
     let str = cleaned.substring(firstBrace);

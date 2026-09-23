@@ -15,7 +15,7 @@ const RESUME_MODELS = [
 
 const COVER_LETTER_MODELS = [
   { id: "groq:openai/gpt-oss-120b", name: "GPT-OSS 120B (Groq)", shortName: "Groq GPT-OSS", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" },
-  { id: "groq:qwen/qwen3.6-27b", name: "Qwen 3.6 27B (Groq)", shortName: "Groq Qwen 3.6", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" },
+  { id: "groq:qwen/qwen3.8-27b", name: "Qwen 3.8 27B (Groq)", shortName: "Groq Qwen 3.8", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" },
 
 ];
 
@@ -970,7 +970,7 @@ const CoverLetterPipelineVisualizer = ({
         <div className="w-1/4 h-3 bg-slate-300/60 dark:bg-white/10 rounded animate-pulse"></div>
         <div className="w-1/3 h-2.5 bg-slate-200/80 dark:bg-white/5 rounded animate-pulse"></div>
         <div className="w-full h-[1px] bg-slate-200 dark:bg-white/5 my-1"></div>
-        
+
         <div className="flex flex-col gap-2">
           <div className="w-full h-2.5 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 dark:from-white/10 dark:via-white/5 dark:to-white/10 rounded animate-pulse"></div>
           <div className="w-[92%] h-2.5 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 dark:from-white/10 dark:via-white/5 dark:to-white/10 rounded animate-pulse"></div>
