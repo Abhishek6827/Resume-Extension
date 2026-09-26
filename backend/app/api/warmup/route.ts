@@ -8,7 +8,7 @@ const WARMUP_MODELS = [
   { id: "nvidia/nemotron-3-super-120b-a12b", name: "Nemotron 120B" },
   { id: "moonshotai/kimi-k3", name: "Kimi K3" },
   { id: "nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B" },
-  { id: "deepseek-ai/deepseek-v4-pro-0813", name: "DeepSeek V4 Pro" },
+  { id: "deepseek-ai/deepseek-v4.1-flash", name: "DeepSeek V4 Flash" },
 ];
 
 export async function OPTIONS(request: NextRequest) {
