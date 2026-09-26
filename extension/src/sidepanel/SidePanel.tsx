@@ -353,6 +353,8 @@ export default function SidePanel() {
         scoreReasoning: score.scoreReasoning,
         matchedKeywords: score.matchedKeywords,
         missingKeywords: score.missingKeywords,
+        redFlags: score.redFlags || [],
+        skimVerdict: score.skimVerdict || "",
         jobTitle: parsedJD.jobTitle,
         company: parsedJD.company,
       };
@@ -654,6 +656,8 @@ export default function SidePanel() {
       score,
       matchedKeywords: matched,
       missingKeywords: missing,
+      redFlags: tailoredResult.redFlags || [],
+      skimVerdict: tailoredResult.skimVerdict || "",
     };
   }, [tailoredResult]);
 
@@ -861,6 +865,12 @@ export default function SidePanel() {
                   <div>
                     <h3 className="text-xs font-bold mb-1 text-gray-900">ATS Compatibility Score</h3>
                     <p className="text-[10px] text-gray-500 line-clamp-3">{tailoredResult.scoreReasoning}</p>
+                    {dynamicStats.skimVerdict && (
+                      <div className="mt-1.5 p-1.5 rounded-lg bg-indigo-50 border border-indigo-200 flex items-start gap-1.5">
+                        <span className="text-[9px] font-bold text-indigo-700 shrink-0">10s Skim:</span>
+                        <span className="text-[9px] text-indigo-900 font-medium leading-tight">{dynamicStats.skimVerdict}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -892,6 +902,22 @@ export default function SidePanel() {
                           <span key={i} className="px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 text-[10px] font-medium border border-amber-200">
                             {kw}
                           </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {dynamicStats.redFlags && dynamicStats.redFlags.length > 0 && (
+                    <div>
+                      <h4 className="text-[10px] font-bold uppercase text-rose-500 mb-1 flex items-center gap-1">
+                        <AlertTriangle size={10} className="text-rose-500" />
+                        10-Second Red Flags ({dynamicStats.redFlags.length})
+                      </h4>
+                      <div className="flex flex-col gap-1">
+                        {dynamicStats.redFlags.map((flag, i) => (
+                          <div key={i} className="px-2 py-1 rounded-md bg-rose-50 text-rose-700 text-[10px] font-medium border border-rose-200 flex items-start gap-1">
+                            <span className="text-rose-500 shrink-0 font-bold">•</span>
+                            <span className="leading-tight">{flag}</span>
+                          </div>
                         ))}
                       </div>
                     </div>

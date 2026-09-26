@@ -79,6 +79,8 @@ export interface ScoreResult {
   scoreReasoning: string;
   matchedKeywords: string[];
   missingKeywords: string[];
+  redFlags?: string[];
+  skimVerdict?: string;
 }
 
 export interface TailoredResult {
@@ -88,6 +90,8 @@ export interface TailoredResult {
   scoreReasoning: string;
   matchedKeywords: string[];
   missingKeywords: string[];
+  redFlags?: string[];
+  skimVerdict?: string;
   jobTitle?: string;
   company?: string;
 }

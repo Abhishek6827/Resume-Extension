@@ -78,6 +78,8 @@ export interface TailoredResult {
   scoreReasoning: string;
   matchedKeywords: string[];
   missingKeywords: string[];
+  redFlags?: string[];
+  skimVerdict?: string;
   jobTitle?: string;
   company?: string;
 }
@@ -87,4 +89,6 @@ export interface ScoreResult {
   scoreReasoning: string;
   matchedKeywords: string[];
   missingKeywords: string[];
+  redFlags?: string[];
+  skimVerdict?: string;
 }

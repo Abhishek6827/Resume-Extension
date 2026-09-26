@@ -493,18 +493,29 @@ export async function scoreResumeWithAI(
   jd: JDData,
   modelSelection?: ModelSelection
 ): Promise<ScoreResult> {
-  const systemPrompt = `You are an expert ATS (Applicant Tracking System) specialist.
+  const companyName = jd?.company ? `for ${jd.company}` : "for this target company";
+  const targetRole = jd?.jobTitle ? `for the ${jd.jobTitle} position` : "";
+
+  const systemPrompt = `You are an expert ATS specialist and senior technical recruiter ${companyName} reviewing candidates ${targetRole}.
+Imagine reviewing 200 resumes in one sitting with under 10 seconds per resume.
 Your goal is to evaluate a candidate's resume against a Job Description (JD).
 
-CRITICAL KEYWORD RULE:
-- Do NOT list version-specific variants (e.g., "Java 8", "Java 17", "Java 21", "Python 3") in "missingKeywords" if the core base skill/technology (e.g. "Java", "Python") is already present/matched in the candidate's resume.
+CRITICAL EVALUATION RULES:
+1. HARD TECHNICAL SKILLS ONLY: "missingKeywords" must ONLY contain fundamentally missing programming languages, technical frameworks, databases, or specific developer tools (e.g. Docker, Kubernetes, GraphQL, Go).
+2. NEVER INCLUDE SOFT TRAITS / GENERIC QUALITIES: Do NOT list generic English descriptors (such as "Accuracy", "Clarity", "Technical Reasoning", "Software Defects", "Maintainability", "Attention to Detail") in "missingKeywords".
+3. NO VERSION DUPLICATES: Do NOT list version-specific variants (e.g., "Java 8", "Java 17", "Java 21", "Python 3") in "missingKeywords" if the core base skill/technology is present.
+4. TOP 5 MISSING KEYWORDS ONLY: Strictly limit "missingKeywords" to the top 5 highest-priority technical requirements that are completely missing.
+5. TOP RED FLAGS (10-SECOND RECRUITER SKIM): Identify 1-3 instant red flags that a hiring manager reviewing 200 resumes would spot in under 10 seconds (e.g. unquantified bullets, vague responsibilities, buzzwords without architectural depth, or passive voice). If no major red flags exist, return an empty array [].
+6. RECRUITER 10-SECOND SKIM VERDICT: In 1 punchy sentence, state whether this resume "stops the scroll" or which specific section/bullet risks getting skipped by a fast-scanning hiring manager.
 
 Return ONLY a valid JSON object matching this exact structure:
 {
   "atsScore": "Estimate a realistic ATS score (0-100)",
   "scoreReasoning": "Brief constructive reasoning for the score",
+  "skimVerdict": "1 punchy sentence on whether it stops the scroll or risks being skipped",
   "matchedKeywords": ["Keywords from JD present in resume"],
-  "missingKeywords": ["Keywords from JD missing from resume"]
+  "missingKeywords": ["Top 5 critical keywords from JD missing from resume"],
+  "redFlags": ["Top 1-3 instant red flags spotted in 10-second skim"]
 }
 `;
 
@@ -519,12 +530,18 @@ Return ONLY a valid JSON object matching this exact structure:
     const parsed = JSON.parse(jsonStr) as ScoreResult;
     const matched = Array.isArray(parsed.matchedKeywords) ? parsed.matchedKeywords : [];
     const missing = Array.isArray(parsed.missingKeywords) ? parsed.missingKeywords : [];
-    const sanitizedMissing = sanitizeMissingKeywords(missing, matched);
+    const redFlags = Array.isArray(parsed.redFlags) ? parsed.redFlags : [];
+    const skimVerdict = typeof parsed.skimVerdict === "string" && parsed.skimVerdict.trim().length > 0
+      ? parsed.skimVerdict.trim()
+      : "Strong technical alignment stops the recruiter's scroll.";
+    const sanitizedMissing = sanitizeMissingKeywords(missing, matched).slice(0, 5);
 
     return {
       ...parsed,
       matchedKeywords: matched,
       missingKeywords: sanitizedMissing,
+      redFlags,
+      skimVerdict,
     };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -575,12 +592,20 @@ export async function tailorExperienceWithAI(
   const keywords = Array.isArray(jd.keywords) ? jd.keywords : [];
   const allJdRequirements = Array.from(new Set([...mustHave, ...niceToHave, ...keywords])).filter(Boolean);
 
-  const systemPrompt = `You are an expert technical recruiter and senior software engineer. Rewrite the candidate's Work Experience bullet points to align deeply with the target Job Description while maintaining senior-level credibility.
+  const systemPrompt = `You are an expert technical recruiter and hiring manager reviewing 200 resumes in one sitting.
+Rewrite the candidate's Work Experience bullet points to align deeply with the target Job Description, eliminate instant red flags, and stop the recruiter's scroll within 10 seconds.
 
 CRITICAL MANDATORY INSTRUCTIONS:
-1. ABSOLUTE BAN ON ROBOTIC / META PHRASING:
+1. MANDATORY GOOGLE XYZ FORMULA & SCROLL-STOPPING BULLETS:
+   - Structure bullets strictly as: Accomplished [X], as measured by [Y], by doing [Z].
+   - Front-load the technical outcome [X] and metric [Y] in the first half of the line so a fast-skimming recruiter immediately sees the impact instead of skipping.
+   - Example: "Reduced p99 API latency from 850ms to 420ms by implementing Redis caching and composite indexing", "Scaled event processing pipeline to 10k+ RPS by refactoring legacy services into asynchronous worker pools".
+   - NATURAL KEYWORD EMBEDDING: Weave target JD keywords naturally into the engineering mechanism [Z]. Never keyword-stuff with trailing buzzword lists (e.g. no ", using Docker, AWS, Git").
+
+2. ABSOLUTE BAN ON ROBOTIC / META PHRASING & RED FLAGS:
    - NEVER write meta-descriptions like "applied Data Structures, Algorithms for...", "conducted task estimation", "practiced Agile/Scrum ceremonies", "demonstrating OOPS", or list software concepts as awkward trailing clauses.
-   - Express engineering depth through authentic technical actions, concrete architecture, and measurable outcomes (e.g. "Optimized high-traffic query latency from 850ms to 550ms by adding composite indexing and query caching", "Architected idempotent webhook event pipeline cutting failure detection from 20m to 3m").
+   - Eliminate vague duties ("responsible for...", "worked on...", "assisted team"). Every bullet must demonstrate senior engineering ownership.
+   - Express engineering depth through authentic technical actions, concrete architecture, and measurable outcomes.
 
 2. CAREER CREDIBILITY & ARCHITECTURAL REALISM:
    - Keep historical company work authentic. Do NOT completely swap the core language/database of established past employers (e.g., do not turn a past Node.js/Postgres startup job into ASP.NET/SQL Server).
@@ -838,8 +863,10 @@ export async function tailorResume(
       tailoredResume,
       atsScore: scoreResult.atsScore ?? 80,
       scoreReasoning: scoreResult.scoreReasoning ?? "Good match",
+      skimVerdict: scoreResult.skimVerdict ?? "Strong technical alignment stops the recruiter's scroll.",
       matchedKeywords: scoreResult.matchedKeywords ?? [],
       missingKeywords: scoreResult.missingKeywords ?? [],
+      redFlags: scoreResult.redFlags ?? [],
       changes,
     };
   } catch (err: unknown) {

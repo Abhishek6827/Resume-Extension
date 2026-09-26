@@ -113,41 +113,57 @@ function fallbackKeywordEvaluation(latex: string, jdData: any) {
   return {
     score,
     reasoning: `Matches ${matched.length} core job competencies (${matched.slice(0, 3).join(', ')}...). ATS alignment is solid.`,
+    skimVerdict: "Clean visual layout and strong technical alignment stop the recruiter's scroll.",
     matchedKeywords: matched,
-    missingKeywords: sanitizedMissing
+    missingKeywords: sanitizedMissing.slice(0, 5),
+    redFlags: []
   };
 }
 
 async function evaluateTailoredResume(latex: string, jdData: any): Promise<{
   score: number;
   reasoning: string;
+  skimVerdict: string;
   matchedKeywords: string[];
   missingKeywords: string[];
+  redFlags: string[];
 }> {
   // If LaTeX is empty or invalid (does not have \begin{document}), return fallback instantly
   if (!latex || !latex.includes("\\begin{document}")) {
     return {
       score: 0,
       reasoning: "Generated LaTeX is incomplete or invalid.",
+      skimVerdict: "Document structure invalid or empty.",
       matchedKeywords: [],
       missingKeywords: [],
+      redFlags: ["LaTeX document incomplete or missing document body."],
     };
   }
 
-  const evalSystemPrompt = `You are an expert technical recruiter and ATS (Applicant Tracking System) optimization algorithm. Your job is to evaluate how well a tailored LaTeX resume matches a target Job Description.
+  const companyName = jdData?.company ? `for ${jdData.company}` : "for this target company";
+  const targetRole = jdData?.jobTitle ? `for the ${jdData.jobTitle} position` : "";
+
+  const evalSystemPrompt = `You are a senior technical recruiter and hiring bar-raiser ${companyName} reviewing candidates ${targetRole}.
+You are scanning 200 resumes in one sitting and spend under 10 seconds per resume.
+Evaluate this tailored LaTeX resume against the target Job Description.
 
 CRITICAL EVALUATION RULES:
 1. HARD TECHNICAL SKILLS ONLY: "missingKeywords" must ONLY contain fundamentally missing programming languages, technical frameworks, databases, or specific cloud/developer tools (e.g. Go, GraphQL, Docker, Kubernetes).
 2. NEVER INCLUDE SOFT TRAITS / GENERIC QUALITIES: Do NOT list generic conversational English descriptors (such as "Accuracy", "Clarity", "Technical Reasoning", "Solution Approaches", "Code Decisions", "Software Defects", "Maintainability", "Scalability", "Performance Bottlenecks", "Attention to Detail") in "missingKeywords".
 3. NO VERSION DUPLICATES: Do NOT list version-specific variants (e.g., "Java 8", "Java 17", "Python 3") in "missingKeywords" if the core base skill is present in the resume.
 4. If an engineering concept is demonstrated or mentioned anywhere in the resume text, treat it as MATCHED.
+5. TOP 5 MISSING KEYWORDS ONLY: Strictly limit "missingKeywords" to the top 5 highest-priority technical requirements that are completely missing.
+6. TOP RED FLAGS (10-SECOND SKIM TEST): Identify 1-3 instant red flags that a hiring manager reviewing 200 resumes in under 10 seconds would spot (e.g. unquantified bullets, vague responsibilities, buzzwords without architectural depth, or passive voice). If no major red flags exist, return an empty array [].
+7. RECRUITER 10-SECOND SKIM VERDICT: In 1 punchy sentence, state whether this resume "stops the scroll" or which specific section/bullet risks getting skipped by a fast-scanning hiring manager.
 
 You MUST return a JSON object with EXACTLY the following structure. Do NOT wrap it in markdown code blocks. Start and end with the JSON curly braces:
 {
   "score": <number from 0 to 100>,
-  "reasoning": "<1-2 sentences>",
+  "reasoning": "<1-2 sentences summarizing overall ATS match>",
+  "skimVerdict": "<1 punchy sentence on 10-second recruiter skim: does it stop the scroll, or what risks being skipped>",
   "matchedKeywords": ["<list of matched technical skills and core engineering domains>"],
-  "missingKeywords": ["<list of strictly missing technical tools/languages only>"]
+  "missingKeywords": ["<list of top 5 strictly missing technical tools/languages only>"],
+  "redFlags": ["<1-3 concise instant red flags, or empty array if none>"]
 }`;
 
   const evalUserMessage = `Job Description:
@@ -185,13 +201,23 @@ ${latex}`;
       ? parsed.missingKeywords
       : fallback.missingKeywords;
 
-    const sanitizedMissing = sanitizeMissingKeywords(missing, matched);
+    const redFlags = Array.isArray(parsed.redFlags)
+      ? parsed.redFlags
+      : fallback.redFlags;
+
+    const skimVerdict = typeof parsed.skimVerdict === "string" && parsed.skimVerdict.trim().length > 0
+      ? parsed.skimVerdict.trim()
+      : fallback.skimVerdict;
+
+    const sanitizedMissing = sanitizeMissingKeywords(missing, matched).slice(0, 5);
 
     return {
       score: typeof parsed.score === 'number' ? parsed.score : fallback.score,
       reasoning: parsed.reasoning || fallback.reasoning,
+      skimVerdict,
       matchedKeywords: matched,
       missingKeywords: sanitizedMissing,
+      redFlags,
     };
   } catch (err) {
     console.warn("[evaluateTailoredResume] Fast fallback used:", (err as any)?.message || err);
@@ -215,8 +241,10 @@ interface TailoredResult {
   };
   score: number;
   reasoning: string;
+  skimVerdict?: string;
   matchedKeywords: string[];
   missingKeywords: string[];
+  redFlags?: string[];
   error?: string;
 }
 
@@ -255,7 +283,7 @@ CRITICAL 1-PAGE CHARACTER LIMIT OVERFLOW (ATTEMPT ${attempt + 1}/${maxAttempts})
 Your generated LaTeX was ${tailoredLatex.length} characters long, which is ${excess} characters OVER the strict 1-page budget (${maxAllowedBudget} characters).
 
 TO GUARANTEE THE RESUME FITS ON EXACTLY 1 PAGE WHILE RETAINING HIGH CREDIBILITY:
-1. SWAP IN-PLACE & COMPACT: Keep single-line bullets under 80 characters, and 2-line bullets under 145 characters. Remove filler words, but retain key technical achievements. NEVER write robotic meta-phrases like "applied Data Structures, Algorithms" or "conducted task estimation".
+1. SWAP IN-PLACE & COMPACT: Keep single-line bullets under 80 characters, and 2-line bullets under 145 characters. Retain Google XYZ formula (accomplished X, measured by Y, by doing Z). Remove filler words, but retain key technical achievements. NEVER write robotic meta-phrases like "applied Data Structures, Algorithms" or "conducted task estimation".
 2. PROJECT TECH HEADERS: Keep strictly to 4-5 core JD technologies per project subtitle.
 3. SKILL ROWS: Keep each skill category to 1 single line (max 5-6 core tools, max 55-60 chars). Lead with target JD skills.
 4. SUMMARY: Limit summary to strictly 3 compact, focused lines (~45-50 words).
@@ -282,8 +310,10 @@ You MUST produce the full LaTeX document with total length <= ${maxAllowedBudget
     },
     score: evaluation.score,
     reasoning: evaluation.reasoning,
+    skimVerdict: evaluation.skimVerdict,
     matchedKeywords: evaluation.matchedKeywords,
     missingKeywords: evaluation.missingKeywords,
+    redFlags: evaluation.redFlags,
   };
 }
 
@@ -314,8 +344,10 @@ async function tailorForModelSafe(
       },
       score: 0,
       reasoning: `Failed to generate: ${err.message || String(err)}`,
+      skimVerdict: "",
       matchedKeywords: [],
       missingKeywords: [],
+      redFlags: [],
       error: err.message || String(err)
     };
   }
@@ -479,17 +511,29 @@ MANDATORY VERIFIED GITHUB SKILL BANK INTEGRATION:
     const jdChecklistText = allJdRequirements.length > 0
       ? allJdRequirements.map((req: string) => `- ${req}`).join("\n")
       : "- Align with structured JD requirements";
-    const systemPrompt = `You are an elite technical recruiter, senior software engineer, and LaTeX resume optimizer.
-Your task is to tailor a raw LaTeX resume to achieve 95-100% ATS match alignment with the target Job Description while maintaining senior-level credibility, professional phrasing, and authentic engineering depth.
+    const companyTarget = jdData?.company ? `at ${jdData.company}` : "for this target company";
+    const roleTarget = jdData?.jobTitle ? `as ${jdData.jobTitle}` : "in this role";
+    const systemPrompt = `You are an elite technical recruiter and hiring bar-raiser ${companyTarget} evaluating candidates ${roleTarget}.
+Act as a hiring manager scanning 200 resumes in one sitting. You spend under 10 seconds per resume—any skippable fluff, generic duties, passive voice, or unquantified claims are instant red flags that get a candidate rejected immediately.
+Your mission is to tailor this raw LaTeX resume to achieve 95-100% ATS match alignment while stopping the recruiter's scroll dead in its tracks through compelling, quantified engineering impact.
 
 TARGET JD REQUIREMENTS CHECKLIST:
 ${jdChecklistText}
 
 CORE IN-PLACE TAILORING RULES:
 
-1. ABSOLUTE BAN ON ROBOTIC / META PHRASING (CRITICAL):
-   - NEVER write meta-phrases or academic descriptions like "applied Data Structures, Algorithms for...", "conducted task estimation", "practiced Agile/Scrum ceremonies", "demonstrating OOPS concepts", or list software concepts as plain trailing nouns.
-   - Express technical mastery through REALISTIC senior engineering actions, concrete architecture, and measurable outcomes (e.g., "Optimized high-traffic query latency from 850ms to 550ms by adding composite indexing and query caching", "Architected idempotent webhook event pipeline cutting failure detection from 20m to 3m").
+1. STOP THE SCROLL & 10-SECOND RECRUITER SKIM (CRITICAL):
+   - Recruiters scan 200 resumes in one sitting. Bullets that read like generic job descriptions ("responsible for...", "assisted with...", "worked on APIs") get skipped in 1 second.
+   - FRONT-LOAD IMPACT: The first 3-5 words of every bullet must pack immediate technical punch. Never bury the metric or outcome at the end of the sentence.
+   - MANDATORY GOOGLE XYZ FORMULA: Structure bullet points strictly as: Accomplished [X], as measured by [Y], by doing [Z].
+     * Will Get Skipped (Passive/Boring): "Responsible for microservices and helped reduce query latency using Redis caching."
+     * Stops The Scroll (Google XYZ): "Slashed p99 query latency from 850ms to 420ms (49% drop) by architecting Redis cache layers and composite PostgreSQL indexes."
+   - NATURAL KEYWORD EMBEDDING (ABSOLUTE BAN ON KEYWORD STUFFING):
+     Seamlessly weave target JD keywords into the functional engineering mechanism [Z]. NEVER append trailing comma-separated buzzwords (e.g. NEVER write ", using Docker, AWS, Git"). Every keyword must be an active architectural component.
+   - STRATEGIC VISUAL ANCHORS IN LATEX:
+     Sparingly wrap 1-2 core technical tools or standout metrics in \\textbf{...} in key bullet points (e.g., \\textbf{420ms p99 latency}, \\textbf{Kafka pipelines}) so the recruiter's eyes visually anchor onto hard proof points during a quick scan.
+   - BAN ON ROBOTIC / META PHRASING:
+     NEVER write meta-phrases like "applied Data Structures, Algorithms for...", "conducted task estimation", "practiced Agile/Scrum ceremonies", "demonstrating OOPS concepts", or list software concepts as plain trailing nouns.
 
 2. CAREER CREDIBILITY & ARCHITECTURAL REALISM (NO PAST COMPANY TECH-SWAPPING):
    - Keep historical company work technically authentic. Do NOT completely swap the foundational language/stack of established past employers (e.g., do NOT turn a past Node.js/PostgreSQL startup role into ASP.NET/SQL Server).
@@ -613,7 +657,7 @@ CRITICAL 1-PAGE CHARACTER LIMIT OVERFLOW (ATTEMPT ${attempt + 2}/${maxAttempts})
 Your generated LaTeX was ${tailored.length} characters long, which is ${excess} characters OVER the strict 1-page budget (${latexLength} characters).
 
 TO GUARANTEE THE RESUME FITS ON EXACTLY 1 PAGE WHILE RETAINING HIGH CREDIBILITY:
-1. SWAP IN-PLACE & COMPACT: Keep single-line bullets under 80 characters, and 2-line bullets under 145 characters. Remove filler words, but retain key technical achievements. NEVER write robotic meta-phrases like "applied Data Structures, Algorithms" or "conducted task estimation".
+1. SWAP IN-PLACE & COMPACT: Keep single-line bullets under 80 characters, and 2-line bullets under 145 characters. Retain Google XYZ formula (accomplished X, measured by Y, by doing Z). Remove filler words, but retain key technical achievements. NEVER write robotic meta-phrases like "applied Data Structures, Algorithms" or "conducted task estimation".
 2. PROJECT TECH HEADERS: Keep strictly to 4-5 core JD technologies per project subtitle.
 3. SKILL ROWS: Keep each skill category to 1 single line (max 5-6 core tools, max 55-60 chars). Lead with target JD skills.
 4. SUMMARY: Limit summary to strictly 3 compact, focused lines (~45-50 words).
@@ -663,8 +707,10 @@ Return ONLY the raw tailored LaTeX string from \\documentclass to \\end{document
               },
               score: finalScore,
               reasoning: evaluation.reasoning,
+              skimVerdict: evaluation.skimVerdict,
               matchedKeywords: evaluation.matchedKeywords,
               missingKeywords: evaluation.missingKeywords,
+              redFlags: evaluation.redFlags,
             };
 
             sendEvent({ modelId: model.id, progress: 100, phase: "Ready", result });
@@ -689,8 +735,10 @@ Return ONLY the raw tailored LaTeX string from \\documentclass to \\end{document
               },
               score: 0,
               reasoning: `Failed to generate: ${errStr}`,
+              skimVerdict: "",
               matchedKeywords: [],
               missingKeywords: [],
+              redFlags: [],
               error: errStr
             };
             sendEvent({ modelId: model.id, progress: 100, phase: "Error", error: errStr, result: errorResult });
