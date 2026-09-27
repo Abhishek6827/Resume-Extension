@@ -15,7 +15,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Resume-Tailor",
   description: "Tailor your resume for any job in seconds with AI",
-  mobileWebAppCapable: "yes",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -29,7 +28,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 5,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
   themeColor: "#090a10",
 };
@@ -42,7 +42,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased overflow-x-hidden max-w-full`}
       suppressHydrationWarning
     >
       <head>
@@ -64,7 +64,7 @@ export default function RootLayout({
         }} />
       </head>
       <body 
-        className="min-h-full w-full overflow-x-hidden flex flex-col bg-background text-foreground"
+        className="min-h-full w-full max-w-full overflow-x-hidden flex flex-col bg-background text-foreground"
         suppressHydrationWarning
       >
         {children}

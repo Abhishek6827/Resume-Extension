@@ -25,6 +25,7 @@ export default function SkillBankCard({
   const [authMode, setAuthMode] = useState<"token" | "username">("username");
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<"All" | "Languages" | "Frameworks" | "Databases" | "ToolsAndCloud" | "Projects">("All");
 
   const handleScan = async () => {
@@ -45,6 +46,7 @@ export default function SkillBankCard({
       }
 
       onScanSuccess(data.skillBank);
+      setIsOpen(true);
     } catch (err: any) {
       console.error(err);
       setScanError(err.message || "Failed to scan GitHub profile");
@@ -59,150 +61,195 @@ export default function SkillBankCard({
     : null;
 
   return (
-    <div className="w-full bg-slate-50/90 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 sm:p-6 backdrop-blur-xl transition-all shadow-xl">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-4 mb-5">
-        <div className="flex items-start sm:items-center gap-3">
-          <div className="h-10 w-10 shrink-0 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-purple-500/20">
-            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
-            </svg>
+    <div className="w-full bg-slate-50/90 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-3.5 sm:p-5 backdrop-blur-xl transition-all shadow-md">
+      {/* Header / Interactive Toggle Bar */}
+      <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isOpen ? "border-b border-slate-200 dark:border-white/10 pb-3.5 mb-4" : ""}`}>
+        <div className="flex items-center justify-between sm:justify-start gap-2.5 sm:gap-3 min-w-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-500 flex items-center justify-center shadow-md shadow-purple-500/20">
+              <svg className="w-5 h-5 text-white shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
+                  GitHub Technical Skill Bank
+                </h3>
+                {skillBank ? (
+                  <span className="text-[10px] sm:text-xs bg-emerald-500/15 dark:bg-emerald-500/20 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full font-bold">
+                    ✓ {skillBank.skills.length} Skills ({skillBank.projects?.length || 0} Repos)
+                  </span>
+                ) : (
+                  <span className="text-[10px] bg-purple-500/10 dark:bg-purple-500/20 border border-purple-500/20 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full font-semibold">
+                    Optional
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[220px] sm:max-w-md">
+                {skillBank ? "Verified technical skills active in tailoring pipeline" : "Extract technical skills and versions from your repositories"}
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 flex flex-wrap items-center gap-2">
-              <span>GitHub Technical Skill Bank</span>
-              {skillBank && (
-                <span className="text-[11px] sm:text-xs bg-emerald-500/15 dark:bg-emerald-500/20 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 px-2.5 py-0.5 rounded-full font-medium">
-                  {skillBank.skills.length} Skills Extracted from {skillBank.projects?.length || 0} Repos
-                </span>
-              )}
-            </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-              Scan repositories to extract granular skills, frameworks & versions mapped to specific projects.
-            </p>
-          </div>
+
+          {!skillBank && (
+            <button
+              type="button"
+              onClick={() => setIsOpen(!isOpen)}
+              className="sm:hidden shrink-0 flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-purple-50 dark:bg-white/10 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-white/10 min-h-[34px]"
+            >
+              <span>{isOpen ? "Close" : "Connect"}</span>
+              <svg className={`w-3.5 h-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+            </button>
+          )}
         </div>
 
-        {skillBank && (
-          <div className="flex flex-wrap items-center justify-between md:justify-end gap-3 w-full md:w-auto">
-            <label className="flex items-center gap-2 cursor-pointer bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 px-3 py-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 transition-all text-xs text-slate-700 dark:text-slate-300">
+        {/* Action controls */}
+        {skillBank ? (
+          <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto pt-1 sm:pt-0">
+            <label className="flex items-center gap-1.5 cursor-pointer bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 px-2.5 py-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 transition-all text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 min-h-[34px]">
               <input
                 type="checkbox"
                 checked={useSkillBankInTailoring}
                 onChange={(e) => setUseSkillBankInTailoring(e.target.checked)}
                 className="rounded border-slate-400 dark:border-slate-700 text-purple-600 focus:ring-purple-500"
               />
-              Inject Skill Bank into Resume
+              <span>Inject into Resume</span>
             </label>
             <button
-              onClick={onClearBank}
-              className="text-xs text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 underline transition-colors"
+              type="button"
+              onClick={() => setIsOpen(!isOpen)}
+              className="flex items-center gap-1 text-[11px] sm:text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-white/10 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-white/10 min-h-[34px] cursor-pointer"
             >
-              Reset Scan
+              <span>{isOpen ? "Hide Details" : "View Skills"}</span>
+              <svg className={`w-3.5 h-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+            </button>
+            <button
+              type="button"
+              onClick={onClearBank}
+              className="text-[11px] text-rose-500 hover:text-rose-600 underline ml-0.5 cursor-pointer"
+            >
+              Reset
             </button>
           </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className="hidden sm:flex shrink-0 items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-white/10 hover:bg-purple-100 dark:hover:bg-white/15 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-white/10 transition-all shadow-sm cursor-pointer min-h-[36px]"
+          >
+            <span>{isOpen ? "Close Scanner" : "Connect GitHub"}</span>
+            <svg className={`w-3.5 h-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+          </button>
         )}
       </div>
 
-      {/* Input / Scanner Controls */}
-      {!skillBank ? (
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 border-b border-slate-200 dark:border-white/5 pb-3">
-            <button
-              onClick={() => setAuthMode("username")}
-              className={`text-xs font-semibold px-3 py-2 rounded-lg transition-all text-center ${
-                authMode === "username"
-                  ? "bg-purple-600/15 dark:bg-purple-600/30 text-purple-700 dark:text-purple-300 border border-purple-500/30"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-              }`}
-            >
-              Public Username Scan
-            </button>
-            <button
-              onClick={() => setAuthMode("token")}
-              className={`text-xs font-semibold px-3 py-2 rounded-lg transition-all text-center ${
-                authMode === "token"
-                  ? "bg-purple-600/15 dark:bg-purple-600/30 text-purple-700 dark:text-purple-300 border border-purple-500/30"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-              }`}
-            >
-              Personal Access Token (Public & Private Repos)
-            </button>
-          </div>
+      {/* Collapsible Content */}
+      {isOpen && (
+        <div className="animate-in fade-in slide-in-from-top-2 duration-200">
+          {!skillBank ? (
+            <div className="space-y-3.5">
+              <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-200/50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5">
+                <button
+                  type="button"
+                  onClick={() => setAuthMode("username")}
+                  className={`text-xs font-semibold py-2 px-2 rounded-lg transition-all text-center min-h-[36px] ${
+                    authMode === "username"
+                      ? "bg-white dark:bg-purple-600/30 text-purple-700 dark:text-purple-300 shadow-sm border border-purple-500/20"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                  }`}
+                >
+                  Public Username
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAuthMode("token")}
+                  className={`text-xs font-semibold py-2 px-2 rounded-lg transition-all text-center min-h-[36px] ${
+                    authMode === "token"
+                      ? "bg-white dark:bg-purple-600/30 text-purple-700 dark:text-purple-300 shadow-sm border border-purple-500/20"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                  }`}
+                >
+                  Personal Token
+                </button>
+              </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            {authMode === "username" ? (
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter GitHub Username (e.g. octocat)..."
-                className="flex-1 bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-purple-500/50 shadow-sm"
-              />
-            ) : (
-              <input
-                type="password"
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                placeholder="Paste GitHub Personal Access Token (ghp_...)..."
-                className="flex-1 bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-purple-500/50 shadow-sm"
-              />
-            )}
+              <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
+                {authMode === "username" ? (
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Enter GitHub Username (e.g. octocat)..."
+                    className="flex-1 bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl px-3.5 sm:px-4 py-2.5 text-base sm:text-sm text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-purple-500/50 shadow-sm min-h-[44px]"
+                  />
+                ) : (
+                  <input
+                    type="password"
+                    value={token}
+                    onChange={(e) => setToken(e.target.value)}
+                    placeholder="Paste GitHub Personal Access Token (ghp_...)..."
+                    className="flex-1 bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl px-3.5 sm:px-4 py-2.5 text-base sm:text-sm text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-purple-500/50 shadow-sm min-h-[44px]"
+                  />
+                )}
 
-            <button
-              onClick={handleScan}
-              disabled={isScanning || (authMode === "username" ? !username.trim() : !token.trim())}
-              className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 text-white font-medium text-sm px-6 py-2.5 rounded-xl transition-all shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2 min-h-[44px]"
-            >
-              {isScanning ? (
-                <>
-                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  <span>Scanning Repositories...</span>
-                </>
-              ) : (
-                <span>Build Skill Bank</span>
+                <button
+                  type="button"
+                  onClick={handleScan}
+                  disabled={isScanning || (authMode === "username" ? !username.trim() : !token.trim())}
+                  className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 disabled:opacity-50 text-white font-medium text-xs sm:text-sm px-5 py-2.5 rounded-xl transition-all shadow-lg shadow-purple-600/20 flex items-center justify-center gap-2 min-h-[44px] cursor-pointer"
+                >
+                  {isScanning ? (
+                    <>
+                      <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span>Scanning Repos...</span>
+                    </>
+                  ) : (
+                    <span>Build Skill Bank</span>
+                  )}
+                </button>
+              </div>
+
+              {scanError && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs text-center font-medium">
+                  {scanError}
+                </div>
               )}
-            </button>
-          </div>
-
-          {scanError && (
-            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs text-center font-medium">
-              {scanError}
             </div>
-          )}
-        </div>
-      ) : (
-        /* Scanned Skill Bank View */
-        <div className="space-y-5 sm:space-y-6">
-          {/* Category & Projects Tabs */}
-          <div className="flex flex-wrap gap-1.5 sm:gap-2">
-            {(["All", "Languages", "Frameworks", "Databases", "ToolsAndCloud"] as const).map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg transition-all ${
-                  activeCategory === cat
-                    ? "bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/40 font-bold"
-                    : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-white/5"
-                }`}
-              >
-                {cat === "ToolsAndCloud" ? "Tools & Cloud" : cat}
-                <span className="ml-1 text-[10px] opacity-70">
-                  ({cat === "All" ? skillBank.skills.length : skillBank.categorized[cat as keyof typeof skillBank.categorized]?.length || 0})
-                </span>
-              </button>
-            ))}
-            <button
-              onClick={() => setActiveCategory("Projects")}
-              className={`text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg transition-all ${
-                activeCategory === "Projects"
-                  ? "bg-purple-500/20 dark:bg-purple-500/30 text-purple-700 dark:text-purple-300 border border-purple-500/50 font-bold"
-                  : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-white/5"
-              }`}
-            >
-              📁 Scanned Projects ({skillBank.projects?.length || 0})
-            </button>
-          </div>
+          ) : (
+            /* Scanned Skill Bank View */
+            <div className="space-y-4 sm:space-y-5">
+              {/* Category & Projects Tabs with horizontal swipe on mobile */}
+              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar flex-nowrap">
+                {(["All", "Languages", "Frameworks", "Databases", "ToolsAndCloud"] as const).map((cat) => (
+                  <button
+                    type="button"
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg transition-all shrink-0 min-h-[32px] ${
+                      activeCategory === cat
+                        ? "bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/40 font-bold"
+                        : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-white/5"
+                    }`}
+                  >
+                    {cat === "ToolsAndCloud" ? "Tools & Cloud" : cat}
+                    <span className="ml-1 text-[10px] opacity-70">
+                      ({cat === "All" ? skillBank.skills.length : skillBank.categorized[cat as keyof typeof skillBank.categorized]?.length || 0})
+                    </span>
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setActiveCategory("Projects")}
+                  className={`text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg transition-all shrink-0 min-h-[32px] ${
+                    activeCategory === "Projects"
+                      ? "bg-purple-500/20 dark:bg-purple-500/30 text-purple-700 dark:text-purple-300 border border-purple-500/50 font-bold"
+                      : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-white/5"
+                  }`}
+                >
+                  📁 Scanned Projects ({skillBank.projects?.length || 0})
+                </button>
+              </div>
 
           {/* Skill Badges View */}
           {activeCategory !== "Projects" ? (
@@ -360,6 +407,8 @@ export default function SkillBankCard({
                   </div>
                 </div>
               )}
+            </div>
+          )}
             </div>
           )}
         </div>

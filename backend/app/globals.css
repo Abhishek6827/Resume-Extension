@@ -26,6 +26,39 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* Prevent horizontal overflow */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Prevent iOS & mobile browsers from auto-zooming when tapping inputs/textareas */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="file"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Touch action and highlight */
+button, input, textarea, a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Utility to hide scrollbars for smooth swipeable mobile tabs */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

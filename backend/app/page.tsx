@@ -659,36 +659,36 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
 
         {/* 1. Source Node */}
         <div className="w-full md:w-[15%] max-w-full sm:max-w-[200px] flex flex-col items-center justify-center">
-          <div ref={sourceRef} className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-white/10 flex flex-col items-center gap-2 text-center w-full max-w-[180px] sm:max-w-[160px] transition-all duration-500 shadow-sm ${status === "parsing" ? "border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.2)]" : "border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.05)]"}`}>
-            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${status === "parsing" ? "bg-indigo-500/20 text-indigo-500 dark:text-indigo-400 animate-pulse" : "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"}`}>
+          <div ref={sourceRef} className={`p-2.5 sm:p-5 rounded-2xl bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-white/10 flex flex-col items-center gap-1.5 sm:gap-2 text-center w-full max-w-[150px] sm:max-w-[160px] transition-all duration-500 shadow-sm ${status === "parsing" ? "border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.2)]" : "border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.05)]"}`}>
+            <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${status === "parsing" ? "bg-indigo-500/20 text-indigo-500 dark:text-indigo-400 animate-pulse" : "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"}`}>
               {status === "parsing" ? (
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
+                <svg className="w-4 h-4 sm:w-6 sm:h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
               ) : (
-                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
               )}
             </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">Data Source</span>
-            <span className="text-[10px] text-slate-500 leading-tight">Resume & JD Loaded</span>
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">Data Source</span>
+            <span className="text-[9px] sm:text-[10px] text-slate-500 leading-tight">Resume & JD Loaded</span>
           </div>
         </div>
 
-        {/* 2. Middle Parallel Branches */}
-        <div className="w-full md:w-[45%] flex flex-col gap-2.5 sm:gap-3 px-0 sm:px-2">
+        {/* 2. Middle Parallel Branches (2-2-1 layout on mobile) */}
+        <div className="w-full md:w-[45%] grid grid-cols-2 md:flex md:flex-col gap-2 sm:gap-2.5 md:gap-3 px-0 sm:px-2">
 
           {/* Branch A: Summary */}
-          <div ref={summaryRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm ${summary.done ? "border-emerald-500/30" : summary.ready ? "border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.05)]" : summary.active ? "active-glow-summary" : "border-slate-200 dark:border-white/5"}`}>
-            <div className="p-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${summary.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : summary.ready ? "bg-indigo-500/25 text-indigo-600 dark:text-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.2)]" : summary.active ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-600"}`}>
+          <div ref={summaryRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm col-span-1 ${summary.done ? "border-emerald-500/30" : summary.ready ? "border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.05)]" : summary.active ? "active-glow-summary" : "border-slate-200 dark:border-white/5"}`}>
+            <div className="p-2 sm:p-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+                <div className={`w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${summary.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : summary.ready ? "bg-indigo-500/25 text-indigo-600 dark:text-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.2)]" : summary.active ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-600"}`}>
                   {summary.done || summary.ready ? "✓" : "A"}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className={`text-xs font-bold truncate ${summary.done ? "text-slate-800 dark:text-slate-200" : summary.ready ? "text-indigo-600 dark:text-indigo-300" : summary.active ? "text-indigo-600 dark:text-indigo-300" : "text-slate-700 dark:text-slate-200"}`}>Summary Tailoring</span>
-                  <span className={`text-[10px] truncate ${summary.ready ? "text-indigo-500 dark:text-indigo-400/80" : "text-slate-500"}`}>{summary.log}</span>
+                  <span className={`text-[11px] sm:text-xs font-bold truncate ${summary.done ? "text-slate-800 dark:text-slate-200" : summary.ready ? "text-indigo-600 dark:text-indigo-300" : summary.active ? "text-indigo-600 dark:text-indigo-300" : "text-slate-700 dark:text-slate-200"}`}>Summary Tailoring</span>
+                  <span className={`text-[9px] sm:text-[10px] truncate ${summary.ready ? "text-indigo-500 dark:text-indigo-400/80" : "text-slate-500"}`}>{summary.log}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
-                {summary.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{summary.progress}%</span>}
+              <div className="flex items-center gap-1 sm:gap-2 mr-0.5 sm:mr-2 shrink-0">
+                {summary.progress > 0 && <span className="text-[8px] sm:text-[9px] font-mono text-slate-500">{summary.progress}%</span>}
                 {summary.active && <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-ping"></span>}
                 {summary.ready && !summary.done && <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 shadow-[0_0_4px_#818cf8]"></span>}
               </div>
@@ -699,19 +699,19 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
           </div>
 
           {/* Branch B: Experience */}
-          <div ref={experienceRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm ${experience.done ? "border-emerald-500/30" : experience.ready ? "border-purple-500/30 shadow-[0_0_10px_rgba(167,139,250,0.05)]" : experience.active ? "active-glow-experience" : "border-slate-200 dark:border-white/5"}`}>
-            <div className="p-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${experience.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : experience.ready ? "bg-purple-500/25 text-purple-600 dark:text-purple-400 shadow-[0_0_8px_rgba(167,139,250,0.2)]" : experience.active ? "bg-purple-500/20 text-purple-600 dark:text-purple-400" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-600"}`}>
+          <div ref={experienceRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm col-span-1 ${experience.done ? "border-emerald-500/30" : experience.ready ? "border-purple-500/30 shadow-[0_0_10px_rgba(167,139,250,0.05)]" : experience.active ? "active-glow-experience" : "border-slate-200 dark:border-white/5"}`}>
+            <div className="p-2 sm:p-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+                <div className={`w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${experience.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : experience.ready ? "bg-purple-500/25 text-purple-600 dark:text-purple-400 shadow-[0_0_8px_rgba(167,139,250,0.2)]" : experience.active ? "bg-purple-500/20 text-purple-600 dark:text-purple-400" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-600"}`}>
                   {experience.done || experience.ready ? "✓" : "B"}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className={`text-xs font-bold truncate ${experience.done ? "text-slate-800 dark:text-slate-200" : experience.ready ? "text-purple-600 dark:text-purple-300" : experience.active ? "text-purple-600 dark:text-purple-300" : "text-slate-700 dark:text-slate-200"}`}>Experience Alignment</span>
-                  <span className={`text-[10px] truncate ${experience.ready ? "text-purple-500 dark:text-purple-400/80" : "text-slate-500"}`}>{experience.log}</span>
+                  <span className={`text-[11px] sm:text-xs font-bold truncate ${experience.done ? "text-slate-800 dark:text-slate-200" : experience.ready ? "text-purple-600 dark:text-purple-300" : experience.active ? "text-purple-600 dark:text-purple-300" : "text-slate-700 dark:text-slate-200"}`}>Experience Alignment</span>
+                  <span className={`text-[9px] sm:text-[10px] truncate ${experience.ready ? "text-purple-500 dark:text-purple-400/80" : "text-slate-500"}`}>{experience.log}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
-                {experience.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{experience.progress}%</span>}
+              <div className="flex items-center gap-1 sm:gap-2 mr-0.5 sm:mr-2 shrink-0">
+                {experience.progress > 0 && <span className="text-[8px] sm:text-[9px] font-mono text-slate-500">{experience.progress}%</span>}
                 {experience.active && <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-ping"></span>}
                 {experience.ready && !experience.done && <span className="h-1.5 w-1.5 rounded-full bg-purple-500 shadow-[0_0_4px_#a78bfa]"></span>}
               </div>
@@ -722,19 +722,19 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
           </div>
 
           {/* Branch C: Projects */}
-          <div ref={projectsRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm ${projects.done ? "border-emerald-500/30" : projects.ready ? "border-pink-500/30 shadow-[0_0_10px_rgba(244,114,182,0.05)]" : projects.active ? "active-glow-projects" : "border-slate-200 dark:border-white/5"}`}>
-            <div className="p-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${projects.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : projects.ready ? "bg-pink-500/25 text-pink-600 dark:text-pink-400 shadow-[0_0_8px_rgba(244,114,182,0.2)]" : projects.active ? "bg-pink-500/20 text-pink-600 dark:text-pink-400" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-600"}`}>
+          <div ref={projectsRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm col-span-1 ${projects.done ? "border-emerald-500/30" : projects.ready ? "border-pink-500/30 shadow-[0_0_10px_rgba(244,114,182,0.05)]" : projects.active ? "active-glow-projects" : "border-slate-200 dark:border-white/5"}`}>
+            <div className="p-2 sm:p-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+                <div className={`w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${projects.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : projects.ready ? "bg-pink-500/25 text-pink-600 dark:text-pink-400 shadow-[0_0_8px_rgba(244,114,182,0.2)]" : projects.active ? "bg-pink-500/20 text-pink-600 dark:text-pink-400" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-600"}`}>
                   {projects.done || projects.ready ? "✓" : "C"}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className={`text-xs font-bold truncate ${projects.done ? "text-slate-800 dark:text-slate-200" : projects.ready ? "text-pink-600 dark:text-pink-300" : projects.active ? "text-pink-600 dark:text-pink-300" : "text-slate-700 dark:text-slate-200"}`}>Project Optimization</span>
-                  <span className={`text-[10px] truncate ${projects.ready ? "text-pink-500 dark:text-pink-400/80" : "text-slate-500"}`}>{projects.log}</span>
+                  <span className={`text-[11px] sm:text-xs font-bold truncate ${projects.done ? "text-slate-800 dark:text-slate-200" : projects.ready ? "text-pink-600 dark:text-pink-300" : projects.active ? "text-pink-600 dark:text-pink-300" : "text-slate-700 dark:text-slate-200"}`}>Project Optimization</span>
+                  <span className={`text-[9px] sm:text-[10px] truncate ${projects.ready ? "text-pink-500 dark:text-pink-400/80" : "text-slate-500"}`}>{projects.log}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
-                {projects.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{projects.progress}%</span>}
+              <div className="flex items-center gap-1 sm:gap-2 mr-0.5 sm:mr-2 shrink-0">
+                {projects.progress > 0 && <span className="text-[8px] sm:text-[9px] font-mono text-slate-500">{projects.progress}%</span>}
                 {projects.active && <span className="h-1.5 w-1.5 rounded-full bg-pink-500 animate-ping"></span>}
                 {projects.ready && !projects.done && <span className="h-1.5 w-1.5 rounded-full bg-pink-500 shadow-[0_0_4px_#f472b6]"></span>}
               </div>
@@ -745,19 +745,19 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
           </div>
 
           {/* Branch D: Skills */}
-          <div ref={skillsRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm ${skills.done ? "border-emerald-500/30" : skills.ready ? "border-teal-500/30 shadow-[0_0_10px_rgba(45,212,191,0.05)]" : skills.active ? "active-glow-skills" : "border-slate-200 dark:border-white/5"}`}>
-            <div className="p-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${skills.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : skills.ready ? "bg-teal-500/25 text-teal-600 dark:text-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.2)]" : skills.active ? "bg-teal-500/20 text-teal-600 dark:text-teal-400" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-600"}`}>
+          <div ref={skillsRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm col-span-1 ${skills.done ? "border-emerald-500/30" : skills.ready ? "border-teal-500/30 shadow-[0_0_10px_rgba(45,212,191,0.05)]" : skills.active ? "active-glow-skills" : "border-slate-200 dark:border-white/5"}`}>
+            <div className="p-2 sm:p-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+                <div className={`w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${skills.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : skills.ready ? "bg-teal-500/25 text-teal-600 dark:text-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.2)]" : skills.active ? "bg-teal-500/20 text-teal-600 dark:text-teal-400" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-600"}`}>
                   {skills.done || skills.ready ? "✓" : "D"}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className={`text-xs font-bold truncate ${skills.done ? "text-slate-800 dark:text-slate-200" : skills.ready ? "text-teal-600 dark:text-teal-300" : skills.active ? "text-teal-600 dark:text-teal-300" : "text-slate-700 dark:text-slate-200"}`}>Skills Prioritization</span>
-                  <span className={`text-[10px] truncate ${skills.ready ? "text-teal-500 dark:text-teal-400/80" : "text-slate-500"}`}>{skills.log}</span>
+                  <span className={`text-[11px] sm:text-xs font-bold truncate ${skills.done ? "text-slate-800 dark:text-slate-200" : skills.ready ? "text-teal-600 dark:text-teal-300" : skills.active ? "text-teal-600 dark:text-teal-300" : "text-slate-700 dark:text-slate-200"}`}>Skills Prioritization</span>
+                  <span className={`text-[9px] sm:text-[10px] truncate ${skills.ready ? "text-teal-500 dark:text-teal-400/80" : "text-slate-500"}`}>{skills.log}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
-                {skills.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{skills.progress}%</span>}
+              <div className="flex items-center gap-1 sm:gap-2 mr-0.5 sm:mr-2 shrink-0">
+                {skills.progress > 0 && <span className="text-[8px] sm:text-[9px] font-mono text-slate-500">{skills.progress}%</span>}
                 {skills.active && <span className="h-1.5 w-1.5 rounded-full bg-teal-500 animate-ping"></span>}
                 {skills.ready && !skills.done && <span className="h-1.5 w-1.5 rounded-full bg-teal-500 shadow-[0_0_4px_#2dd4bf]"></span>}
               </div>
@@ -768,19 +768,19 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
           </div>
 
           {/* Branch E: Match & Score */}
-          <div ref={matchScoreRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm ${matchScore.done ? "border-emerald-500/30" : matchScore.active ? "active-glow-matchScore" : "border-slate-200 dark:border-white/5"}`}>
-            <div className="p-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${matchScore.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : matchScore.active ? "bg-purple-500/25 text-purple-600 dark:text-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.2)]" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-600"}`}>
+          <div ref={matchScoreRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm col-span-2 md:col-span-1 max-w-[280px] sm:max-w-none mx-auto w-full ${matchScore.done ? "border-emerald-500/30" : matchScore.active ? "active-glow-matchScore" : "border-slate-200 dark:border-white/5"}`}>
+            <div className="p-2 sm:p-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+                <div className={`w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${matchScore.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : matchScore.active ? "bg-purple-500/25 text-purple-600 dark:text-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.2)]" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-600"}`}>
                   {matchScore.done ? "✓" : "E"}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className={`text-xs font-bold truncate ${matchScore.done ? "text-slate-800 dark:text-slate-200" : matchScore.active ? "text-purple-600 dark:text-purple-300" : "text-slate-700 dark:text-slate-200"}`}>Match & Score Analysis</span>
-                  <span className={`text-[10px] truncate ${matchScore.active ? "text-purple-500 dark:text-purple-400/80" : "text-slate-500"}`}>{matchScore.log}</span>
+                  <span className={`text-[11px] sm:text-xs font-bold truncate ${matchScore.done ? "text-slate-800 dark:text-slate-200" : matchScore.active ? "text-purple-600 dark:text-purple-300" : "text-slate-700 dark:text-slate-200"}`}>Match & Score Analysis</span>
+                  <span className={`text-[9px] sm:text-[10px] truncate ${matchScore.active ? "text-purple-500 dark:text-purple-400/80" : "text-slate-500"}`}>{matchScore.log}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
-                {matchScore.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{matchScore.progress}%</span>}
+              <div className="flex items-center gap-1 sm:gap-2 mr-0.5 sm:mr-2 shrink-0">
+                {matchScore.progress > 0 && <span className="text-[8px] sm:text-[9px] font-mono text-slate-500">{matchScore.progress}%</span>}
                 {matchScore.active && !matchScore.done && <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-ping"></span>}
               </div>
             </div>
@@ -793,16 +793,16 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
 
         {/* 3. Output Node */}
         <div className="w-full md:w-[15%] max-w-full sm:max-w-[200px] flex flex-col items-center justify-center">
-          <div ref={compileRef} className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-white/10 flex flex-col items-center gap-2 text-center w-full max-w-[180px] sm:max-w-[160px] transition-all duration-500 shadow-sm ${status === "compiling" ? "border-pink-500/50 shadow-[0_0_20px_rgba(244,114,182,0.2)]" : status === "success" ? "border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "opacity-40"}`}>
-            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${status === "compiling" ? "bg-pink-500/20 text-pink-500 dark:text-pink-400" : status === "success" ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-slate-100 dark:bg-white/5 text-slate-500"}`}>
+          <div ref={compileRef} className={`p-2.5 sm:p-5 rounded-2xl bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-white/10 flex flex-col items-center gap-1.5 sm:gap-2 text-center w-full max-w-[150px] sm:max-w-[160px] transition-all duration-500 shadow-sm ${status === "compiling" ? "border-pink-500/50 shadow-[0_0_20px_rgba(244,114,182,0.2)]" : status === "success" ? "border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "opacity-40"}`}>
+            <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${status === "compiling" ? "bg-pink-500/20 text-pink-500 dark:text-pink-400" : status === "success" ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-slate-100 dark:bg-white/5 text-slate-500"}`}>
               {status === "compiling" ? (
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
+                <svg className="w-4 h-4 sm:w-6 sm:h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
               ) : (
-                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H20" /></svg>
+                <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H20" /></svg>
               )}
             </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">PDF Compile</span>
-            <span className="text-[10px] text-slate-500 leading-tight">
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">PDF Compile</span>
+            <span className="text-[9px] sm:text-[10px] text-slate-500 leading-tight">
               {status === "compiling" ? "Compiling LaTeX..." : status === "success" ? "Ready to Download" : "Awaiting Merges"}
             </span>
           </div>
@@ -908,53 +908,53 @@ const CoverLetterPipelineVisualizer = ({
       </div>
 
       {/* 3-Step Pipeline Flow Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 relative z-10">
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-3 relative z-10">
         {/* Stage 1 */}
-        <div className={`p-3.5 sm:p-4 rounded-xl border transition-all duration-300 ${step1.active ? "bg-indigo-50 dark:bg-indigo-500/10 border-indigo-300 dark:border-indigo-500/40 shadow-sm dark:shadow-[0_0_15px_rgba(99,102,241,0.15)]" : step1.done ? "bg-emerald-50 dark:bg-slate-900/60 border-emerald-300 dark:border-emerald-500/30" : "bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-white/5 opacity-60"}`}>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${step1.done ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : step1.active ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 animate-pulse" : "bg-slate-200 dark:bg-white/5 text-slate-500"}`}>
+        <div className={`p-2 sm:p-4 rounded-xl border transition-all duration-300 min-w-0 ${step1.active ? "bg-indigo-50 dark:bg-indigo-500/10 border-indigo-300 dark:border-indigo-500/40 shadow-sm dark:shadow-[0_0_15px_rgba(99,102,241,0.15)]" : step1.done ? "bg-emerald-50 dark:bg-slate-900/60 border-emerald-300 dark:border-emerald-500/30" : "bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-white/5 opacity-60"}`}>
+          <div className="flex items-center justify-between mb-1 sm:mb-2 min-w-0">
+            <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+              <span className={`w-4 h-4 sm:w-6 sm:h-6 rounded-md sm:rounded-lg shrink-0 flex items-center justify-center text-[9px] sm:text-xs font-bold ${step1.done ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : step1.active ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 animate-pulse" : "bg-slate-200 dark:bg-white/5 text-slate-500"}`}>
                 {step1.done ? "✓" : "1"}
               </span>
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Context Extraction</span>
+              <span className="text-[10px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 truncate">Extraction</span>
             </div>
-            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">{step1.progress}%</span>
+            <span className="text-[8px] sm:text-[10px] font-mono text-slate-500 dark:text-slate-400 shrink-0">{step1.progress}%</span>
           </div>
-          <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-tight mb-2">{step1.log}</p>
+          <p className="text-[9px] sm:text-[11px] text-slate-600 dark:text-slate-400 leading-tight mb-1 sm:mb-2 truncate">{step1.log}</p>
           <div className="h-1 w-full bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
             <div className={`h-full transition-all duration-500 ${step1.done ? "bg-emerald-500 dark:bg-emerald-400" : "bg-indigo-500 animate-pulse"}`} style={{ width: `${step1.progress}%` }}></div>
           </div>
         </div>
 
         {/* Stage 2 */}
-        <div className={`p-3.5 sm:p-4 rounded-xl border transition-all duration-300 ${step2.active ? "bg-purple-50 dark:bg-purple-500/10 border-purple-300 dark:border-purple-500/40 shadow-sm dark:shadow-[0_0_15px_rgba(168,85,247,0.15)]" : step2.done ? "bg-emerald-50 dark:bg-slate-900/60 border-emerald-300 dark:border-emerald-500/30" : "bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-white/5 opacity-60"}`}>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${step2.done ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : step2.active ? "bg-purple-500/20 text-purple-600 dark:text-purple-300 animate-pulse" : "bg-slate-200 dark:bg-white/5 text-slate-500"}`}>
+        <div className={`p-2 sm:p-4 rounded-xl border transition-all duration-300 min-w-0 ${step2.active ? "bg-purple-50 dark:bg-purple-500/10 border-purple-300 dark:border-purple-500/40 shadow-sm dark:shadow-[0_0_15px_rgba(168,85,247,0.15)]" : step2.done ? "bg-emerald-50 dark:bg-slate-900/60 border-emerald-300 dark:border-emerald-500/30" : "bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-white/5 opacity-60"}`}>
+          <div className="flex items-center justify-between mb-1 sm:mb-2 min-w-0">
+            <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+              <span className={`w-4 h-4 sm:w-6 sm:h-6 rounded-md sm:rounded-lg shrink-0 flex items-center justify-center text-[9px] sm:text-xs font-bold ${step2.done ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : step2.active ? "bg-purple-500/20 text-purple-600 dark:text-purple-300 animate-pulse" : "bg-slate-200 dark:bg-white/5 text-slate-500"}`}>
                 {step2.done ? "✓" : "2"}
               </span>
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Narrative Alignment</span>
+              <span className="text-[10px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 truncate">Alignment</span>
             </div>
-            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">{step2.progress}%</span>
+            <span className="text-[8px] sm:text-[10px] font-mono text-slate-500 dark:text-slate-400 shrink-0">{step2.progress}%</span>
           </div>
-          <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-tight mb-2">{step2.log}</p>
+          <p className="text-[9px] sm:text-[11px] text-slate-600 dark:text-slate-400 leading-tight mb-1 sm:mb-2 truncate">{step2.log}</p>
           <div className="h-1 w-full bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
             <div className={`h-full transition-all duration-500 ${step2.done ? "bg-emerald-500 dark:bg-emerald-400" : "bg-purple-500 animate-pulse"}`} style={{ width: `${step2.progress}%` }}></div>
           </div>
         </div>
 
         {/* Stage 3 */}
-        <div className={`p-3.5 sm:p-4 rounded-xl border transition-all duration-300 ${step3.active ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/40 shadow-sm dark:shadow-[0_0_15px_rgba(16,185,129,0.15)]" : step3.done ? "bg-emerald-50 dark:bg-slate-900/60 border-emerald-300 dark:border-emerald-500/30" : "bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-white/5 opacity-60"}`}>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className={`w-5 h-5 sm:w-6 sm:h-6 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${step3.done ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : step3.active ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 animate-pulse" : "bg-slate-200 dark:bg-white/5 text-slate-500"}`}>
+        <div className={`p-2 sm:p-4 rounded-xl border transition-all duration-300 min-w-0 ${step3.active ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/40 shadow-sm dark:shadow-[0_0_15px_rgba(16,185,129,0.15)]" : step3.done ? "bg-emerald-50 dark:bg-slate-900/60 border-emerald-300 dark:border-emerald-500/30" : "bg-slate-50 dark:bg-slate-950/40 border-slate-200 dark:border-white/5 opacity-60"}`}>
+          <div className="flex items-center justify-between mb-1 sm:mb-2 min-w-0">
+            <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+              <span className={`w-4 h-4 sm:w-6 sm:h-6 rounded-md sm:rounded-lg shrink-0 flex items-center justify-center text-[9px] sm:text-xs font-bold ${step3.done ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : step3.active ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 animate-pulse" : "bg-slate-200 dark:bg-white/5 text-slate-500"}`}>
                 {step3.done ? "✓" : "3"}
               </span>
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Letter Synthesis</span>
+              <span className="text-[10px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 truncate">Synthesis</span>
             </div>
-            <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">{step3.progress}%</span>
+            <span className="text-[8px] sm:text-[10px] font-mono text-slate-500 dark:text-slate-400 shrink-0">{step3.progress}%</span>
           </div>
-          <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-tight mb-2">{step3.log}</p>
+          <p className="text-[9px] sm:text-[11px] text-slate-600 dark:text-slate-400 leading-tight mb-1 sm:mb-2 truncate">{step3.log}</p>
           <div className="h-1 w-full bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
             <div className={`h-full transition-all duration-500 ${step3.done ? "bg-emerald-500 dark:bg-emerald-400" : "bg-emerald-500 animate-pulse"}`} style={{ width: `${step3.progress}%` }}></div>
           </div>
@@ -1294,7 +1294,7 @@ const ParallelPipelineVisualizer = ({
       )}
 
       {/* Model tabs at the top */}
-      <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4 justify-center border-b border-slate-200 dark:border-white/5 pb-3 relative z-20">
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 mb-3 sm:mb-4 sm:justify-center border-b border-slate-200 dark:border-white/5 pb-3 relative z-20 w-full">
         {targetModels.map((model) => {
           const isSelected = model.id === selectedTab;
           const progressVal = Math.round(visualProgress[model.id] || 0);
@@ -1315,17 +1315,19 @@ const ParallelPipelineVisualizer = ({
                   if (idx !== -1) onSelectModel(idx);
                 }
               }}
-              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl border text-[11px] sm:text-xs font-semibold transition-all ${isSelected
+              className={`w-full sm:w-auto flex items-center justify-between sm:justify-start gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 rounded-xl border text-[11px] sm:text-xs font-semibold transition-all min-h-[38px] ${isSelected
                 ? 'bg-indigo-500/10 border-indigo-500 text-indigo-700 dark:text-indigo-300 shadow-sm'
                 : 'bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300'
                 }`}
             >
-              <img src={model.icon} alt="icon" className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded shrink-0" onError={(e) => e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>'} />
-              <span className="truncate max-w-[120px] sm:max-w-none">{model.shortName || model.name}</span>
-              <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.2 rounded-md ${isReady
-                ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold'
+              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                <img src={model.icon} alt="icon" className="w-4 h-4 rounded shrink-0" onError={(e) => e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>'} />
+                <span className="truncate text-left">{model.shortName || model.name}</span>
+              </div>
+              <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-md shrink-0 font-bold ${isReady
+                ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
                 : isError
-                  ? 'bg-red-500/20 text-red-500 dark:text-red-400 font-bold'
+                  ? 'bg-red-500/20 text-red-500 dark:text-red-400'
                   : 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 animate-pulse font-mono'
                 }`}>
                 {isReady ? "Ready" : isError ? "FAIL" : `${progressVal}%`}
@@ -1480,35 +1482,35 @@ const ParallelPipelineVisualizer = ({
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 min-h-[auto] md:min-h-[500px] md:px-8 w-full">
             {/* 1. Source Node */}
             <div className="w-full md:w-[15%] max-w-full sm:max-w-[200px] flex flex-col items-center justify-center">
-              <div ref={sourceRef} className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-white/10 flex flex-col items-center gap-2 text-center w-full max-w-[180px] sm:max-w-[160px] transition-all duration-500 ${!isFinished ? "border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.2)]" : "border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.05)]"}`}>
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${!isFinished ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 animate-pulse" : "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"}`}>
+              <div ref={sourceRef} className={`p-2.5 sm:p-5 rounded-2xl bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-white/10 flex flex-col items-center gap-1.5 sm:gap-2 text-center w-full max-w-[150px] sm:max-w-[160px] transition-all duration-500 shadow-sm ${!isFinished ? "border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.2)]" : "border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.05)]"}`}>
+                <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${!isFinished ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 animate-pulse" : "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"}`}>
                   {!isFinished ? (
-                    <svg className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
+                    <svg className="w-4 h-4 sm:w-6 sm:h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
                   ) : (
-                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                   )}
                 </div>
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">Data Source</span>
-                <span className="text-[10px] text-slate-500 leading-tight">Resume & JD Loaded</span>
+                <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">Data Source</span>
+                <span className="text-[9px] sm:text-[10px] text-slate-500 leading-tight">Resume & JD Loaded</span>
               </div>
             </div>
 
-            {/* 2. Middle Parallel Branches */}
-            <div className="w-full md:w-[45%] flex flex-col gap-2.5 sm:gap-3 px-0 sm:px-2">
+            {/* 2. Middle Parallel Branches (2-2-1 layout on mobile) */}
+            <div className="w-full md:w-[45%] grid grid-cols-2 md:flex md:flex-col gap-2 sm:gap-2.5 md:gap-3 px-0 sm:px-2">
               {/* Branch A: Summary */}
-              <div ref={summaryRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 ${summary.done ? "border-emerald-500/20" : summary.ready ? "border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.05)]" : summary.active ? "active-glow-summary" : "border-slate-200 dark:border-white/5"}`}>
-                <div className="p-2.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${summary.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : summary.ready ? "bg-indigo-500/25 text-indigo-600 dark:text-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.2)]" : summary.active ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400" : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600"}`}>
+              <div ref={summaryRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm col-span-1 ${summary.done ? "border-emerald-500/20" : summary.ready ? "border-indigo-500/30 shadow-[0_0_10px_rgba(99,102,241,0.05)]" : summary.active ? "active-glow-summary" : "border-slate-200 dark:border-white/5"}`}>
+                <div className="p-2 sm:p-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+                    <div className={`w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${summary.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : summary.ready ? "bg-indigo-500/25 text-indigo-600 dark:text-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.2)]" : summary.active ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400" : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600"}`}>
                       {summary.done || summary.ready ? "✓" : "A"}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className={`text-xs font-bold truncate ${summary.done ? "text-slate-800 dark:text-slate-200" : summary.ready ? "text-indigo-600 dark:text-indigo-300" : summary.active ? "text-indigo-600 dark:text-indigo-300" : "text-slate-800 dark:text-slate-200"}`}>Summary Tailoring</span>
-                      <span className={`text-[10px] truncate ${summary.ready ? "text-indigo-600/80 dark:text-indigo-400/80" : "text-slate-500"}`}>{summary.log}</span>
+                      <span className={`text-[11px] sm:text-xs font-bold truncate ${summary.done ? "text-slate-800 dark:text-slate-200" : summary.ready ? "text-indigo-600 dark:text-indigo-300" : summary.active ? "text-indigo-600 dark:text-indigo-300" : "text-slate-800 dark:text-slate-200"}`}>Summary Tailoring</span>
+                      <span className={`text-[9px] sm:text-[10px] truncate ${summary.ready ? "text-indigo-600/80 dark:text-indigo-400/80" : "text-slate-500"}`}>{summary.log}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
-                    {summary.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{summary.progress}%</span>}
+                  <div className="flex items-center gap-1 sm:gap-2 mr-0.5 sm:mr-2 shrink-0">
+                    {summary.progress > 0 && <span className="text-[8px] sm:text-[9px] font-mono text-slate-500">{summary.progress}%</span>}
                     {summary.active && <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-ping"></span>}
                     {summary.ready && !summary.done && <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 shadow-[0_0_4px_#818cf8]"></span>}
                   </div>
@@ -1519,19 +1521,19 @@ const ParallelPipelineVisualizer = ({
               </div>
 
               {/* Branch B: Experience */}
-              <div ref={experienceRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 ${experience.done ? "border-emerald-500/20" : experience.ready ? "border-purple-500/30 shadow-[0_0_10px_rgba(167,139,250,0.05)]" : experience.active ? "active-glow-experience" : "border-slate-200 dark:border-white/5"}`}>
-                <div className="p-2.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${experience.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : experience.ready ? "bg-purple-500/25 text-purple-600 dark:text-purple-400 shadow-[0_0_8px_rgba(167,139,250,0.2)]" : experience.active ? "bg-purple-500/20 text-purple-600 dark:text-purple-400" : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600"}`}>
+              <div ref={experienceRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm col-span-1 ${experience.done ? "border-emerald-500/20" : experience.ready ? "border-purple-500/30 shadow-[0_0_10px_rgba(167,139,250,0.05)]" : experience.active ? "active-glow-experience" : "border-slate-200 dark:border-white/5"}`}>
+                <div className="p-2 sm:p-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+                    <div className={`w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${experience.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : experience.ready ? "bg-purple-500/25 text-purple-600 dark:text-purple-400 shadow-[0_0_8px_rgba(167,139,250,0.2)]" : experience.active ? "bg-purple-500/20 text-purple-600 dark:text-purple-400" : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600"}`}>
                       {experience.done || experience.ready ? "✓" : "B"}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className={`text-xs font-bold truncate ${experience.done ? "text-slate-800 dark:text-slate-200" : experience.ready ? "text-purple-600 dark:text-purple-300" : experience.active ? "text-purple-600 dark:text-purple-300" : "text-slate-800 dark:text-slate-200"}`}>Experience Alignment</span>
-                      <span className={`text-[10px] truncate ${experience.ready ? "text-purple-600/80 dark:text-purple-400/80" : "text-slate-500"}`}>{experience.log}</span>
+                      <span className={`text-[11px] sm:text-xs font-bold truncate ${experience.done ? "text-slate-800 dark:text-slate-200" : experience.ready ? "text-purple-600 dark:text-purple-300" : experience.active ? "text-purple-600 dark:text-purple-300" : "text-slate-800 dark:text-slate-200"}`}>Experience Alignment</span>
+                      <span className={`text-[9px] sm:text-[10px] truncate ${experience.ready ? "text-purple-600/80 dark:text-purple-400/80" : "text-slate-500"}`}>{experience.log}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
-                    {experience.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{experience.progress}%</span>}
+                  <div className="flex items-center gap-1 sm:gap-2 mr-0.5 sm:mr-2 shrink-0">
+                    {experience.progress > 0 && <span className="text-[8px] sm:text-[9px] font-mono text-slate-500">{experience.progress}%</span>}
                     {experience.active && <span className="h-1.5 w-1.5 rounded-full bg-purple-500 dark:bg-purple-400 animate-ping"></span>}
                     {experience.ready && !experience.done && <span className="h-1.5 w-1.5 rounded-full bg-purple-500 dark:bg-purple-400 shadow-[0_0_4px_#a78bfa]"></span>}
                   </div>
@@ -1542,19 +1544,19 @@ const ParallelPipelineVisualizer = ({
               </div>
 
               {/* Branch C: Projects */}
-              <div ref={projectsRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 ${projects.done ? "border-emerald-500/20" : projects.ready ? "border-pink-500/30 shadow-[0_0_10px_rgba(244,114,182,0.05)]" : projects.active ? "active-glow-projects" : "border-slate-200 dark:border-white/5"}`}>
-                <div className="p-2.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${projects.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : projects.ready ? "bg-pink-500/25 text-pink-600 dark:text-pink-400 shadow-[0_0_8px_rgba(244,114,182,0.2)]" : projects.active ? "bg-pink-500/20 text-pink-600 dark:text-pink-400" : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600"}`}>
+              <div ref={projectsRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm col-span-1 ${projects.done ? "border-emerald-500/20" : projects.ready ? "border-pink-500/30 shadow-[0_0_10px_rgba(244,114,182,0.05)]" : projects.active ? "active-glow-projects" : "border-slate-200 dark:border-white/5"}`}>
+                <div className="p-2 sm:p-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+                    <div className={`w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${projects.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : projects.ready ? "bg-pink-500/25 text-pink-600 dark:text-pink-400 shadow-[0_0_8px_rgba(244,114,182,0.2)]" : projects.active ? "bg-pink-500/20 text-pink-600 dark:text-pink-400" : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600"}`}>
                       {projects.done || projects.ready ? "✓" : "C"}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className={`text-xs font-bold truncate ${projects.done ? "text-slate-800 dark:text-slate-200" : projects.ready ? "text-pink-600 dark:text-pink-300" : projects.active ? "text-pink-600 dark:text-pink-300" : "text-slate-800 dark:text-slate-200"}`}>Project Optimization</span>
-                      <span className={`text-[10px] truncate ${projects.ready ? "text-pink-600/80 dark:text-pink-400/80" : "text-slate-500"}`}>{projects.log}</span>
+                      <span className={`text-[11px] sm:text-xs font-bold truncate ${projects.done ? "text-slate-800 dark:text-slate-200" : projects.ready ? "text-pink-600 dark:text-pink-300" : projects.active ? "text-pink-600 dark:text-pink-300" : "text-slate-800 dark:text-slate-200"}`}>Project Optimization</span>
+                      <span className={`text-[9px] sm:text-[10px] truncate ${projects.ready ? "text-pink-600/80 dark:text-pink-400/80" : "text-slate-500"}`}>{projects.log}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
-                    {projects.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{projects.progress}%</span>}
+                  <div className="flex items-center gap-1.5 sm:gap-2 mr-0.5 sm:mr-2 shrink-0">
+                    {projects.progress > 0 && <span className="text-[8px] sm:text-[9px] font-mono text-slate-500">{projects.progress}%</span>}
                     {projects.active && <span className="h-1.5 w-1.5 rounded-full bg-pink-500 dark:bg-pink-400 animate-ping"></span>}
                     {projects.ready && !projects.done && <span className="h-1.5 w-1.5 rounded-full bg-pink-500 dark:bg-pink-400 shadow-[0_0_4px_#f472b6]"></span>}
                   </div>
@@ -1565,19 +1567,19 @@ const ParallelPipelineVisualizer = ({
               </div>
 
               {/* Branch D: Skills */}
-              <div ref={skillsRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 ${skills.done ? "border-emerald-500/20" : skills.ready ? "border-teal-500/30 shadow-[0_0_10px_rgba(45,212,191,0.05)]" : skills.active ? "active-glow-skills" : "border-slate-200 dark:border-white/5"}`}>
-                <div className="p-2.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${skills.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : skills.ready ? "bg-teal-500/25 text-teal-600 dark:text-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.2)]" : skills.active ? "bg-teal-500/20 text-teal-600 dark:text-teal-400" : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600"}`}>
+              <div ref={skillsRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm col-span-1 ${skills.done ? "border-emerald-500/20" : skills.ready ? "border-teal-500/30 shadow-[0_0_10px_rgba(45,212,191,0.05)]" : skills.active ? "active-glow-skills" : "border-slate-200 dark:border-white/5"}`}>
+                <div className="p-2 sm:p-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+                    <div className={`w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${skills.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : skills.ready ? "bg-teal-500/25 text-teal-600 dark:text-teal-400 shadow-[0_0_8px_rgba(45,212,191,0.2)]" : skills.active ? "bg-teal-500/20 text-teal-600 dark:text-teal-400" : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600"}`}>
                       {skills.done || skills.ready ? "✓" : "D"}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className={`text-xs font-bold truncate ${skills.done ? "text-slate-800 dark:text-slate-200" : skills.ready ? "text-teal-600 dark:text-teal-300" : skills.active ? "text-teal-600 dark:text-teal-300" : "text-slate-800 dark:text-slate-200"}`}>Skills Prioritization</span>
-                      <span className={`text-[10px] truncate ${skills.ready ? "text-teal-600/80 dark:text-teal-400/80" : "text-slate-500"}`}>{skills.log}</span>
+                      <span className={`text-[11px] sm:text-xs font-bold truncate ${skills.done ? "text-slate-800 dark:text-slate-200" : skills.ready ? "text-teal-600 dark:text-teal-300" : skills.active ? "text-teal-600 dark:text-teal-300" : "text-slate-800 dark:text-slate-200"}`}>Skills Prioritization</span>
+                      <span className={`text-[9px] sm:text-[10px] truncate ${skills.ready ? "text-teal-600/80 dark:text-teal-400/80" : "text-slate-500"}`}>{skills.log}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
-                    {skills.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{skills.progress}%</span>}
+                  <div className="flex items-center gap-1.5 sm:gap-2 mr-0.5 sm:mr-2 shrink-0">
+                    {skills.progress > 0 && <span className="text-[8px] sm:text-[9px] font-mono text-slate-500">{skills.progress}%</span>}
                     {skills.active && <span className="h-1.5 w-1.5 rounded-full bg-teal-500 dark:bg-teal-400 animate-ping"></span>}
                     {skills.ready && !skills.done && <span className="h-1.5 w-1.5 rounded-full bg-teal-500 dark:bg-teal-400 shadow-[0_0_4px_#2dd4bf]"></span>}
                   </div>
@@ -1588,19 +1590,19 @@ const ParallelPipelineVisualizer = ({
               </div>
 
               {/* Branch E: Match & Score */}
-              <div ref={matchScoreRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 ${matchScore.done ? "border-emerald-500/20" : matchScore.active ? "active-glow-matchScore" : "border-slate-200 dark:border-white/5"}`}>
-                <div className="p-2.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div className={`w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold ${matchScore.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : matchScore.active ? "bg-purple-500/25 text-purple-600 dark:text-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.2)]" : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600"}`}>
+              <div ref={matchScoreRef} className={`rounded-xl bg-white dark:bg-slate-950/70 border overflow-hidden transition-all duration-300 shadow-sm col-span-2 md:col-span-1 max-w-[280px] sm:max-w-none mx-auto w-full ${matchScore.done ? "border-emerald-500/20" : matchScore.active ? "active-glow-matchScore" : "border-slate-200 dark:border-white/5"}`}>
+                <div className="p-2 sm:p-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+                    <div className={`w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold ${matchScore.done ? "bg-emerald-500/25 text-emerald-600 dark:text-emerald-400" : matchScore.active ? "bg-purple-500/25 text-purple-600 dark:text-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.2)]" : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600"}`}>
                       {matchScore.done ? "✓" : "E"}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className={`text-xs font-bold truncate ${matchScore.done ? "text-slate-800 dark:text-slate-200" : matchScore.active ? "text-purple-600 dark:text-purple-300" : "text-slate-800 dark:text-slate-200"}`}>Match & Score Analysis</span>
-                      <span className={`text-[10px] truncate ${matchScore.active ? "text-purple-600/80 dark:text-purple-400/80" : "text-slate-500"}`}>{matchScore.log}</span>
+                      <span className={`text-[11px] sm:text-xs font-bold truncate ${matchScore.done ? "text-slate-800 dark:text-slate-200" : matchScore.active ? "text-purple-600 dark:text-purple-300" : "text-slate-800 dark:text-slate-200"}`}>Match & Score Analysis</span>
+                      <span className={`text-[9px] sm:text-[10px] truncate ${matchScore.active ? "text-purple-600/80 dark:text-purple-400/80" : "text-slate-500"}`}>{matchScore.log}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 shrink-0">
-                    {matchScore.progress > 0 && <span className="text-[9px] font-mono text-slate-500">{matchScore.progress}%</span>}
+                  <div className="flex items-center gap-1.5 sm:gap-2 mr-0.5 sm:mr-2 shrink-0">
+                    {matchScore.progress > 0 && <span className="text-[8px] sm:text-[9px] font-mono text-slate-500">{matchScore.progress}%</span>}
                     {matchScore.active && !matchScore.done && <span className="h-1.5 w-1.5 rounded-full bg-purple-500 dark:bg-purple-400 animate-ping"></span>}
                   </div>
                 </div>
@@ -1613,18 +1615,18 @@ const ParallelPipelineVisualizer = ({
 
             {/* 3. Output Node */}
             <div className="w-full md:w-[15%] max-w-full sm:max-w-[200px] flex flex-col items-center justify-center">
-              <div ref={compileRef} className={`p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-white/10 flex flex-col items-center gap-2 text-center w-full max-w-[180px] sm:max-w-[160px] transition-all duration-500 ${isModelError ? "border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.2)]" : isCompiling ? "border-pink-500/50 shadow-[0_0_20px_rgba(244,114,182,0.2)]" : (isFinished || pVal === 100) ? "border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "opacity-40"}`}>
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${isModelError ? "bg-red-500/20 text-red-600 dark:text-red-400" : isCompiling ? "bg-pink-500/20 text-pink-600 dark:text-pink-400" : (isFinished || pVal === 100) ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-slate-100 dark:bg-white/5 text-slate-500"}`}>
+              <div ref={compileRef} className={`p-2.5 sm:p-5 rounded-2xl bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-white/10 flex flex-col items-center gap-1.5 sm:gap-2 text-center w-full max-w-[150px] sm:max-w-[160px] transition-all duration-500 shadow-sm ${isModelError ? "border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.2)]" : isCompiling ? "border-pink-500/50 shadow-[0_0_20px_rgba(244,114,182,0.2)]" : (isFinished || pVal === 100) ? "border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]" : "opacity-40"}`}>
+                <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${isModelError ? "bg-red-500/20 text-red-600 dark:text-red-400" : isCompiling ? "bg-pink-500/20 text-pink-600 dark:text-pink-400" : (isFinished || pVal === 100) ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-slate-100 dark:bg-white/5 text-slate-500"}`}>
                   {isModelError ? (
-                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                   ) : isCompiling ? (
-                    <svg className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
+                    <svg className="w-4 h-4 sm:w-6 sm:h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
                   ) : (
-                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H20" /></svg>
+                    <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293H20" /></svg>
                   )}
                 </div>
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">PDF Compile</span>
-                <span className="text-[10px] text-slate-500 leading-tight">
+                <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">PDF Compile</span>
+                <span className="text-[9px] sm:text-[10px] text-slate-500 leading-tight">
                   {isModelError ? "Generation Failed" : isCompiling ? "Compiling LaTeX..." : (isFinished || pVal === 100) ? "Ready to Compile" : "Awaiting Merges"}
                 </span>
               </div>
@@ -2035,11 +2037,68 @@ export default function Home() {
     }
   };
 
-  const handleCopyCoverLetter = () => {
+  const copyToClipboard = async (text: string): Promise<boolean> => {
+    if (!text) return false;
+
+    // 1. Try modern Clipboard API if supported and in secure context
+    if (typeof window !== "undefined" && navigator?.clipboard?.writeText && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (err) {
+        console.warn("navigator.clipboard.writeText failed, using fallback:", err);
+      }
+    }
+
+    // 2. Universal fallback for mobile browsers & HTTP/LAN contexts
+    try {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.top = "-9999px";
+      textarea.style.left = "-9999px";
+      textarea.style.opacity = "0";
+      textarea.style.fontSize = "16px"; // Prevents iOS auto-zoom
+      document.body.appendChild(textarea);
+
+      if (/ipad|iphone|ipod/i.test(navigator.userAgent)) {
+        const editable = textarea.contentEditable;
+        const readOnly = textarea.readOnly;
+        textarea.contentEditable = "true";
+        textarea.readOnly = false;
+        const range = document.createRange();
+        range.selectNodeContents(textarea);
+        const sel = window.getSelection();
+        sel?.removeAllRanges();
+        sel?.addRange(range);
+        textarea.setSelectionRange(0, 999999);
+        textarea.contentEditable = editable;
+        textarea.readOnly = readOnly;
+      } else {
+        textarea.select();
+        textarea.setSelectionRange(0, textarea.value.length);
+      }
+
+      const success = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return success;
+    } catch (fallbackErr) {
+      console.error("Clipboard copy failed entirely:", fallbackErr);
+      return false;
+    }
+  };
+
+  const handleCopyCoverLetter = async () => {
     if (!coverLetter) return;
-    navigator.clipboard.writeText(coverLetter);
-    setHasCopiedCL(true);
-    setTimeout(() => setHasCopiedCL(false), 2000);
+    const copied = await copyToClipboard(coverLetter);
+    if (copied) {
+      setHasCopiedCL(true);
+      setTimeout(() => setHasCopiedCL(false), 2500);
+    } else {
+      setClError("Automatic copy failed. Please select and copy the text manually.");
+      setTimeout(() => setClError(""), 4000);
+    }
   };
 
   const handleDownloadCoverLetterTXT = () => {
@@ -2539,21 +2598,21 @@ export default function Home() {
       </header>
 
       {/* Main Hero & Tool */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-12 flex flex-col items-center">
-        <div className="text-center mb-6 sm:mb-10">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-3 sm:mb-4 bg-gradient-to-b from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
+      <main className="flex-1 w-full max-w-5xl mx-auto px-3.5 sm:px-6 py-4 sm:py-10 flex flex-col items-center">
+        <div className="text-center mb-5 sm:mb-8 max-w-full">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-2 sm:mb-4 bg-gradient-to-b from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent px-1">
             Perfect LaTeX Resumes,{" "}
             <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-500 bg-clip-text text-transparent">
               Zero Code.
             </span>
           </h1>
-          <p className="text-sm sm:text-base md:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto px-2">
+          <p className="text-xs sm:text-base md:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto px-2">
             Upload your resume, paste the job description, and instantly download a 1-page, beautifully formatted ATS-friendly PDF.
           </p>
         </div>
 
         {/* Generator Tool */}
-        <div className="w-full max-w-4xl bg-white/95 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 backdrop-blur-xl shadow-xl dark:shadow-2xl transition-all">
+        <div className="w-full max-w-4xl bg-white/95 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 md:p-8 backdrop-blur-xl shadow-xl dark:shadow-2xl transition-all">
           <div className="flex flex-col gap-4 sm:gap-6">
 
             {/* GitHub Skill Bank Card */}
@@ -2566,21 +2625,29 @@ export default function Home() {
               setUseSkillBankInTailoring={setUseSkillBankInTailoring}
             />
 
-            {/* Input Method Tabs */}
-            <div className="grid grid-cols-2 sm:flex sm:gap-4 border-b border-slate-200 dark:border-white/10 pb-2 gap-2">
+            {/* Input Method Tabs - Mobile Segmented Switcher */}
+            <div className="p-1 bg-slate-100 dark:bg-white/5 rounded-xl grid grid-cols-2 gap-1 border border-slate-200 dark:border-white/10 mb-1">
               <button
                 type="button"
                 onClick={() => { setActiveTab("file"); handleReset(false); }}
-                className={`py-2 px-2 sm:px-4 font-semibold text-xs sm:text-sm border-b-2 text-center transition-all ${activeTab === "file" ? "border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400" : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-300"}`}
+                className={`py-2 px-2.5 sm:px-4 font-semibold text-xs sm:text-sm rounded-lg text-center transition-all min-h-[38px] flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeTab === "file"
+                    ? "bg-white dark:bg-white/15 text-indigo-600 dark:text-white shadow-sm font-bold"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
               >
-                Tailor Resume (File + JD)
+                <span>Upload Base Resume</span>
               </button>
               <button
                 type="button"
                 onClick={() => { setActiveTab("latex"); handleReset(false); }}
-                className={`py-2 px-2 sm:px-4 font-semibold text-xs sm:text-sm border-b-2 text-center transition-all ${activeTab === "latex" ? "border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400" : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-300"}`}
+                className={`py-2 px-2.5 sm:px-4 font-semibold text-xs sm:text-sm rounded-lg text-center transition-all min-h-[38px] flex items-center justify-center gap-1.5 cursor-pointer ${
+                  activeTab === "latex"
+                    ? "bg-white dark:bg-white/15 text-indigo-600 dark:text-white shadow-sm font-bold"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
               >
-                Compile LaTeX Directly
+                <span>Direct LaTeX Code</span>
               </button>
             </div>
 
@@ -2595,7 +2662,7 @@ export default function Home() {
                       accept=".pdf,.docx"
                       onChange={handleFileChange}
                       className="block w-full text-xs sm:text-sm text-slate-600 dark:text-slate-400
-                        file:mr-3 sm:file:mr-4 file:py-2.5 sm:file:py-3 file:px-4 sm:file:px-6
+                        file:mr-2.5 sm:file:mr-4 file:py-2.5 sm:file:py-3 file:px-3.5 sm:file:px-6
                         file:rounded-xl file:border-0
                         file:text-xs sm:file:text-sm file:font-semibold
                         file:bg-indigo-50 dark:file:bg-indigo-500/10 file:text-indigo-600 dark:file:text-indigo-400
@@ -2612,7 +2679,7 @@ export default function Home() {
                     onPaste={() => triggerWarmup(isAutoRun ? undefined : primaryModel)}
                     placeholder="Paste the target job description here..."
                     rows={6}
-                    className="w-full bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-xs sm:text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"
+                    className="w-full bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-base sm:text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"
                   ></textarea>
                 </div>
               </div>
@@ -2677,7 +2744,7 @@ export default function Home() {
                       onChange={(e) => handleLatexChange(e.target.value)}
                       placeholder="Paste your raw LaTeX resume code here..."
                       rows={10}
-                      className="w-full flex-1 bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 font-mono text-xs sm:text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-y min-h-[180px] md:min-h-[300px]"
+                      className="w-full flex-1 bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 font-mono text-base sm:text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-y min-h-[180px] md:min-h-[300px]"
                     ></textarea>
                   </div>
                 )}
@@ -2742,7 +2809,7 @@ export default function Home() {
                       onPaste={() => triggerWarmup(isAutoRun ? undefined : primaryModel)}
                       placeholder="Paste the target job description here..."
                       rows={10}
-                      className="w-full flex-1 bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-y min-h-[180px] md:min-h-[300px]"
+                      className="w-full flex-1 bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 text-base sm:text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all resize-y min-h-[180px] md:min-h-[300px]"
                     ></textarea>
                   </div>
                 )}
@@ -2753,7 +2820,7 @@ export default function Home() {
             <div>
               <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">3. Execution Mode</label>
 
-              <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-4 mb-4">
+              <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -2763,10 +2830,11 @@ export default function Home() {
                       triggerWarmup();
                     }
                   }}
-                  className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center justify-center gap-2 ${isAutoRun ? 'bg-indigo-50 dark:bg-indigo-500/20 border-indigo-400 dark:border-indigo-500/50 text-indigo-700 dark:text-indigo-300 shadow-sm dark:shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'bg-white dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/10'}`}
+                  className={`py-2.5 sm:py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center justify-center gap-1.5 sm:gap-2 ${isAutoRun ? 'bg-indigo-50 dark:bg-indigo-500/20 border-indigo-400 dark:border-indigo-500/50 text-indigo-700 dark:text-indigo-300 shadow-sm dark:shadow-[0_0_15px_rgba(99,102,241,0.15)]' : 'bg-white dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/10'}`}
                 >
                   <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                  <span>Auto Run (All {RESUME_MODELS.length} Models)</span>
+                  <span className="hidden sm:inline">Auto Run (All {RESUME_MODELS.length} Models)</span>
+                  <span className="sm:hidden">Auto ({RESUME_MODELS.length})</span>
                 </button>
                 <button
                   type="button"
@@ -2777,10 +2845,11 @@ export default function Home() {
                       triggerWarmup(primaryModel);
                     }
                   }}
-                  className={`flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center justify-center gap-2 ${!isAutoRun ? 'bg-emerald-50 dark:bg-emerald-500/20 border-emerald-400 dark:border-emerald-500/50 text-emerald-700 dark:text-emerald-300 shadow-sm dark:shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'bg-white dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/10'}`}
+                  className={`py-2.5 sm:py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-bold border transition-all flex items-center justify-center gap-1.5 sm:gap-2 ${!isAutoRun ? 'bg-emerald-50 dark:bg-emerald-500/20 border-emerald-400 dark:border-emerald-500/50 text-emerald-700 dark:text-emerald-300 shadow-sm dark:shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'bg-white dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/10'}`}
                 >
                   <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
-                  <span>Manual Run (Selected Model)</span>
+                  <span className="hidden sm:inline">Manual Run (Selected Model)</span>
+                  <span className="sm:hidden">Manual Run</span>
                 </button>
               </div>
 
@@ -2878,7 +2947,7 @@ export default function Home() {
                     })()}
 
                     {/* Grid of Results (Leaderboard Cards) */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
                       {tailoredResumes.map((result, idx) => {
                         const isSelected = idx === selectedResultIndex;
                         const hasError = !!result.error;
@@ -2896,30 +2965,30 @@ export default function Home() {
                           <div
                             key={result.modelId}
                             onClick={() => handleSelectModel(idx)}
-                            className={`flex flex-col gap-2.5 p-3.5 sm:p-4 rounded-xl border cursor-pointer transition-all ${isSelected
+                            className={`flex flex-col gap-2 p-2.5 sm:p-4 rounded-xl border cursor-pointer transition-all min-w-0 [&:last-child:nth-child(2n+1)]:col-span-2 lg:[&:last-child:nth-child(2n+1)]:col-span-1 ${isSelected
                               ? 'border-indigo-500 bg-indigo-50/80 dark:bg-indigo-500/10 shadow-lg shadow-indigo-500/10 scale-[1.02]'
                               : hasError
                                 ? 'border-red-200 dark:border-red-500/10 bg-red-50 dark:bg-red-500/5 opacity-70 hover:opacity-100 hover:bg-red-100 dark:hover:bg-red-500/10'
                                 : 'border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-slate-50 dark:hover:bg-white/10 shadow-sm'
                               }`}
                           >
-                            <div className="flex justify-between items-center">
-                              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Rank {idx + 1}</span>
+                            <div className="flex justify-between items-center min-w-0">
+                              <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">Rank {idx + 1}</span>
                               {hasError ? (
-                                <div className="flex items-center gap-1">
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 font-bold">FAIL</span>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <span className="text-[8px] sm:text-[9px] px-1 py-0.5 rounded-md bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 font-bold">FAIL</span>
                                   <button
                                     type="button"
                                     onClick={(e) => handleRetryModel(e, result.modelId, idx)}
                                     disabled={retryingModels.has(result.modelId)}
-                                    className="text-[9px] px-1.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 hover:bg-indigo-100 dark:hover:bg-indigo-500/40 transition-colors font-bold disabled:opacity-50"
+                                    className="text-[8px] sm:text-[9px] px-1 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 hover:bg-indigo-100 dark:hover:bg-indigo-500/40 transition-colors font-bold disabled:opacity-50"
                                     title="Retry this model"
                                   >
                                     {retryingModels.has(result.modelId) ? "..." : "RETRY"}
                                   </button>
                                 </div>
                               ) : (
-                                <span className={`text-[10px] px-1.5 py-0.5 rounded-md border font-mono font-bold ${scoreColor}`}>
+                                <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-md border font-mono font-bold shrink-0 ${scoreColor}`}>
                                   {result.score}%
                                 </span>
                               )}
@@ -2928,29 +2997,29 @@ export default function Home() {
                             {/* Candidate Name before resume model */}
                             <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
                               <svg className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                              <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate" title={cardCandidate}>
+                              <span className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-slate-100 truncate" title={cardCandidate}>
                                 {cardCandidate}
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-2 min-w-0">
+                            <div className="flex items-center gap-1.5 min-w-0">
                               <img src={ALL_MODELS.find(m => m.id === result.modelId)?.icon} className="w-3.5 h-3.5 rounded shrink-0" onError={(e) => e.currentTarget.style.display = 'none'} />
-                              <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 truncate">
+                              <span className="text-[10px] sm:text-[11px] font-medium text-slate-600 dark:text-slate-400 truncate">
                                 {ALL_MODELS.find(m => m.id === result.modelId)?.shortName || result.modelName}
                               </span>
                             </div>
 
                             {!hasError && (
-                              <div className="flex flex-col gap-1 mt-1 border-t border-slate-200 dark:border-white/5 pt-2 text-[10px]">
+                              <div className="flex flex-col gap-0.5 sm:gap-1 mt-1 border-t border-slate-200 dark:border-white/5 pt-1.5 sm:pt-2 text-[9px] sm:text-[10px]">
                                 <div className="flex justify-between">
-                                  <span className="text-slate-500">Length check:</span>
+                                  <span className="text-slate-500">Length:</span>
                                   <span className={result.lengthCheck.status === "fit" ? "text-emerald-600 dark:text-emerald-400 font-bold" : "text-amber-600 dark:text-amber-400 font-bold"}>
                                     {result.lengthCheck.status === "fit" ? "Fit" : "Over"}
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-slate-500">Characters:</span>
-                                  <span className="text-slate-700 dark:text-slate-300 font-mono">{result.lengthCheck.length} / {result.lengthCheck.maxLength}</span>
+                                  <span className="text-slate-500">Chars:</span>
+                                  <span className="text-slate-700 dark:text-slate-300 font-mono text-[9px] truncate">{result.lengthCheck.length}/{result.lengthCheck.maxLength}</span>
                                 </div>
                               </div>
                             )}
@@ -3012,19 +3081,19 @@ export default function Home() {
                                 <span className="text-xs text-slate-500 dark:text-slate-400">Compiling PDF...</span>
                               </div>
                             ) : pdfUrl ? (
-                              <div className="flex flex-col gap-2 sm:gap-2.5 w-full mt-1">
+                              <div className="grid grid-cols-2 gap-2 sm:gap-2.5 w-full mt-1">
                                 <a
                                   href={pdfUrl || undefined}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="px-4 sm:px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center w-full min-h-[42px] flex items-center justify-center"
+                                  className="px-2 sm:px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center w-full min-h-[42px] flex items-center justify-center truncate"
                                 >
                                   View PDF
                                 </a>
                                 <a
                                   href={pdfUrl || undefined}
                                   download={downloadName}
-                                  className="px-4 sm:px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-center w-full min-h-[42px] flex items-center justify-center"
+                                  className="px-2 sm:px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-center w-full min-h-[42px] flex items-center justify-center truncate"
                                 >
                                   Download PDF
                                 </a>
@@ -3033,7 +3102,7 @@ export default function Home() {
                               <button
                                 type="button"
                                 onClick={() => compilePdfForIndex(selectedResultIndex, tailoredResumes)}
-                                className="px-4 sm:px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center w-full min-h-[42px] flex items-center justify-center cursor-pointer"
+                                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center w-auto mx-auto min-h-[40px] flex items-center justify-center cursor-pointer"
                               >
                                 Compile PDF
                               </button>
@@ -3067,8 +3136,8 @@ export default function Home() {
                                 </span>
                                 <div className="flex flex-wrap gap-1.5">
                                   {activeResult.matchedKeywords.length > 0 ? (
-                                    activeResult.matchedKeywords.map((kw: string) => (
-                                      <span key={kw} className="text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 px-2 py-0.5 rounded-md">
+                                    Array.from(new Set<string>(activeResult.matchedKeywords)).map((kw: string, idx: number) => (
+                                      <span key={`matched-${kw}-${idx}`} className="text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 px-2 py-0.5 rounded-md">
                                         {kw}
                                       </span>
                                     ))
@@ -3086,8 +3155,8 @@ export default function Home() {
                                 </span>
                                 <div className="flex flex-wrap gap-1.5">
                                   {activeResult.missingKeywords.length > 0 ? (
-                                    activeResult.missingKeywords.map((kw: string) => (
-                                      <span key={kw} className="text-[10px] font-semibold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 px-2 py-0.5 rounded-md">
+                                    Array.from(new Set<string>(activeResult.missingKeywords)).map((kw: string, idx: number) => (
+                                      <span key={`missing-${kw}-${idx}`} className="text-[10px] font-semibold bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 px-2 py-0.5 rounded-md">
                                         {kw}
                                       </span>
                                     ))
@@ -3121,19 +3190,19 @@ export default function Home() {
                     })()}
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full justify-center">
+                  <div className="flex flex-row items-center justify-center gap-2.5 sm:gap-4 w-full">
                     <button
                       type="button"
                       onClick={handleGenerate}
                       disabled={["parsing", "tailoring", "compiling"].includes(status)}
-                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-xs sm:text-sm rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-center cursor-pointer"
+                      className="w-auto px-5 sm:px-8 py-2.5 sm:py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-xs sm:text-sm rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-center cursor-pointer"
                     >
                       Regenerate
                     </button>
                     <button
                       type="button"
                       onClick={() => handleReset(true)}
-                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-800 dark:text-white font-bold text-xs sm:text-sm rounded-xl transition-all text-center cursor-pointer shadow-sm"
+                      className="w-auto px-5 sm:px-8 py-2.5 sm:py-3.5 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-800 dark:text-white font-bold text-xs sm:text-sm rounded-xl transition-all text-center cursor-pointer shadow-sm"
                     >
                       Clear All
                     </button>
@@ -3148,33 +3217,33 @@ export default function Home() {
                     Success! Your resume has been tailored and compiled successfully.
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full justify-center">
+                  <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2.5 sm:gap-4 w-full sm:w-auto justify-center">
                     <a
                       href={pdfUrl || undefined}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center"
+                      className="w-full sm:w-auto px-4 sm:px-8 py-2.5 sm:py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center flex items-center justify-center truncate"
                     >
                       View PDF
                     </a>
                     <a
                       href={pdfUrl || undefined}
                       download={downloadName}
-                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-center"
+                      className="w-full sm:w-auto px-4 sm:px-8 py-2.5 sm:py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-center flex items-center justify-center truncate"
                     >
                       Download PDF
                     </a>
                     <button
                       type="button"
                       onClick={handleGenerate}
-                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center cursor-pointer"
+                      className="w-full sm:w-auto px-4 sm:px-8 py-2.5 sm:py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center cursor-pointer truncate"
                     >
                       Regenerate
                     </button>
                     <button
                       type="button"
                       onClick={() => handleReset(true)}
-                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-800 dark:text-white text-xs sm:text-sm font-bold rounded-xl transition-all text-center cursor-pointer shadow-sm"
+                      className="w-full sm:w-auto px-4 sm:px-8 py-2.5 sm:py-3.5 bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/20 text-slate-800 dark:text-white text-xs sm:text-sm font-bold rounded-xl transition-all text-center cursor-pointer shadow-sm truncate"
                     >
                       Clear All
                     </button>
@@ -3184,12 +3253,12 @@ export default function Home() {
 
               {/* Initial state Generate Button */}
               {!["success", "parsing", "tailoring", "compiling"].includes(status) && tailoredResumes.length === 0 && (
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full justify-center mt-4">
+                <div className="flex flex-row items-center justify-center gap-2.5 sm:gap-4 w-full mt-4">
                   <button
                     type="button"
                     onClick={handleGenerate}
                     disabled={["parsing", "tailoring", "compiling"].includes(status)}
-                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-center cursor-pointer"
+                    className="w-auto px-6 sm:px-8 py-2.5 sm:py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-center cursor-pointer"
                   >
                     {["parsing", "tailoring", "compiling"].includes(status) ? "Processing..." : "Generate Tailored PDF"}
                   </button>
@@ -3197,7 +3266,7 @@ export default function Home() {
                     <button
                       type="button"
                       onClick={() => handleReset(true)}
-                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-3.5 bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 text-slate-800 dark:text-white text-xs sm:text-sm font-bold rounded-xl transition-all text-center cursor-pointer shadow-sm"
+                      className="w-auto px-4 sm:px-8 py-2.5 sm:py-3.5 bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 text-slate-800 dark:text-white text-xs sm:text-sm font-bold rounded-xl transition-all text-center cursor-pointer shadow-sm"
                     >
                       Clear All
                     </button>
@@ -3222,12 +3291,12 @@ export default function Home() {
                 onChange={(e) => setClJdText(e.target.value)}
                 placeholder="Paste the Job Description specifically for your Cover Letter here..."
                 rows={4}
-                className="w-full bg-white dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-xs sm:text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 resize-y"
+                className="w-full bg-white dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-base sm:text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 resize-y"
               ></textarea>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-end">
-              <div className="flex-1 w-full">
+            <div className="flex flex-row gap-2 sm:gap-4 items-end">
+              <div className="flex-1 min-w-0">
                 <CustomDropdown
                   label="Cover Letter Model"
                   value={coverLetterModel}
@@ -3240,11 +3309,16 @@ export default function Home() {
                 type="button"
                 onClick={handleGenerateCoverLetter}
                 disabled={isGeneratingCL || !clJdText || (!latexText && !file)}
-                className="w-full sm:w-auto px-5 sm:px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] flex items-center justify-center gap-2 cursor-pointer"
+                className="shrink-0 px-3.5 sm:px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer active:scale-95"
               >
                 {isGeneratingCL ? (
                   <><svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg> <span>Generating...</span></>
-                ) : "Generate Cover Letter"}
+                ) : (
+                  <>
+                    <span className="hidden sm:inline">Generate Cover Letter</span>
+                    <span className="sm:hidden">Generate Letter</span>
+                  </>
+                )}
               </button>
             </div>
 
@@ -3281,12 +3355,12 @@ export default function Home() {
                   <button
                     type="button"
                     onClick={handleCopyCoverLetter}
-                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-semibold flex items-center gap-1.5 transition-all cursor-pointer py-1.5 px-3 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200/50 dark:border-indigo-500/20 active:scale-95 min-h-[32px]"
                   >
                     {hasCopiedCL ? (
                       <>
                         <svg className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                        <span className="text-emerald-600 dark:text-emerald-400">Copied!</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">Copied!</span>
                       </>
                     ) : (
                       <>
@@ -3302,21 +3376,21 @@ export default function Home() {
                 onChange={(e) => setCoverLetter(e.target.value)}
                 placeholder="Your generated cover letter will appear here. You can manually edit it before downloading."
                 rows={10}
-                className="w-full bg-white dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-xs sm:text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 font-mono leading-relaxed resize-y min-h-[180px] sm:min-h-[260px]"
+                className="w-full bg-white dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 sm:p-4 text-base sm:text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 font-mono leading-relaxed resize-y min-h-[180px] sm:min-h-[260px]"
               ></textarea>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-end gap-2.5 sm:gap-3">
+            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
               {coverLetter && (
                 <button
                   type="button"
                   onClick={handleCopyCoverLetter}
-                  className="w-full sm:w-auto px-5 sm:px-6 py-2.5 bg-white dark:bg-white/10 hover:bg-slate-100 dark:hover:bg-white/15 text-slate-800 dark:text-white text-xs sm:text-sm font-bold rounded-xl transition-all border border-slate-300 dark:border-white/10 flex items-center justify-center gap-2 cursor-pointer min-h-[42px] shadow-sm"
+                  className="w-auto px-4 sm:px-5 py-2.5 bg-white dark:bg-white/10 hover:bg-slate-100 dark:hover:bg-white/15 text-slate-800 dark:text-white text-xs sm:text-sm font-bold rounded-xl transition-all border border-slate-300 dark:border-white/10 flex items-center justify-center gap-2 cursor-pointer min-h-[40px] sm:min-h-[44px] shadow-sm active:scale-95"
                 >
                   {hasCopiedCL ? (
                     <>
                       <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                      <span className="text-emerald-600 dark:text-emerald-400">Copied to Clipboard!</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">Copied to Clipboard!</span>
                     </>
                   ) : (
                     <>
@@ -3330,7 +3404,7 @@ export default function Home() {
                 type="button"
                 onClick={handleDownloadCoverLetterTXT}
                 disabled={!coverLetter || isGeneratingCL}
-                className="w-full sm:w-auto px-5 sm:px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer min-h-[42px]"
+                className="w-auto px-4 sm:px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer min-h-[40px] sm:min-h-[44px] active:scale-95"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                 <span>Download TXT</span>
@@ -3339,7 +3413,7 @@ export default function Home() {
                 type="button"
                 onClick={handleDownloadCoverLetterPDF}
                 disabled={!coverLetter || isGeneratingCL}
-                className="w-full sm:w-auto px-5 sm:px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer min-h-[42px]"
+                className="w-auto px-4 sm:px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer min-h-[40px] sm:min-h-[44px] active:scale-95"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                 <span>Download PDF</span>
