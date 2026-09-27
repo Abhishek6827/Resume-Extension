@@ -15,12 +15,22 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Resume-Tailor",
   description: "Tailor your resume for any job in seconds with AI",
+  mobileWebAppCapable: "yes",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Resume-Tailor",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  viewportFit: "cover",
   themeColor: "#090a10",
 };
 
@@ -35,7 +45,30 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full w-full overflow-x-hidden flex flex-col" suppressHydrationWarning>{children}</body>
+      <head>
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            :root {
+              --safe-area-inset-top: env(safe-area-inset-top);
+              --safe-area-inset-right: env(safe-area-inset-right);
+              --safe-area-inset-bottom: env(safe-area-inset-bottom);
+              --safe-area-inset-left: env(safe-area-inset-left);
+            }
+            * {
+              -webkit-tap-highlight-color: transparent;
+            }
+            input, textarea, select {
+              font-size: 16px !important; /* Prevents zoom on iOS */
+            }
+          `
+        }} />
+      </head>
+      <body 
+        className="min-h-full w-full overflow-x-hidden flex flex-col bg-background text-foreground"
+        suppressHydrationWarning
+      >
+        {children}
+      </body>
     </html>
   );
 }
