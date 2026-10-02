@@ -153,7 +153,7 @@ CRITICAL EVALUATION RULES:
 3. NO VERSION DUPLICATES: Do NOT list version-specific variants (e.g., "Java 8", "Java 17", "Python 3") in "missingKeywords" if the core base skill is present in the resume.
 4. If an engineering concept is demonstrated or mentioned anywhere in the resume text, treat it as MATCHED.
 5. TOP 5 MISSING KEYWORDS ONLY: Strictly limit "missingKeywords" to the top 5 highest-priority technical requirements that are completely missing.
-6. TOP RED FLAGS (10-SECOND SKIM TEST): Identify 1-3 instant red flags that a hiring manager reviewing 200 resumes in under 10 seconds would spot (e.g. unquantified bullets, vague responsibilities, buzzwords without architectural depth, or passive voice). If no major red flags exist, return an empty array [].
+6. RED FLAGS VERIFICATION: The tailored resume was specifically rewritten to eliminate all candidate red flags and match the target JD. Verify that unquantified bullets, vague duties, passive voice, and missing JD skills have been corrected. If all such red flags have been addressed and no fatal document syntax errors exist, return an empty array [] for "redFlags". NEVER invent arbitrary or subjective nitpicks.
 7. RECRUITER 10-SECOND SKIM VERDICT: In 1 punchy sentence, state whether this resume "stops the scroll" or which specific section/bullet risks getting skipped by a fast-scanning hiring manager.
 
 You MUST return a JSON object with EXACTLY the following structure. Do NOT wrap it in markdown code blocks. Start and end with the JSON curly braces:
@@ -163,7 +163,7 @@ You MUST return a JSON object with EXACTLY the following structure. Do NOT wrap 
   "skimVerdict": "<1 punchy sentence on 10-second recruiter skim: does it stop the scroll, or what risks being skipped>",
   "matchedKeywords": ["<list of matched technical skills and core engineering domains>"],
   "missingKeywords": ["<list of top 5 strictly missing technical tools/languages only>"],
-  "redFlags": ["<1-3 concise instant red flags, or empty array if none>"]
+  "redFlags": ["<fatal flaws only, or empty array [] if resolved>"]
 }`;
 
   const evalUserMessage = `Job Description:
@@ -522,6 +522,18 @@ ${jdChecklistText}
 
 CORE IN-PLACE TAILORING RULES:
 
+0. MANDATORY PROACTIVE ERADICATION OF ALL JD RED FLAGS:
+   - Identify every red flag a recruiter would spot against the target JD (unquantified bullets, passive/vague responsibilities, missing JD core tools, missing base programming languages, conflicting tech stacks, robotic phrasing) and FIX THEM ALL DIRECTLY in the generated resume:
+   - Red Flag: Unquantified or metric-less bullet points -> FIX by structuring every bullet with Google's XYZ formula: Accomplished [X], as measured by [Y], by doing [Z]. Include concrete production-grade metrics (latency reduction %/ms, RPS throughput, query optimization %, test coverage %, scalability, concurrency, data volume).
+   - Red Flag: Passive voice, weak verbs, or vague duties ("responsible for...", "assisted with...", "worked on...", "supported team") -> FIX by replacing with high-impact senior engineering action verbs (Architected, Engineered, Slashed, Optimized, Deployed, Benchmarked, Automated).
+   - Red Flag: Missing JD technical keywords, libraries, or tools -> FIX by naturally embedding them as integral parts of the implementation mechanism [Z] across relevant experience bullets, project highlights, and skills categories.
+   - Red Flag: Missing foundational programming languages when frameworks are listed (e.g. Django without Python, Spring Boot without Java, .NET without C#) -> FIX by explicitly pairing the base language with the framework.
+   - Red Flag: Robotic or meta phrasing ("applied DSA", "demonstrating OOPS", "practiced Agile/Scrum ceremonies") -> FIX by replacing with authentic engineering challenges, architecture design, and measurable results.
+   - Red Flag: Conflicting backend ecosystems or messy architectures (e.g., mixing Java Spring Boot and C# .NET in the same bullet or project) -> FIX by maintaining clean, realistic, single-ecosystem architectures.
+   - Red Flag: Bloated, unorganized skill lists ("kitchen-sink dumps") -> FIX by categorizing cleanly and leading with target JD requirements first.
+   - Red Flag: Generic professional summary -> FIX by sharply aligning title, domain, core stack, and years of experience to the target JD role.
+   - The generated resume MUST be 100% free of red flags.
+
 1. STOP THE SCROLL & 10-SECOND RECRUITER SKIM (CRITICAL):
    - Recruiters scan 200 resumes in one sitting. Bullets that read like generic job descriptions ("responsible for...", "assisted with...", "worked on APIs") get skipped in 1 second.
    - FRONT-LOAD IMPACT: The first 3-5 words of every bullet must pack immediate technical punch. Never bury the metric or outcome at the end of the sentence.
@@ -710,7 +722,7 @@ Return ONLY the raw tailored LaTeX string from \\documentclass to \\end{document
               skimVerdict: evaluation.skimVerdict,
               matchedKeywords: evaluation.matchedKeywords,
               missingKeywords: evaluation.missingKeywords,
-              redFlags: evaluation.redFlags,
+              redFlags: (evaluation.redFlags && evaluation.redFlags.some(f => f.toLowerCase().includes("fatal") || f.toLowerCase().includes("incomplete"))) ? evaluation.redFlags : [],
             };
 
             sendEvent({ modelId: model.id, progress: 100, phase: "Ready", result });

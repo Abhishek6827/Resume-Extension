@@ -3166,8 +3166,8 @@ export default function Home() {
                                 </div>
                               </div>
 
-                              {/* Recruiter Red Flags */}
-                              {activeResult.redFlags && activeResult.redFlags.length > 0 && (
+                              {/* Red Flags Status */}
+                              {activeResult.redFlags && activeResult.redFlags.length > 0 ? (
                                 <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/10">
                                   <span className="text-xs font-semibold text-rose-700 dark:text-rose-400 flex items-center gap-1.5 mb-2">
                                     <svg className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -3180,6 +3180,15 @@ export default function Home() {
                                         <span className="leading-snug">{flag}</span>
                                       </div>
                                     ))}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="mt-3 pt-3 border-t border-slate-200 dark:border-white/10">
+                                  <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 px-2.5 py-1.5 rounded-lg">
+                                    <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span>Zero Red Flags • All JD alignment red flags resolved</span>
                                   </div>
                                 </div>
                               )}

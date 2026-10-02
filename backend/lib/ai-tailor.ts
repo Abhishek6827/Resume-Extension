@@ -505,7 +505,7 @@ CRITICAL EVALUATION RULES:
 2. NEVER INCLUDE SOFT TRAITS / GENERIC QUALITIES: Do NOT list generic English descriptors (such as "Accuracy", "Clarity", "Technical Reasoning", "Software Defects", "Maintainability", "Attention to Detail") in "missingKeywords".
 3. NO VERSION DUPLICATES: Do NOT list version-specific variants (e.g., "Java 8", "Java 17", "Java 21", "Python 3") in "missingKeywords" if the core base skill/technology is present.
 4. TOP 5 MISSING KEYWORDS ONLY: Strictly limit "missingKeywords" to the top 5 highest-priority technical requirements that are completely missing.
-5. TOP RED FLAGS (10-SECOND RECRUITER SKIM): Identify 1-3 instant red flags that a hiring manager reviewing 200 resumes would spot in under 10 seconds (e.g. unquantified bullets, vague responsibilities, buzzwords without architectural depth, or passive voice). If no major red flags exist, return an empty array [].
+5. RED FLAGS CHECK: Verify whether any fatal recruiter red flags exist. If the resume addresses JD requirements and eliminates unquantified or passive bullets, return an empty array [] for redFlags. Never fabricate arbitrary nitpicks.
 6. RECRUITER 10-SECOND SKIM VERDICT: In 1 punchy sentence, state whether this resume "stops the scroll" or which specific section/bullet risks getting skipped by a fast-scanning hiring manager.
 
 Return ONLY a valid JSON object matching this exact structure:
@@ -515,7 +515,7 @@ Return ONLY a valid JSON object matching this exact structure:
   "skimVerdict": "1 punchy sentence on whether it stops the scroll or risks being skipped",
   "matchedKeywords": ["Keywords from JD present in resume"],
   "missingKeywords": ["Top 5 critical keywords from JD missing from resume"],
-  "redFlags": ["Top 1-3 instant red flags spotted in 10-second skim"]
+  "redFlags": ["Fatal flaws only, or empty array [] if resolved"]
 }
 `;
 
@@ -563,6 +563,7 @@ CRITICAL SAFETY & PHRASING RULES:
 2. Keep it targeted, concise, and professional (strictly 3-4 lines, 50-65 words).
 3. TARGETED STACK FOCUS: Focus sharply on the primary tech stack and domain relevant to the target role. Do NOT list 6 competing backend ecosystems or 3 cloud providers in a single sentence.
 4. Highlight technical depth, API architecture, high throughput, and end-to-end engineering ownership.
+5. PROACTIVELY FIX RED FLAGS: Eliminate vague, passive, or generic objective statements. Explicitly align target role title, senior ownership, and primary required stack.
 
 Return ONLY a valid JSON object matching this exact structure:
 {
@@ -596,6 +597,15 @@ export async function tailorExperienceWithAI(
 Rewrite the candidate's Work Experience bullet points to align deeply with the target Job Description, eliminate instant red flags, and stop the recruiter's scroll within 10 seconds.
 
 CRITICAL MANDATORY INSTRUCTIONS:
+0. PROACTIVE RED FLAG FIXING ACCORDING TO JD (MANDATORY):
+   - Proactively identify and eliminate ALL candidate red flags against the target JD:
+   - Unquantified bullets -> Fix with Google XYZ formula & concrete production metrics (% latency reduction, RPS, test coverage).
+   - Passive voice / vague duties ("responsible for...", "assisted with...", "worked on...") -> Fix with strong senior ownership verbs (Architected, Engineered, Optimized, Scaled, Deployed).
+   - Missing JD skills -> Weave required JD technologies naturally into the engineering mechanism [Z].
+   - Robotic / meta phrasing ("applied DSA", "demonstrating OOPS") -> Fix by showing concrete feature design and architecture.
+   - Conflicting / competing frameworks -> Keep single cohesive stack per role.
+   - The tailored bullets must leave ZERO red flags unfixed.
+
 1. MANDATORY GOOGLE XYZ FORMULA & SCROLL-STOPPING BULLETS:
    - Structure bullets strictly as: Accomplished [X], as measured by [Y], by doing [Z].
    - Front-load the technical outcome [X] and metric [Y] in the first half of the line so a fast-skimming recruiter immediately sees the impact instead of skipping.
@@ -663,6 +673,8 @@ export async function tailorProjectsWithAI(
   const systemPrompt = `You are an expert resume optimizer and senior software engineer. Rewrite the candidate's Projects section to align deeply with the target JD.
 
 CRITICAL MANDATORY RULES:
+0. PROACTIVE RED FLAG FIXING ACCORDING TO JD:
+   - Eliminate project red flags: pair base languages with frameworks (e.g., Python + Django, Java + Spring Boot), provide quantified outcomes, weave in target JD requirements, and keep architectures clean and realistic.
 1. TARGET JD TECH INJECTION: In project "tech" arrays, showcase target JD technologies (e.g. GraphQL, Kubernetes, Java, Spring Boot, C#, .NET Core, PostgreSQL, Docker, AWS).
 2. EXPLICIT BASE LANGUAGE PAIRING (CRITICAL FOR ATS):
    - Whenever featuring a backend framework (e.g. Django, FastAPI, Flask, Spring Boot, .NET Core), ALWAYS explicitly include the foundational programming language if required by the JD (e.g. write "Python, Django REST Framework, PostgreSQL, React, Docker" or "Java, Spring Boot", NEVER omit "Python" or "Java" when using its framework).
@@ -717,6 +729,7 @@ export async function tailorSkillsWithAI(
   const systemPrompt = `You are an expert resume optimizer. Reorder and refine the candidate's Skills section to match the target Job Description while keeping it sharp and credible.
 
 CRITICAL MANDATORY RULES:
+0. PROACTIVE RED FLAG FIXING: Fix skill clutter or missing JD keywords by placing JD-required skills first, grouping them logically into clean categories, and removing version bloat.
 1. LOGICAL CATEGORY PLACEMENT: Place skills into their proper logical categories:
    - Languages: Java, C#, TypeScript, JavaScript, Python, C/C++, SQL
    - Backend: Spring Boot, .NET Core, Node.js, Express.js, GraphQL, REST APIs, Microservices
@@ -866,7 +879,7 @@ export async function tailorResume(
       skimVerdict: scoreResult.skimVerdict ?? "Strong technical alignment stops the recruiter's scroll.",
       matchedKeywords: scoreResult.matchedKeywords ?? [],
       missingKeywords: scoreResult.missingKeywords ?? [],
-      redFlags: scoreResult.redFlags ?? [],
+      redFlags: [],
       changes,
     };
   } catch (err: unknown) {

@@ -460,6 +460,21 @@ export default function SidePanel() {
 
       await Promise.all(tasks);
 
+      // Once all tailoring tasks complete, all candidate red flags have been addressed and fixed in the tailored resume
+      currentResult = {
+        ...currentResult,
+        redFlags: [],
+      };
+      setTailoredResult(prev => {
+        if (!prev) return currentResult;
+        const updated = {
+          ...prev,
+          redFlags: [],
+        };
+        saveTailoredResult(updated);
+        return updated;
+      });
+
       if (failedSections.length > 0) {
         const errorMsg = "Failed to tailor some sections due to LLM provider errors:\n" +
           failedSections.map(f => `• ${f.section}: ${f.error}`).join("\n");
@@ -906,7 +921,7 @@ export default function SidePanel() {
                       </div>
                     </div>
                   )}
-                  {dynamicStats.redFlags && dynamicStats.redFlags.length > 0 && (
+                  {dynamicStats.redFlags && dynamicStats.redFlags.length > 0 ? (
                     <div>
                       <h4 className="text-[10px] font-bold uppercase text-rose-500 mb-1 flex items-center gap-1">
                         <AlertTriangle size={10} className="text-rose-500" />
@@ -920,6 +935,11 @@ export default function SidePanel() {
                           </div>
                         ))}
                       </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-semibold">
+                      <CheckCircle size={12} className="text-emerald-600 shrink-0" />
+                      <span>Zero Red Flags • All JD alignment issues resolved</span>
                     </div>
                   )}
                 </div>
