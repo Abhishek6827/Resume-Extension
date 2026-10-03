@@ -3127,7 +3127,7 @@ export default function Home() {
                               )}
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-2">
+                            <div className="flex flex-col gap-3 sm:gap-4 mt-2">
                               {/* Matched Keywords */}
                               <div>
                                 <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 mb-2">
