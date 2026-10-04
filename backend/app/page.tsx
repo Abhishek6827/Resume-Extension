@@ -65,17 +65,24 @@ function extractCandidateNameFromLatex(latex: string): string {
     if (isValidName(res)) return res;
   }
 
-  // 2. Explicit macro definitions: \name{...}, \author{...}, \fullname{...}, \cvname{...}, \candidate{...}
-  const explicitMacroMatch = latex.match(/\\(?:name|author|fullname|cvname|candidate|profileName)\s*\{([^}]+)\}/i);
+  // 2. Explicit macro definitions: \name{...}, \author{...}, \fullname{...}, \cvname{...}, \candidate{...}, \title{...}
+  const explicitMacroMatch = latex.match(/\\(?:name|author|fullname|cvname|candidate|profileName|title)\s*\{([^}]+)\}/i);
   if (explicitMacroMatch) {
     const res = clean(explicitMacroMatch[1]);
     if (isValidName(res)) return res;
   }
 
   // 3. \newcommand{\name}{Full Name} or \newcommand{\myname}{Full Name}
-  const newcmdMatch = latex.match(/\\newcommand\s*\{\s*\\(?:my)?name\s*\}\s*\{([^}]+)\}/i);
+  const newcmdMatch = latex.match(/\\(?:newcommand|def)\s*\{\s*\\(?:my)?(?:name|author|candidate)\s*\}\s*\{([^}]+)\}/i);
   if (newcmdMatch) {
     const res = clean(newcmdMatch[1]);
+    if (isValidName(res)) return res;
+  }
+
+  // 3b. \def\name{Full Name}
+  const defMatch = latex.match(/\\def\s*\\(?:name|author|candidate|myname)\s*\{([^}]+)\}/i);
+  if (defMatch) {
+    const res = clean(defMatch[1]);
     if (isValidName(res)) return res;
   }
 
@@ -112,7 +119,7 @@ function extractCandidateNameFromLatex(latex: string): string {
   }
 
   // 5d. \begin{center} ... \textbf{Full Name} \\ or {\LARGE ...}
-  const centerMatch = searchArea.match(/\\begin\{center\}\s*\\(?:textbf|Huge|LARGE|Large)\s*(?:\{|\s+)([^\\\}\n]+)(?:\}|\s*\\\\)/i);
+  const centerMatch = searchArea.match(/\\begin\{center\}\s*(?:\\vspace\*?\{[^}]*\}\s*)*\\(?:textbf|Huge|LARGE|Large)\s*(?:\{|\s+)([^\\\}\n]+)(?:\}|\s*\\\\)/i);
   if (centerMatch) {
     const res = clean(centerMatch[1]);
     if (isValidName(res)) return res;
@@ -122,6 +129,13 @@ function extractCandidateNameFromLatex(latex: string): string {
   const centerBraceMatch = searchArea.match(/\\begin\{center\}\s*\{+([^\\\}\n]{3,40})\}+/i);
   if (centerBraceMatch) {
     const res = clean(centerBraceMatch[1]);
+    if (isValidName(res)) return res;
+  }
+
+  // 5f. \centerline{\textbf{...}} or \centerline{\Huge ...}
+  const centerlineMatch = searchArea.match(/\\centerline\s*\{\s*(?:\\(?:textbf|Huge|huge|LARGE|Large)\s*\{?|\s*)([^\\\}]+)\}?/i);
+  if (centerlineMatch) {
+    const res = clean(centerlineMatch[1]);
     if (isValidName(res)) return res;
   }
 
@@ -217,31 +231,44 @@ function cleanTitleForFilename(rawTitle?: string): string {
   return conciseWords.join("_");
 }
 
+function extractCandidateNameFromFilename(filename?: string): string {
+  if (!filename) return "";
+  const withoutExt = filename.replace(/\.[^/.]+$/, "");
+  let text = withoutExt.replace(/[_\-–—.]+/g, " ");
+  text = text.replace(/\b(?:resume|cv|curriculum\s*vitae|profile|biodata|bio|draft|latest|updated|final|new|copy|v\d+|\d{4})\b/gi, " ");
+  text = text.replace(/[^a-zA-Z\s]/g, " ").trim();
+  const words = text.split(/\s+/).filter(Boolean);
+  if (words.length >= 1 && words.length <= 4) {
+    return words.join(" ");
+  }
+  return "";
+}
+
 function cleanCandidateForFilename(rawName?: string): string {
   if (!rawName) return "";
+  if (rawName.trim().toLowerCase() === "candidate") return "";
+
   const words = rawName
     .replace(/[^a-zA-Z0-9\s]/g, " ")
     .trim()
     .split(/\s+/)
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter(w => !/^(?:resume|cv|curriculum|vitae|profile|document)$/i.test(w));
+
+  if (words.length === 0) return "";
 
   // Keep first 2 to 3 words (e.g. "Abhishek Tiwari")
   return words.slice(0, 3).join("_");
 }
 
-function formatResumeFilename(candidateName: string, jobTitle?: string): string {
+function formatResumeFilename(candidateName?: string, _jobTitle?: string): string {
   const cleanCandidate = cleanCandidateForFilename(candidateName);
-  const cleanTitle = cleanTitleForFilename(jobTitle);
 
-  if (cleanCandidate && cleanTitle) {
-    return `${cleanCandidate}_${cleanTitle}.pdf`;
-  }
   if (cleanCandidate) {
-    return `${cleanCandidate}.pdf`;
+    const base = cleanCandidate.replace(/_resume$/i, "");
+    return `${base}_Resume.pdf`;
   }
-  if (cleanTitle) {
-    return `${cleanTitle}.pdf`;
-  }
+
   return "Resume.pdf";
 }
 
@@ -1907,6 +1934,10 @@ export default function Home() {
     setLatexText(val);
     if (val) {
       localStorage.setItem("savedLatex", val);
+      const parsedCandidate = extractCandidateNameFromLatex(val);
+      if (parsedCandidate) {
+        setDownloadName(formatResumeFilename(parsedCandidate));
+      }
     } else {
       localStorage.removeItem("savedLatex");
     }
@@ -2122,9 +2153,11 @@ export default function Home() {
     const result = resultsList[index];
     if (!result || !result.latex) return;
 
-    const cand = result.candidateName || extractCandidateNameFromLatex(result.latex || latexText) || "Candidate";
-    const job = result.jobTitle || parsedJobTitle || extractJobTitleFromText(jdText) || "";
-    setDownloadName(formatResumeFilename(cand, job));
+    const cand =
+      result.candidateName ||
+      extractCandidateNameFromLatex(result.latex || latexText) ||
+      (file ? extractCandidateNameFromFilename(file.name) : "");
+    setDownloadName(formatResumeFilename(cand));
 
     setIsCompilingSelected(true);
     setPdfUrl(null);
@@ -2253,17 +2286,24 @@ export default function Home() {
     const result = tailoredResumes[index];
     setGeneratedLatexLength(result.generatedLength);
 
-    // Dynamically set download name with candidate name and job title
-    const cand = result.candidateName || extractCandidateNameFromLatex(result.latex || latexText) || "Candidate";
-    const job = result.jobTitle || parsedJobTitle || extractJobTitleFromText(jdText) || "";
-    setDownloadName(formatResumeFilename(cand, job));
+    // Dynamically set download name with candidate name
+    const cand =
+      result.candidateName ||
+      extractCandidateNameFromLatex(result.latex || latexText) ||
+      (file ? extractCandidateNameFromFilename(file.name) : "");
+    setDownloadName(formatResumeFilename(cand));
 
     await compilePdfForIndex(index, tailoredResumes);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+      const parsedFromFile = extractCandidateNameFromFilename(selectedFile.name);
+      if (parsedFromFile) {
+        setDownloadName(formatResumeFilename(parsedFromFile));
+      }
     }
   };
 
@@ -2370,7 +2410,7 @@ export default function Home() {
         const candidateName = extractCandidateNameFromLatex(latexText);
         const jobTitle = jdData?.jobTitle?.trim() || extractJobTitleFromText(jdText) || "";
         setParsedJobTitle(jobTitle);
-        setDownloadName(formatResumeFilename(candidateName, jobTitle));
+        setDownloadName(formatResumeFilename(candidateName));
 
         setStatus("tailoring");
 
@@ -2465,9 +2505,12 @@ export default function Home() {
         const bestResult = sortedResults.find(r => !r.error && r.latex);
 
         if (bestResult && bestResult.latex) {
-          const resCand = bestResult.candidateName || candidateName || extractCandidateNameFromLatex(bestResult.latex) || "Candidate";
-          const resJob = bestResult.jobTitle || jobTitle || parsedJobTitle || extractJobTitleFromText(jdText) || "";
-          setDownloadName(formatResumeFilename(resCand, resJob));
+          const resCand =
+            bestResult.candidateName ||
+            candidateName ||
+            extractCandidateNameFromLatex(bestResult.latex) ||
+            (file ? extractCandidateNameFromFilename(file.name) : "");
+          setDownloadName(formatResumeFilename(resCand));
 
           setGeneratedLatexLength(bestResult.generatedLength);
           setStatus("compiling");
@@ -2523,10 +2566,14 @@ export default function Home() {
       if (!tailorRes.ok) throw new Error("Failed to tailor resume");
       const tailoredResult = await tailorRes.json();
 
-      const candidateName = tailoredResult.tailoredResume?.name?.trim() || extractCandidateNameFromLatex(latexText || "");
+      const candidateName =
+        tailoredResult.tailoredResume?.name?.trim() ||
+        resumeData?.name?.trim() ||
+        (file ? extractCandidateNameFromFilename(file.name) : "") ||
+        extractCandidateNameFromLatex(latexText || "");
       const jobTitle = jdData?.jobTitle?.trim() || extractJobTitleFromText(jdText) || "";
       setParsedJobTitle(jobTitle);
-      setDownloadName(formatResumeFilename(candidateName, jobTitle));
+      setDownloadName(formatResumeFilename(candidateName));
 
       setStatus("compiling");
       const compileRes = await fetch(`${API_BASE_URL}/api/generate-latex-pdf`, {
