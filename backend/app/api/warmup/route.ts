@@ -8,7 +8,7 @@ const WARMUP_MODELS = [
   { id: "nvidia/nemotron-3-super-120b-a12b", name: "Nemotron 120B" },
   { id: "moonshotai/kimi-k3", name: "Kimi K3" },
   { id: "nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B" },
-  { id: "deepseek-ai/deepseek-v4.1-flash", name: "DeepSeek V4 Flash" },
+  { id: "nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron 30B" },
 ];
 
 export async function OPTIONS(request: NextRequest) {
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
       const sendEvent = (data: any) => {
         try {
           controller.enqueue(encoder.encode(JSON.stringify(data) + "\n"));
-        } catch (_) {}
+        } catch (_) { }
       };
 
       // Send initial queued state for target models
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
             max_tokens: 1,
             stream: false,
           };
-          if (model.id.includes("deepseek-v4")) {
+          if (model.id.includes("nemotron-3.5")) {
             requestOptions.chat_template_kwargs = { thinking: false };
           }
 
