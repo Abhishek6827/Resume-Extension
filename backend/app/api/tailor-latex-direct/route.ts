@@ -73,10 +73,12 @@ function cleanLatexResponse(rawText: string): string {
   cleaned = cleaned.replace(/[ \t]+$/gm, '');
   cleaned = cleaned.replace(/[ \t]+\\\\/g, '\\\\');
 
-  // 7. Strip unintended blank lines inside itemize environments that add paragraph break spacing
+  // 7. Strip unintended blank lines inside and around itemize environments that add paragraph break spacing
+  cleaned = cleaned.replace(/\n\s*\n+(\\begin\{itemize\})/g, '\n$1');
   cleaned = cleaned.replace(/(\\begin\{itemize\})\n\s*\n+/g, '$1\n');
   cleaned = cleaned.replace(/(\\item[^\n]*)\n\s*\n+(\s*\\item)/g, '$1\n$2');
   cleaned = cleaned.replace(/\n\s*\n+(\\end\{itemize\})/g, '\n$1');
+  cleaned = cleaned.replace(/(\\end\{itemize\})\n\s*\n+/g, '$1\n');
 
   return cleaned.trim();
 }
@@ -261,7 +263,7 @@ async function tailorForModel(
   let attempt = 0;
   const maxAttempts = 3;
   let currentSystemPrompt = systemPrompt;
-  const maxAllowedBudget = latexLength;
+  const maxAllowedBudget = Math.round(latexLength * 0.94);
 
   while (attempt < maxAttempts) {
     const response = await callLLM({
@@ -279,15 +281,17 @@ async function tailorForModel(
 
     const excess = tailoredLatex.length - maxAllowedBudget;
     currentSystemPrompt = `You are an expert ATS specialist and senior LaTeX editor.
-CRITICAL 1-PAGE CHARACTER LIMIT OVERFLOW (ATTEMPT ${attempt + 1}/${maxAttempts}):
+CRITICAL 1-PAGE CHARACTER & LINE OVERFLOW (ATTEMPT ${attempt + 1}/${maxAttempts}):
 Your generated LaTeX was ${tailoredLatex.length} characters long, which is ${excess} characters OVER the strict 1-page budget (${maxAllowedBudget} characters).
 
 TO GUARANTEE THE RESUME FITS ON EXACTLY 1 PAGE WHILE RETAINING HIGH CREDIBILITY:
-1. SWAP IN-PLACE & COMPACT: Keep single-line bullets under 80 characters, and 2-line bullets under 145 characters. Retain Google XYZ formula (accomplished X, measured by Y, by doing Z). Remove filler words, but retain key technical achievements. NEVER write robotic meta-phrases like "applied Data Structures, Algorithms" or "conducted task estimation".
+1. SWAP IN-PLACE & COMPACT: Keep single-line bullets strictly under 75-80 characters, and 2-line bullets under 140-145 characters so they never wrap an extra line. Retain Google XYZ formula (accomplished X, measured by Y, by doing Z). Remove filler words, but retain key technical achievements. NEVER write robotic meta-phrases like "applied Data Structures, Algorithms" or "conducted task estimation".
 2. PROJECT TECH HEADERS: Keep strictly to 4-5 core JD technologies per project subtitle.
 3. SKILL ROWS: Keep each skill category to 1 single line (max 5-6 core tools, max 55-60 chars). Lead with target JD skills.
-4. SUMMARY: Limit summary to strictly 3 compact, focused lines (~45-50 words).
+4. SUMMARY: Limit summary to strictly 3 compact, focused lines (~45 words).
 5. DO NOT add extra bullets or projects. Keep the exact count as the original template.
+6. DO NOT alter preamble, geometry, margins, packages, or vertical spacing.
+7. DO NOT add extra blank lines between sections or around itemize blocks.
 
 You MUST produce the full LaTeX document with total length <= ${maxAllowedBudget} characters.`;
     attempt++;
@@ -585,10 +589,21 @@ CORE IN-PLACE TAILORING RULES:
    - Rewrite the summary to highlight the candidate's target role title, years of experience (3+ years), and primary domain/stack focus in strictly 3 compact lines (~45-55 words).
    - Keep it targeted and cohesive—do not list 6 competing backend frameworks in a single sentence.
 
-6. STRICT 1-PAGE CHARACTER LIMIT (HARD REQUIREMENT):
-   - The original LaTeX has ${latexLength} characters.
-   - Your tailored LaTeX MUST be <= ${latexLength} characters (Target budget: ~${Math.round(latexLength * 0.95)} to ${latexLength} characters).
+6. STRICT 1-PAGE AND LINE-WRAPPING BUDGET LIMIT (HARD REQUIREMENT):
+   - In LaTeX, character count does NOT determine page fit—VERTICAL LINE HEIGHT DOES. Just 2-3 bullets wrapping onto an extra line will spill the bottom section onto page 2!
+   - EXACT STRUCTURE PRESERVATION:
+     * Keep the EXACT same number of \\item bullets per job and project as the original template. NEVER add extra bullets.
+     * Match the physical line-count of each bullet in the original:
+       - Single-line bullets: keep strictly under 75-80 characters.
+       - 2-line bullets: keep strictly under 140-145 characters so they never wrap an extra line.
+       - NEVER allow a bullet to spill onto a new line by just 1-3 trailing words ("widows").
+     * Technical Skills: Keep each skill line to strictly 1 physical line (max 55-60 characters). Do NOT create multi-line skill dumps.
+     * Summary: Limit to strictly 3 compact lines (~45 words).
+   - STRICT CHARACTER BUDGET:
+     * The original LaTeX has ${latexLength} characters.
+     * Your tailored LaTeX MUST be <= ${Math.round(latexLength * 0.94)} characters (Target budget: ~${Math.round(latexLength * 0.88)} to ${Math.round(latexLength * 0.93)} characters). A 6-12% buffer is required to guarantee zero 2nd-page spillover after keyword injection.
    - DO NOT alter preamble, geometry, margins, packages, or vertical spacing.
+   - DO NOT add extra blank lines between sections or around itemize blocks.
 
 7. LATEX FORMATTING RULES:
    - Leave ALL macros, brackets, and custom commands (e.g. \\role, \\project, \\item) intact.
@@ -652,31 +667,33 @@ ${latex}`;
 
                 tailored = cleanLatexResponse(response.content);
 
-                if (tailored.length <= latexLength) {
+                const targetBudget = Math.round(latexLength * 0.94);
+                if (tailored.length <= targetBudget) {
                   break;
                 }
 
                 // Last attempt — no point building a retry prompt
                 if (attempt >= maxAttempts - 1) break;
 
-                const excess = tailored.length - latexLength;
-                console.warn(`[Stream Retry] Model ${model.name} exceeded budget by ${excess} chars (${tailored.length}/${latexLength}). Attempt ${attempt + 2}/${maxAttempts}...`);
+                const excess = tailored.length - targetBudget;
+                console.warn(`[Stream Retry] Model ${model.name} exceeded budget by ${excess} chars (${tailored.length}/${targetBudget}). Attempt ${attempt + 2}/${maxAttempts}...`);
 
                 sendEvent({ modelId: model.id, progress: 30 + (attempt + 1) * 15, phase: `Compacting (retry ${attempt + 1})` });
 
                 currentPrompt = `You are an expert ATS specialist and senior LaTeX editor.
-CRITICAL 1-PAGE CHARACTER LIMIT OVERFLOW (ATTEMPT ${attempt + 2}/${maxAttempts}):
-Your generated LaTeX was ${tailored.length} characters long, which is ${excess} characters OVER the strict 1-page budget (${latexLength} characters).
+CRITICAL 1-PAGE CHARACTER & LINE OVERFLOW (ATTEMPT ${attempt + 2}/${maxAttempts}):
+Your generated LaTeX was ${tailored.length} characters long, which is ${excess} characters OVER the strict 1-page budget (${targetBudget} characters).
 
 TO GUARANTEE THE RESUME FITS ON EXACTLY 1 PAGE WHILE RETAINING HIGH CREDIBILITY:
-1. SWAP IN-PLACE & COMPACT: Keep single-line bullets under 80 characters, and 2-line bullets under 145 characters. Retain Google XYZ formula (accomplished X, measured by Y, by doing Z). Remove filler words, but retain key technical achievements. NEVER write robotic meta-phrases like "applied Data Structures, Algorithms" or "conducted task estimation".
+1. SWAP IN-PLACE & COMPACT: Keep single-line bullets under 75-80 characters, and 2-line bullets under 140-145 characters so they never wrap an extra line. Retain Google XYZ formula (accomplished X, measured by Y, by doing Z). Remove filler words, but retain key technical achievements. NEVER write robotic meta-phrases like "applied Data Structures, Algorithms" or "conducted task estimation".
 2. PROJECT TECH HEADERS: Keep strictly to 4-5 core JD technologies per project subtitle.
 3. SKILL ROWS: Keep each skill category to 1 single line (max 5-6 core tools, max 55-60 chars). Lead with target JD skills.
-4. SUMMARY: Limit summary to strictly 3 compact, focused lines (~45-50 words).
+4. SUMMARY: Limit summary to strictly 3 compact, focused lines (~45 words).
 5. DO NOT add extra bullets or projects. Keep the exact count as the original template.
 6. DO NOT alter preamble, geometry, margins, packages, or vertical spacing.
+7. DO NOT add extra blank lines between sections or around itemize blocks.
 
-You MUST produce the full LaTeX document with total length <= ${latexLength} characters.
+You MUST produce the full LaTeX document with total length <= ${targetBudget} characters.
 Return ONLY the raw tailored LaTeX string from \\documentclass to \\end{document}. No markdown fences, no explanations.`;
               }
 

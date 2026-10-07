@@ -2166,7 +2166,7 @@ export default function Home() {
       const compileRes = await fetch(`${API_BASE_URL}/api/generate-latex-pdf`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ latex: result.latex }),
+        body: JSON.stringify({ latex: result.latex, enforceSinglePage: true }),
       });
 
       if (!compileRes.ok) {
@@ -2517,7 +2517,7 @@ export default function Home() {
           const compileRes = await fetch(`${API_BASE_URL}/api/generate-latex-pdf`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ latex: bestResult.latex }),
+            body: JSON.stringify({ latex: bestResult.latex, enforceSinglePage: true }),
           });
 
           if (!compileRes.ok) {
