@@ -10,7 +10,7 @@ const RESUME_MODELS = [
   { id: "nvidia:moonshotai/kimi-k3", name: "Kimi K3 (Moonshot AI)", shortName: "Kimi K3", icon: "https://www.google.com/s2/favicons?domain=moonshot.cn&sz=128" },
   { id: "nvidia:nvidia/nemotron-3-super-120b-a12b", name: "Nemotron 120B (Balanced)", shortName: "Nemotron 120B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)", shortName: "Nemotron 550B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
-  { id: "nvidia:deepseek-ai/deepseek-v4.1-flash", name: "DeepSeek V4 Flash (Quality)", shortName: "DeepSeek V4", icon: "https://www.google.com/s2/favicons?domain=deepseek.com&sz=128" },
+  { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron 30B (Speed)", shortName: "Nemotron 30B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
 ];
 
 const COVER_LETTER_MODELS = [
@@ -2677,22 +2677,20 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => { setActiveTab("file"); handleReset(false); }}
-                className={`py-2 px-2.5 sm:px-4 font-semibold text-xs sm:text-sm rounded-lg text-center transition-all min-h-[38px] flex items-center justify-center gap-1.5 cursor-pointer ${
-                  activeTab === "file"
-                    ? "bg-white dark:bg-white/15 text-indigo-600 dark:text-white shadow-sm font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                }`}
+                className={`py-2 px-2.5 sm:px-4 font-semibold text-xs sm:text-sm rounded-lg text-center transition-all min-h-[38px] flex items-center justify-center gap-1.5 cursor-pointer ${activeTab === "file"
+                  ? "bg-white dark:bg-white/15 text-indigo-600 dark:text-white shadow-sm font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                  }`}
               >
                 <span>Upload Base Resume</span>
               </button>
               <button
                 type="button"
                 onClick={() => { setActiveTab("latex"); handleReset(false); }}
-                className={`py-2 px-2.5 sm:px-4 font-semibold text-xs sm:text-sm rounded-lg text-center transition-all min-h-[38px] flex items-center justify-center gap-1.5 cursor-pointer ${
-                  activeTab === "latex"
-                    ? "bg-white dark:bg-white/15 text-indigo-600 dark:text-white shadow-sm font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                }`}
+                className={`py-2 px-2.5 sm:px-4 font-semibold text-xs sm:text-sm rounded-lg text-center transition-all min-h-[38px] flex items-center justify-center gap-1.5 cursor-pointer ${activeTab === "latex"
+                  ? "bg-white dark:bg-white/15 text-indigo-600 dark:text-white shadow-sm font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                  }`}
               >
                 <span>Direct LaTeX Code</span>
               </button>
