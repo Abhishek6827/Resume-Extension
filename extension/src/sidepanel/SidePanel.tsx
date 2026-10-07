@@ -499,7 +499,7 @@ export default function SidePanel() {
   // Helper to construct a clean, professional resume filename for recruiters/ATS
   const generateProfessionalFilename = (
     rawName: string | undefined,
-    rawTitle: string | undefined,
+    _rawTitle: string | undefined,
     ext: "pdf" | "docx"
   ): string => {
     const sanitize = (str?: string) =>
@@ -509,20 +509,14 @@ export default function SidePanel() {
         .replace(/\s+/g, "_");
 
     let name = sanitize(rawName);
-    if (!name || name.includes("\\")) {
+    if (!name || name.includes("\\") || name.toLowerCase() === "candidate") {
       const extracted = extractNameFromLatex(rawResumeText);
       if (extracted) name = sanitize(extracted);
     }
-    const title = sanitize(rawTitle);
 
-    if (name && title) {
-      return `${name}_${title}.${ext}`;
-    }
-    if (name) {
-      return `${name}.${ext}`;
-    }
-    if (title) {
-      return `${title}.${ext}`;
+    if (name && name.toLowerCase() !== "candidate") {
+      const base = name.replace(/_resume$/i, "");
+      return `${base}_Resume.${ext}`;
     }
     return `Resume.${ext}`;
   };
