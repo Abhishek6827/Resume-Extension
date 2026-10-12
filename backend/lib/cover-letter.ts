@@ -26,6 +26,19 @@ function formatResumeSection(resume: ResumeData | string, defaultName: string): 
   return { text, name };
 }
 
+export function stripMarkdownFormatting(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\*\*\*([^*]+?)\*\*\*/g, "$1")
+    .replace(/\*\*([^*]+?)\*\*/g, "$1")
+    .replace(/(^|[^\*])\*([^\*\s](?:[^\*]*?[^\*\s])?)\*(?!\*)/g, "$1$2")
+    .replace(/__([^_]+?)__/g, "$1")
+    .replace(/\*\*/g, "")
+    .trim();
+}
+
 export async function generateCoverLetter(
   resume: ResumeData | string,
   jd: JDData | string,
@@ -44,7 +57,8 @@ CRITICAL TRUTHFULNESS & ANTI-HALLUCINATION RULES:
    - Only cite companies, projects, metrics, and technologies that actually exist in the candidate's resume.
    - Do NOT invent fictitious employers, unverified metrics, or fake responsibilities.
 3. STRUCTURE & FORMATTING:
-   - Output plain text with clear paragraphs. Do NOT wrap in markdown code blocks or backticks.
+   - Output clean plain text with clear paragraphs. Do NOT wrap in markdown code blocks or backticks.
+   - STRICTLY NO MARKDOWN BOLDING OR ASTERISKS: NEVER use asterisks (**bold** or *italic*), markdown headers (###), or formatting symbols. ATS systems and job portal textboxes require pure plain text.
    - Do NOT use placeholders like [Date], [Hiring Manager], or [Company Name]. Infer Company Name and Job Title from the Job Description.
    - Keep the letter focused and concise (3-4 paragraphs).
    - Paragraph 1: Target position, candidate's authentic professional profile with exact years of experience, and core value proposition.
@@ -74,5 +88,6 @@ Please write the cover letter now. Only output the cover letter text, no other c
     maxTokens: 2500,
   });
 
-  return response.content.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+  const rawCleaned = response.content.replace(/<think>[\s\S]*?<\/think>/gi, "");
+  return stripMarkdownFormatting(rawCleaned);
 }

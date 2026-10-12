@@ -1,4 +1,5 @@
 import PDFDocument from "pdfkit";
+import { stripMarkdownFormatting } from "./cover-letter";
 
 export function generateCoverLetterPDF(
   content: string,
@@ -33,12 +34,13 @@ export function generateCoverLetterPDF(
       doc.moveDown(2);
 
       // Body
+      const cleanBody = stripMarkdownFormatting(content);
       doc
         .fillColor(textColor)
         .font(fontRegular)
         .fontSize(11)
         .lineGap(6)
-        .text(content, {
+        .text(cleanBody, {
           align: "left",
           width: 450
         });

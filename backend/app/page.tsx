@@ -288,6 +288,19 @@ function formatCoverLetterFilename(candidateName: string, jobTitle?: string, ext
   return `Cover_Letter.${ext}`;
 }
 
+function stripMarkdownFormatting(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\*\*\*([^*]+?)\*\*\*/g, "$1")
+    .replace(/\*\*([^*]+?)\*\*/g, "$1")
+    .replace(/(^|[^\*])\*([^\*\s](?:[^\*]*?[^\*\s])?)\*(?!\*)/g, "$1$2")
+    .replace(/__([^_]+?)__/g, "$1")
+    .replace(/\*\*/g, "")
+    .trim();
+}
+
 const CustomDropdown = ({ value, onChange, options, label, focusColor }: { value: string, onChange: (val: string) => void, options: any[], label: string, focusColor: string }) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectedModel = options.find((m: any) => m.id === value);
@@ -1856,7 +1869,7 @@ export default function Home() {
     if (savedGenLen) setGeneratedLatexLength(Number(savedGenLen));
 
     const savedCL = localStorage.getItem("savedCoverLetter");
-    if (savedCL) setCoverLetter(savedCL);
+    if (savedCL) setCoverLetter(stripMarkdownFormatting(savedCL));
   }, []);
 
   // Save states to localStorage on changes
@@ -2027,7 +2040,7 @@ export default function Home() {
       }
 
       const { content } = await clRes.json();
-      setCoverLetter(content);
+      setCoverLetter(stripMarkdownFormatting(content));
     } catch (err: any) {
       console.error(err);
       setClError(err.message || "Failed to generate cover letter.");
@@ -2043,11 +2056,12 @@ export default function Home() {
       const jobTitle = parsedJobTitle || extractJobTitleFromText(clJdText || jdText) || "";
       const clFilename = formatCoverLetterFilename(candidateName, jobTitle, "pdf");
 
+      const cleanContent = stripMarkdownFormatting(coverLetter);
       const res = await fetch(`${API_BASE_URL}/api/export-cover-letter-pdf`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          content: coverLetter,
+          content: cleanContent,
           candidateName,
           downloadName: clFilename
         }),
@@ -2122,9 +2136,11 @@ export default function Home() {
 
   const handleCopyCoverLetter = async () => {
     if (!coverLetter) return;
-    const copied = await copyToClipboard(coverLetter);
+    const cleanContent = stripMarkdownFormatting(coverLetter);
+    const copied = await copyToClipboard(cleanContent);
     if (copied) {
       setHasCopiedCL(true);
+      setCoverLetter(cleanContent);
       setTimeout(() => setHasCopiedCL(false), 2500);
     } else {
       setClError("Automatic copy failed. Please select and copy the text manually.");
@@ -2134,11 +2150,12 @@ export default function Home() {
 
   const handleDownloadCoverLetterTXT = () => {
     if (!coverLetter) return;
+    const cleanContent = stripMarkdownFormatting(coverLetter);
     const candidateName = extractCandidateNameFromLatex(latexText) || "Candidate";
     const jobTitle = parsedJobTitle || extractJobTitleFromText(clJdText || jdText) || "";
     const clFilename = formatCoverLetterFilename(candidateName, jobTitle, "txt");
 
-    const blob = new Blob([coverLetter], { type: "text/plain" });
+    const blob = new Blob([cleanContent], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -2388,7 +2405,7 @@ export default function Home() {
             throw new Error(errData.error || "Failed to generate cover letter.");
           }
           const { content } = await clRes.json();
-          setCoverLetter(content);
+          setCoverLetter(stripMarkdownFormatting(content));
         } catch (err: any) {
           console.error("[parallel-cover-letter] Error:", err);
           setClError(err.message || "Cover letter generation failed.");
