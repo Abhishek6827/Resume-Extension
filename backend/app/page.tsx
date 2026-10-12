@@ -2621,7 +2621,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col justify-between bg-slate-100 dark:bg-radial dark:from-[#121324] dark:via-[#090a10] dark:to-[#040408] text-slate-900 dark:text-slate-100 font-sans antialiased transition-colors duration-300">
       {/* Navbar */}
-      <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex items-center justify-between">
+      <header className="w-full max-w-7xl xl:max-w-[1440px] 2xl:max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
             <span className="font-bold text-base sm:text-lg text-white tracking-wider">RT</span>
@@ -2662,7 +2662,7 @@ export default function Home() {
       </header>
 
       {/* Main Hero & Tool */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-3.5 sm:px-6 py-4 sm:py-10 flex flex-col items-center">
+      <main className="flex-1 w-full max-w-7xl xl:max-w-[1440px] 2xl:max-w-[1760px] mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-8 flex flex-col items-center">
         <div className="text-center mb-5 sm:mb-8 max-w-full">
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-2 sm:mb-4 bg-gradient-to-b from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent px-1">
             Perfect LaTeX Resumes,{" "}
@@ -2676,7 +2676,7 @@ export default function Home() {
         </div>
 
         {/* Generator Tool */}
-        <div className="w-full max-w-4xl bg-white/95 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 md:p-8 backdrop-blur-xl shadow-xl dark:shadow-2xl transition-all">
+        <div className="w-full bg-white/95 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 md:p-8 backdrop-blur-xl shadow-xl dark:shadow-2xl transition-all">
           <div className="flex flex-col gap-4 sm:gap-6">
 
             {/* GitHub Skill Bank Card */}
@@ -3495,7 +3495,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 border-t border-slate-200 dark:border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-xs text-slate-500 dark:text-slate-500 text-center sm:text-left">
+      <footer className="w-full max-w-7xl xl:max-w-[1440px] 2xl:max-w-[1760px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 border-t border-slate-200 dark:border-white/5 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-xs text-slate-500 dark:text-slate-500 text-center sm:text-left">
         <p>&copy; {new Date().getFullYear()} Resume Tailor. All rights reserved.</p>
         <div className="flex gap-4 sm:gap-6">
           <span>Powered by Multi-Provider AI & LaTeX.</span>
