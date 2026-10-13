@@ -1743,6 +1743,7 @@ export default function Home() {
   const [coverLetterModel, setCoverLetterModel] = useState<string>(COVER_LETTER_MODELS[0].id);
   const [clError, setClError] = useState<string>("");
   const [hasCopiedCL, setHasCopiedCL] = useState<boolean>(false);
+  const coverLetterTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Voice notification on resume generation completion (works even when Chrome is minimized)
   // ponytail: keeps utterance ref alive to dodge Chrome GC bug; retries once if voices aren't loaded yet
@@ -1979,10 +1980,12 @@ export default function Home() {
 
     if (clearInputs) {
       setJdText("");
+      setClJdText("");
       setFile(null);
       setFileKey((prev) => prev + 1);
       setIsEditingJd(false);
       localStorage.removeItem("jdText");
+      localStorage.removeItem("clJdText");
       warmedModelsRef.current.clear();
     }
 
@@ -2082,62 +2085,65 @@ export default function Home() {
     }
   };
 
-  const copyToClipboard = async (text: string): Promise<boolean> => {
+  const execCommandCopy = (text: string, targetEl?: HTMLTextAreaElement | null): boolean => {
+    if (targetEl) {
+      try {
+        targetEl.focus({ preventScroll: true });
+        targetEl.select();
+        targetEl.setSelectionRange(0, targetEl.value.length);
+        const ok = document.execCommand("copy");
+        targetEl.blur();
+        window.getSelection()?.removeAllRanges();
+        if (ok) return true;
+      } catch (_) { /* fallback to temporary element */ }
+    }
+
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      Object.assign(ta.style, {
+        position: "fixed", top: "0", left: "0", width: "2em", height: "2em",
+        opacity: "0.01", fontSize: "16px", border: "none", background: "transparent"
+      });
+      document.body.appendChild(ta);
+      ta.focus({ preventScroll: true });
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
+    } catch (err) {
+      console.warn("execCommand fallback failed:", err);
+      return false;
+    }
+  };
+
+  const copyToClipboard = async (text: string, targetEl?: HTMLTextAreaElement | null): Promise<boolean> => {
     if (!text) return false;
 
-    // 1. Try modern Clipboard API if supported and in secure context
-    if (typeof window !== "undefined" && navigator?.clipboard?.writeText && window.isSecureContext) {
+    // 1. In non-secure contexts (e.g. mobile Chrome on LAN HTTP), Clipboard API is disabled; use execCommand immediately
+    if (typeof window !== "undefined" && (!window.isSecureContext || !navigator?.clipboard?.writeText)) {
+      return execCommandCopy(text, targetEl);
+    }
+
+    // 2. Modern Clipboard API in secure contexts (HTTPS / localhost)
+    if (typeof window !== "undefined" && navigator?.clipboard?.writeText) {
       try {
         await navigator.clipboard.writeText(text);
         return true;
       } catch (err) {
         console.warn("navigator.clipboard.writeText failed, using fallback:", err);
+        return execCommandCopy(text, targetEl);
       }
     }
 
-    // 2. Universal fallback for mobile browsers & HTTP/LAN contexts
-    try {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.setAttribute("readonly", "");
-      textarea.style.position = "fixed";
-      textarea.style.top = "-9999px";
-      textarea.style.left = "-9999px";
-      textarea.style.opacity = "0";
-      textarea.style.fontSize = "16px"; // Prevents iOS auto-zoom
-      document.body.appendChild(textarea);
-
-      if (/ipad|iphone|ipod/i.test(navigator.userAgent)) {
-        const editable = textarea.contentEditable;
-        const readOnly = textarea.readOnly;
-        textarea.contentEditable = "true";
-        textarea.readOnly = false;
-        const range = document.createRange();
-        range.selectNodeContents(textarea);
-        const sel = window.getSelection();
-        sel?.removeAllRanges();
-        sel?.addRange(range);
-        textarea.setSelectionRange(0, 999999);
-        textarea.contentEditable = editable;
-        textarea.readOnly = readOnly;
-      } else {
-        textarea.select();
-        textarea.setSelectionRange(0, textarea.value.length);
-      }
-
-      const success = document.execCommand("copy");
-      document.body.removeChild(textarea);
-      return success;
-    } catch (fallbackErr) {
-      console.error("Clipboard copy failed entirely:", fallbackErr);
-      return false;
-    }
+    return execCommandCopy(text, targetEl);
   };
 
   const handleCopyCoverLetter = async () => {
     if (!coverLetter) return;
     const cleanContent = stripMarkdownFormatting(coverLetter);
-    const copied = await copyToClipboard(cleanContent);
+    const copied = await copyToClipboard(cleanContent, coverLetterTextareaRef.current);
     if (copied) {
       setHasCopiedCL(true);
       setCoverLetter(cleanContent);
@@ -3333,7 +3339,7 @@ export default function Home() {
                   >
                     {["parsing", "tailoring", "compiling"].includes(status) ? "Processing..." : "Generate Tailored PDF"}
                   </button>
-                  {(file || jdText || latexText || ["parsing", "tailoring", "compiling"].includes(status)) && (
+                  {(file || jdText || latexText || clJdText || ["parsing", "tailoring", "compiling"].includes(status)) && (
                     <button
                       type="button"
                       onClick={() => handleReset(true)}
@@ -3443,6 +3449,7 @@ export default function Home() {
                 )}
               </div>
               <textarea
+                ref={coverLetterTextareaRef}
                 value={coverLetter}
                 onChange={(e) => setCoverLetter(e.target.value)}
                 placeholder="Your generated cover letter will appear here. You can manually edit it before downloading."
