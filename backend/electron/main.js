@@ -1,12 +1,26 @@
-const { app, BrowserWindow, shell } = require('electron');
+const { app, BrowserWindow, shell, Tray, Menu } = require('electron');
 const path = require('path');
 const http = require('http');
+const fs = require('fs');
 
 const PORT = process.env.PORT || 3000;
 const DEFAULT_LIVE_URL = 'https://resume.getchintu.com';
 const isLiveMode = app.isPackaged || process.argv.includes('--live');
 const SERVER_URL = process.env.APP_URL || (isLiveMode ? DEFAULT_LIVE_URL : `http://localhost:${PORT}`);
 const isLocal = SERVER_URL.includes('localhost') || SERVER_URL.includes('127.0.0.1');
+
+let mainWindow = null;
+let tray = null;
+let isQuitting = false;
+
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    showMainWindow();
+  });
+}
 
 function pollServer(url, timeoutMs = 45000) {
   const startTime = Date.now();
@@ -24,6 +38,60 @@ function pollServer(url, timeoutMs = 45000) {
       });
     };
     attempt();
+  });
+}
+
+function showMainWindow() {
+  if (!mainWindow) return;
+  if (mainWindow.isMinimized()) {
+    mainWindow.restore();
+  }
+  if (!mainWindow.isVisible()) {
+    mainWindow.show();
+  }
+  mainWindow.focus();
+}
+
+function getTrayIconPath() {
+  const icoPath = path.join(__dirname, 'icon.ico');
+  if (fs.existsSync(icoPath)) {
+    return icoPath;
+  }
+  return path.join(__dirname, 'icon.png');
+}
+
+function createTray() {
+  if (tray) return;
+
+  const iconPath = getTrayIconPath();
+  tray = new Tray(iconPath);
+  tray.setToolTip('Resume Tailor AI');
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Open Resume Tailor AI',
+      click: () => {
+        showMainWindow();
+      },
+    },
+    { type: 'separator' },
+    {
+      label: 'Quit',
+      click: () => {
+        isQuitting = true;
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setContextMenu(contextMenu);
+
+  tray.on('click', () => {
+    showMainWindow();
+  });
+
+  tray.on('double-click', () => {
+    showMainWindow();
   });
 }
 
@@ -56,18 +124,26 @@ function createMainWindow() {
     win.show();
   });
 
+  win.on('close', (event) => {
+    if (!isQuitting) {
+      event.preventDefault();
+      win.hide();
+    }
+  });
+
   return win;
 }
 
 async function startApp() {
-  const win = createMainWindow();
+  mainWindow = createMainWindow();
+  createTray();
   try {
     if (isLocal) {
       await pollServer(SERVER_URL);
     }
-    await win.loadURL(SERVER_URL);
+    await mainWindow.loadURL(SERVER_URL);
   } catch (err) {
-    win.show();
+    mainWindow.show();
     const errorHtml = `
       <body style="font-family:sans-serif;padding:32px;background:#111;color:#eee;">
         <h2>Server Connection Error</h2>
@@ -75,18 +151,26 @@ async function startApp() {
         <p>${err.message}</p>
       </body>
     `;
-    win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(errorHtml)}`).catch(() => {});
+    mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(errorHtml)}`).catch(() => {});
   }
 }
 
 app.whenReady().then(() => {
-  startApp().catch(() => {});
+  if (gotTheLock) {
+    startApp().catch(() => {});
+  }
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
+    if (mainWindow) {
+      showMainWindow();
+    } else if (BrowserWindow.getAllWindows().length === 0) {
       startApp().catch(() => {});
     }
   });
+});
+
+app.on('before-quit', () => {
+  isQuitting = true;
 });
 
 app.on('window-all-closed', () => {
