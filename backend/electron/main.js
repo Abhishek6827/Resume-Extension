@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, Tray, Menu } = require('electron');
+const { app, BrowserWindow, shell, Tray, Menu, nativeImage } = require('electron');
 const path = require('path');
 const http = require('http');
 const fs = require('fs');
@@ -63,36 +63,41 @@ function getTrayIconPath() {
 function createTray() {
   if (tray) return;
 
-  const iconPath = getTrayIconPath();
-  tray = new Tray(iconPath);
-  tray.setToolTip('Resume Tailor AI');
+  try {
+    const iconPath = getTrayIconPath();
+    const img = nativeImage.createFromPath(iconPath);
+    tray = new Tray(img.isEmpty() ? iconPath : img);
+    tray.setToolTip('Resume Tailor AI');
 
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Open Resume Tailor AI',
-      click: () => {
-        showMainWindow();
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Open Resume Tailor AI',
+        click: () => {
+          showMainWindow();
+        },
       },
-    },
-    { type: 'separator' },
-    {
-      label: 'Quit',
-      click: () => {
-        isQuitting = true;
-        app.quit();
+      { type: 'separator' },
+      {
+        label: 'Quit',
+        click: () => {
+          isQuitting = true;
+          app.quit();
+        },
       },
-    },
-  ]);
+    ]);
 
-  tray.setContextMenu(contextMenu);
+    tray.setContextMenu(contextMenu);
 
-  tray.on('click', () => {
-    showMainWindow();
-  });
+    tray.on('click', () => {
+      showMainWindow();
+    });
 
-  tray.on('double-click', () => {
-    showMainWindow();
-  });
+    tray.on('double-click', () => {
+      showMainWindow();
+    });
+  } catch (err) {
+    console.error('Failed to create tray icon:', err);
+  }
 }
 
 function createMainWindow() {
