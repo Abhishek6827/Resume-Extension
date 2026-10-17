@@ -161,7 +161,7 @@ export function generateLatex(resume: ResumeData): string {
   const summary = escapeLatex(resume.summary || "");
   let summaryLatex = "";
   if (summary) {
-    summaryLatex = `\\section*{Summary}\n${summary}\n\\vspace{4pt}\n\n`;
+    summaryLatex = `\\section*{Summary}\n${summary}\n\\vspace{2pt}\n\n`;
   }
 
   // Generate Experience section
@@ -185,7 +185,7 @@ export function generateLatex(resume: ResumeData): string {
           const cleanHl = hl.replace(/^[\s•\-\*]+/, "");
           experienceLatex += `  \\item ${escapeLatex(cleanHl)}\n`;
         });
-        experienceLatex += "\\end{itemize}\\vspace{4pt}\n\n";
+        experienceLatex += "\\end{itemize}\\vspace{2pt}\n\n";
       } else {
         experienceLatex += "\n";
       }
@@ -208,7 +208,7 @@ export function generateLatex(resume: ResumeData): string {
           const cleanHl = hl.replace(/^[\s•\-\*]+/, "");
           projectsLatex += `  \\item ${escapeLatex(cleanHl)}\n`;
         });
-        projectsLatex += "\\end{itemize}\\vspace{4pt}\n\n";
+        projectsLatex += "\\end{itemize}\\vspace{2pt}\n\n";
       } else {
         projectsLatex += "\n";
       }
@@ -242,7 +242,7 @@ export function generateLatex(resume: ResumeData): string {
     if (skillLines.length > 0) {
       skillsLatex = "\\section*{Technical Skills}\n\\begin{itemize}[leftmargin=0pt, label={}]\n  \\small{\\item{\n";
       skillsLatex += skillLines.join(" \\\\\n");
-      skillsLatex += "\n  }}\n\\end{itemize}\\vspace{4pt}\n\n";
+      skillsLatex += "\n  }}\n\\end{itemize}\\vspace{2pt}\n\n";
     }
   }
 
@@ -260,7 +260,7 @@ export function generateLatex(resume: ResumeData): string {
 
   return `\\documentclass[10pt]{article}
 
-\\usepackage[margin=0.38in]{geometry}
+\\usepackage[top=0.32in,bottom=0.30in,left=0.32in,right=0.32in]{geometry}
 \\usepackage{titlesec}
 \\usepackage{enumitem}
 \\usepackage{hyperref}
@@ -275,7 +275,7 @@ export function generateLatex(resume: ResumeData): string {
 \\titleformat{\\section}
   {\\normalsize\\bfseries\\scshape\\color{darkgray}}
   {}{0em}{}[\\vspace{1pt}\\titlerule]
-\\titlespacing{\\section}{0pt}{9pt}{3pt}
+\\titlespacing{\\section}{0pt}{5pt}{2pt}
 
 \\setlist[itemize]{leftmargin=12pt, topsep=0pt, itemsep=0.3pt,
                   parsep=0pt, label=\\textbullet}
@@ -313,22 +313,22 @@ export function ensureLatexSpacing(latex: string): string {
   if (!latex) return "";
   let result = latex;
 
-  // 1. Upgrade cramped section spacing in preamble if titlespacing is 4pt or less
+  // 1. Upgrade section spacing to consistent compact height
   result = result.replace(
-    /\\titlespacing\{\\section\}\{0pt\}\{[0-5]pt\}\{([0-9]+pt)\}/g,
-    "\\titlespacing{\\section}{0pt}{9pt}{3pt}"
+    /\\titlespacing\*?\{\\section\}\{0pt\}\{[^}]+\}\{[^}]+\}/g,
+    "\\titlespacing{\\section}{0pt}{5pt}{2pt}"
   );
 
   // 2. Ensure gap after \end{itemize} before next \section*{...}
   result = result.replace(
     /\\end\{itemize\}(?:\s*(?:\\vspace\{[^}]+\})?\s*)*(?=\\section\*?\{)/g,
-    "\\end{itemize}\\vspace{4pt}\n\n"
+    "\\end{itemize}\\vspace{2pt}\n\n"
   );
 
   // 3. Ensure gap after \end{itemize} before next \role, \project, or entry macro
   result = result.replace(
     /\\end\{itemize\}(?:\s*(?:\\vspace\{[^}]+\})?\s*)*(?=\\(?:role|project|resumeItem|resumeSubheading)\b)/g,
-    "\\end{itemize}\\vspace{4pt}\n\n"
+    "\\end{itemize}\\vspace{2pt}\n\n"
   );
 
   // 4. Ensure gap after Summary section text before next section
@@ -336,7 +336,7 @@ export function ensureLatexSpacing(latex: string): string {
     /(\\section\*?\{Summary\}[\s\S]*?)(?=\\section\*?\{)/g,
     (match, summaryBlock) => {
       if (!summaryBlock.includes("\\vspace")) {
-        return summaryBlock.trimEnd() + "\n\\vspace{4pt}\n\n";
+        return summaryBlock.trimEnd() + "\n\\vspace{2pt}\n\n";
       }
       return summaryBlock;
     }

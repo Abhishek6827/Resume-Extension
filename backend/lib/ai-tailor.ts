@@ -564,6 +564,10 @@ CRITICAL SAFETY & PHRASING RULES:
 3. TARGETED STACK FOCUS: Focus sharply on the primary tech stack and domain relevant to the target role. Do NOT list 6 competing backend ecosystems or 3 cloud providers in a single sentence.
 4. Highlight technical depth, API architecture, high throughput, and end-to-end engineering ownership.
 5. PROACTIVELY FIX RED FLAGS: Eliminate vague, passive, or generic objective statements. Explicitly align target role title, senior ownership, and primary required stack.
+6. ABSOLUTE BAN ON SENIORITY DOWNGRADING (CRITICAL):
+   - NEVER downgrade the candidate into a "Fresher", "Beginner", "Junior graduate", or entry-level student even if the target JD title or requirements say "Fresher", "Junior", or "0-1 year experience".
+   - If the candidate has 2+ years of full-stack/production experience, founded a SaaS (e.g. CHINTU AI), or owned fintech payments, ALWAYS PRESERVE and highlight these production accomplishments.
+   - For junior/fresher JDs, frame the candidate as a high-velocity full-stack engineer with strong core fundamentals, verified production track record, and immediate day-one delivery capability.
 
 Return ONLY a valid JSON object matching this exact structure:
 {
@@ -612,20 +616,21 @@ CRITICAL MANDATORY INSTRUCTIONS:
    - Example: "Reduced p99 API latency from 850ms to 420ms by implementing Redis caching and composite indexing", "Scaled event processing pipeline to 10k+ RPS by refactoring legacy services into asynchronous worker pools".
    - NATURAL KEYWORD EMBEDDING: Weave target JD keywords naturally into the engineering mechanism [Z]. Never keyword-stuff with trailing buzzword lists (e.g. no ", using Docker, AWS, Git").
 
-2. ABSOLUTE BAN ON ROBOTIC / META PHRASING & RED FLAGS:
+2. ABSOLUTE BAN ON ROBOTIC / META PHRASING & SENIORITY DOWNGRADING:
    - NEVER write meta-descriptions like "applied Data Structures, Algorithms for...", "conducted task estimation", "practiced Agile/Scrum ceremonies", "demonstrating OOPS", or list software concepts as awkward trailing clauses.
    - Eliminate vague duties ("responsible for...", "worked on...", "assisted team"). Every bullet must demonstrate senior engineering ownership.
+   - NEVER dilute or water down production metrics or ownership into beginner/student tasks even if the JD is for a junior/fresher position.
    - Express engineering depth through authentic technical actions, concrete architecture, and measurable outcomes.
 
-2. CAREER CREDIBILITY & ARCHITECTURAL REALISM:
+3. CAREER CREDIBILITY & ARCHITECTURAL REALISM:
    - Keep historical company work authentic. Do NOT completely swap the core language/database of established past employers (e.g., do not turn a past Node.js/Postgres startup job into ASP.NET/SQL Server).
    - Align past company roles by highlighting transferable senior engineering patterns: API latency, microservices, cloud infrastructure, containerization, concurrency, CI/CD pipelines, automated testing, security, and schema optimization.
    - For Founder / SaaS / Contract roles where candidate had full ownership (e.g. Chintu AI), actively showcase relevant target JD architectures and technologies.
 
-3. ARCHITECTURAL REALISM (NO COMPETING BACKEND SLASH-MIXING):
+4. ARCHITECTURAL REALISM (NO COMPETING BACKEND SLASH-MIXING):
    - NEVER mix competing backend technologies in the same sentence or bullet point (e.g., NEVER write "Java Spring Boot / C# .Net services"). Allocate different services/roles to their respective stacks.
 
-4. PRESERVE STRUCTURE & LENGTH:
+5. PRESERVE STRUCTURE & LENGTH:
    - DO NOT reorder jobs. Preserve the exact same number of bullet points in the "highlights" array as the original.
    - Keep character length/word count of each tailored bullet point within +/- 15% of the original bullet point.
    - ABSOLUTE BAN ON LAZY SUFFIXES: Do NOT append lazy suffixes like ", demonstrating expertise in...". Truly rewrite the engineering action verbs.

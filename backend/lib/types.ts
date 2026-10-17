@@ -1,7 +1,7 @@
 // ─── Resume Tailor — Shared TypeScript Interfaces ──────────────
 
 export interface ContactInfo {
-  name: string;
+  name?: string;
   email: string;
   phone: string;
   linkedin: string;

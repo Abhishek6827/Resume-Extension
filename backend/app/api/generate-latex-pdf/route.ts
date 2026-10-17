@@ -63,77 +63,52 @@ function sanitizeLatex(raw: string): string {
   return cleaned;
 }
 
-function applySqueezeLevel(latex: string, level: number): string {
-  let result = latex;
-
-  if (level === 1) {
-    // Level 1: Moderate vertical enlargement & itemize spacing squeeze
-    if (!result.includes("\\enlargethispage") && result.includes("\\begin{document}")) {
-      result = result.replace(/(\\begin\{document\})/, "$1\n\\enlargethispage{3.5\\baselineskip}");
-    } else {
-      result = result.replace(/\\enlargethispage\{[^}]+\}/, "\\enlargethispage{3.5\\baselineskip}");
-    }
-
-    if (result.includes("enumitem")) {
-      result = result.replace(
-        /\\setlist\[itemize\]\{[^}]*\}/,
-        "\\setlist[itemize]{nosep, leftmargin=12pt, topsep=1pt, itemsep=0.5pt, parsep=0pt, label=\\textbullet}"
-      );
-    }
-  } else if (level === 2) {
-    // Level 2: Stronger enlargement, section spacing & geometry squeeze
-    if (!result.includes("\\enlargethispage") && result.includes("\\begin{document}")) {
-      result = result.replace(/(\\begin\{document\})/, "$1\n\\enlargethispage{5\\baselineskip}");
-    } else {
-      result = result.replace(/\\enlargethispage\{[^}]+\}/, "\\enlargethispage{5\\baselineskip}");
-    }
-
-    if (result.includes("geometry")) {
-      result = result.replace(
-        /\\usepackage\[([^\]]*)\]\{geometry\}/,
-        "\\usepackage[top=0.32in,bottom=0.3in,left=0.35in,right=0.35in]{geometry}"
-      );
-    }
-
-    result = result.replace(
-      /\\titlespacing\*?\{\\section\}\{[^}]*\}\{[^}]*\}\{[^}]*\}/g,
-      "\\titlespacing{\\section}{0pt}{4pt}{1.5pt}"
-    );
-
-    if (!result.includes("enumitem") && result.includes("\\documentclass")) {
-      result = result.replace(
-        /(\\documentclass(?:\[[^\]]*\])?\{[^}]+\})/,
-        "$1\n\\usepackage{enumitem}\n\\setlist[itemize]{nosep, leftmargin=12pt, topsep=1pt, itemsep=0.5pt, parsep=0pt, label=\\textbullet}"
-      );
-    }
-  } else if (level === 3) {
-    // Level 3: Max squeeze with line spread compression & tighter margins
-    if (!result.includes("\\enlargethispage") && result.includes("\\begin{document}")) {
-      result = result.replace(/(\\begin\{document\})/, "$1\n\\enlargethispage{6.5\\baselineskip}");
-    } else {
-      result = result.replace(/\\enlargethispage\{[^}]+\}/, "\\enlargethispage{6.5\\baselineskip}");
-    }
-
-    if (result.includes("geometry")) {
-      result = result.replace(
-        /\\usepackage\[([^\]]*)\]\{geometry\}/,
-        "\\usepackage[top=0.28in,bottom=0.28in,left=0.32in,right=0.32in]{geometry}"
-      );
-    }
-
-    result = result.replace(
-      /\\titlespacing\*?\{\\section\}\{[^}]*\}\{[^}]*\}\{[^}]*\}/g,
-      "\\titlespacing{\\section}{0pt}{3pt}{1pt}"
-    );
-
-    if (result.includes("\\linespread{")) {
-      result = result.replace(/\\linespread\{[^}]+\}/g, "\\linespread{0.92}");
-    } else if (result.includes("\\begin{document}")) {
-      result = result.replace(/(\\begin\{document\})/, "$1\n\\linespread{0.93}\\selectfont");
-    }
+function applyGeometryAndSpacing(
+  latex: string,
+  geom: string,
+  sectionBefore: string,
+  itemSep: string
+): string {
+  let res = latex.replace(/\\enlargethispage\{[^}]+\}/g, "");
+  if (res.includes("geometry")) {
+    res = res.replace(/\\usepackage\[[^\]]*\]\{geometry\}/, `\\usepackage[${geom}]{geometry}`);
   }
+  res = res.replace(
+    /\\titlespacing\*?\{\\section\}\{[^}]*\}\{[^}]*\}\{[^}]*\}/g,
+    `\\titlespacing{\\section}{0pt}{${sectionBefore}}{1.5pt}`
+  );
+  if (res.includes("enumitem")) {
+    res = res.replace(
+      /\\setlist\[itemize\]\{[^}]*\}/,
+      `\\setlist[itemize]{nosep, leftmargin=12pt, topsep=1pt, itemsep=${itemSep}, parsep=0pt, label=\\textbullet}`
+    );
+  } else if (res.includes("\\documentclass")) {
+    res = res.replace(
+      /(\\documentclass(?:\[[^\]]*\])?\{[^}]+\})/,
+      `$1\n\\usepackage{enumitem}\n\\setlist[itemize]{nosep, leftmargin=12pt, topsep=1pt, itemsep=${itemSep}, parsep=0pt, label=\\textbullet}`
+    );
+  }
+  return res;
+}
 
-  return result;
+function applySqueezeLevel(latex: string, level: number): string {
+  if (level === 1) {
+    const res = applyGeometryAndSpacing(latex, "top=0.30in,bottom=0.28in,left=0.32in,right=0.32in", "4.5pt", "0.3pt");
+    return res.replace(/\\vspace\{4pt\}/g, "\\vspace{2pt}");
+  }
+  if (level === 2) {
+    const res = applyGeometryAndSpacing(latex, "top=0.26in,bottom=0.25in,left=0.30in,right=0.30in", "3.5pt", "0.1pt");
+    return res.replace(/\\vspace\{[24]pt\}/g, "\\vspace{1pt}");
+  }
+  if (level === 3) {
+    let res = applyGeometryAndSpacing(latex, "top=0.23in,bottom=0.23in,left=0.28in,right=0.28in", "2.5pt", "0pt");
+    res = res.replace(/\\vspace\{[124]pt\}/g, "\\vspace{0pt}");
+    if (res.includes("\\linespread{")) {
+      return res.replace(/\\linespread\{[^}]+\}/g, "\\linespread{0.89}");
+    }
+    return res.replace(/(\\begin\{document\})/, "$1\n\\linespread{0.89}\\selectfont");
+  }
+  return latex;
 }
 
 async function compileLatex(latex: string): Promise<{ ok: boolean; status: number; pdfBuffer?: ArrayBuffer; errText?: string }> {

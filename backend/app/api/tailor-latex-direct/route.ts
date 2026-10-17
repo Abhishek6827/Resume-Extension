@@ -535,7 +535,7 @@ CORE IN-PLACE TAILORING RULES:
    - Red Flag: Robotic or meta phrasing ("applied DSA", "demonstrating OOPS", "practiced Agile/Scrum ceremonies") -> FIX by replacing with authentic engineering challenges, architecture design, and measurable results.
    - Red Flag: Conflicting backend ecosystems or messy architectures (e.g., mixing Java Spring Boot and C# .NET in the same bullet or project) -> FIX by maintaining clean, realistic, single-ecosystem architectures.
    - Red Flag: Bloated, unorganized skill lists ("kitchen-sink dumps") -> FIX by categorizing cleanly and leading with target JD requirements first.
-   - Red Flag: Generic professional summary -> FIX by sharply aligning title, domain, core stack, and years of experience to the target JD role.
+   - Red Flag: Generic professional summary -> FIX by sharply aligning target role title, domain, core stack, and candidate's production track record to the target JD role.
    - The generated resume MUST be 100% free of red flags.
 
 1. STOP THE SCROLL & 10-SECOND RECRUITER SKIM (CRITICAL):
@@ -585,8 +585,9 @@ CORE IN-PLACE TAILORING RULES:
    - AVOID KITCHEN-SINK BLOAT: Keep each skill category line strictly on 1 physical line with 5-6 core, high-relevance technologies (~50-65 chars). Do NOT dump every existing technology into one resume. Lead with the target JD's required technologies!
    - MODERN AI / DEVELOPER TOOLS: Do not list simple IDE plugins as standalone skill categories. If including AI tooling, format as practical engineering competencies (e.g. \\textbf{AI \\& LLM Integration:} OpenAI API, LangChain, Prompt Engineering, Vector Search, AI-Assisted Workflows) or combine under \\textbf{Developer Tools:}.
 
-5. PROFESSIONAL SUMMARY:
-   - Rewrite the summary to highlight the candidate's target role title, years of experience (3+ years), and primary domain/stack focus in strictly 3 compact lines (~45-55 words).
+5. PROFESSIONAL SUMMARY & SENIORITY PRESERVATION (CRITICAL):
+   - Rewrite the summary to highlight the candidate's target engineering title, production experience (2+ years), and primary domain/stack focus in strictly 3 compact lines (~45-55 words).
+   - ABSOLUTE BAN ON SENIORITY DOWNGRADING: NEVER downgrade the candidate into a "Fresher", "Student", or "Junior/Beginner" even if the target JD role title or requirement mentions "Fresher", "Junior", or "0-1 years". If applying to an entry-level/fresher JD, frame the candidate as a high-velocity full-stack engineer with strong core fundamentals, live production/founder track record, and immediate day-one delivery capability.
    - Keep it targeted and cohesive—do not list 6 competing backend frameworks in a single sentence.
 
 6. STRICT 1-PAGE AND LINE-WRAPPING BUDGET LIMIT (HARD REQUIREMENT):
