@@ -506,7 +506,8 @@ MANDATORY VERIFIED GITHUB SKILL BANK INTEGRATION:
 - Verified projects: ${topProjects}
 - MANDATORY IN-PLACE INJECTION & SWAPPING:
   1. TECHNICAL SKILLS: If the target JD requires technologies (e.g. Python, Django, REST APIs, Docker, PostgreSQL) that exist in the Verified GitHub Skill Bank, you MUST include them in the Technical Skills section under their proper category.
-  2. PROJECTS SECTION: If an existing resume project is low-relevance or lacks target JD technologies, SWAP it out with the most relevant verified GitHub project (e.g. Kanban_WorkBoard for Python/Django/REST APIs). Keep exact LaTeX markup and bullet counts intact.`;
+  2. PROJECTS SECTION: If an existing resume project is low-relevance or lacks target JD technologies, SWAP it out with the most relevant verified GitHub project from the candidate's list above (e.g. YT-Automation, OpenJarvis, Kanban_WorkBoard). Keep exact LaTeX markup and bullet counts intact.
+  3. ABSOLUTE BAN ON SYNTHETIC / HALLUCINATED PROJECT NAMES: NEVER invent, fabricate, or make up synthetic project names (e.g. NEVER make up names like 'Video & Media Management Portal', 'CyberGuard AI', 'Fintech Payment Gateway', etc.). You MUST ONLY use the real, verified project names from the candidate's original resume or from the Verified Candidate GitHub Projects list above. Update the tech stack and bullet points of those real projects to match the JD requirements, but do NOT invent new projects.`;
     }
     const mustHave = Array.isArray(jdData.mustHaveSkills) ? jdData.mustHaveSkills : [];
     const niceToHave = Array.isArray(jdData.niceToHaveSkills) ? jdData.niceToHaveSkills : [];
@@ -570,7 +571,10 @@ CORE IN-PLACE TAILORING RULES:
      * NEVER mix competing backend ecosystems in the SAME single project or bullet point (e.g., NEVER write "Java Spring Boot / C# .Net REST APIs" or "Angular/Node.js frontend and C# .Net backend").
      * A single project MUST use ONE coherent, realistic stack!
      * If the target JD requires multiple backend technologies (e.g. Java, C#, Node.js, Python), DISTRIBUTE them across different projects in the resume so each project represents a distinct, realistic stack.
-   - GITHUB SKILL BANK DYNAMIC SWAPPING:
+   - GITHUB SKILL BANK DYNAMIC SWAPPING & BAN ON FAKE PROJECTS:
+     * ABSOLUTE BAN ON SYNTHETIC / HALLUCINATED PROJECT NAMES: NEVER invent, fabricate, or synthesize fake project names (e.g. NEVER make up names like 'Video & Media Management Portal', 'CyberGuard AI', 'Fintech Payment Gateway').
+     * You may ONLY use the real, verified project names that already exist in the candidate's original resume or from the candidate's Verified GitHub Skill Bank list.
+     * Update the skills in the project subtitle and the bullet points of the candidate's REAL projects to highlight the target JD technologies, but keep the real project names intact.
      * You may swap out any low-relevance project with any matching verified project from the candidate's GitHub Skill Bank, keeping the exact LaTeX \\project{...}{...} command and bullet structure.
    - In project bullet points: describe realistic technical actions with the specific project's allocated stack (e.g., designing GraphQL queries/mutations, deploying containerized pods in Kubernetes, building RESTful microservices, optimizing algorithms).
 
