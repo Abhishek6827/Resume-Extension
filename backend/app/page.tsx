@@ -7,8 +7,8 @@ import type { SkillBank } from "../lib/skill-bank";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 const RESUME_MODELS = [
-  { id: "nvidia:moonshotai/kimi-k3", name: "Kimi K3 (Moonshot AI)", shortName: "Kimi K3", icon: "https://www.google.com/s2/favicons?domain=moonshot.cn&sz=128" },
-  { id: "nvidia:nvidia/nemotron-3-super-120b-a12b", name: "Nemotron 120B (Balanced)", shortName: "Nemotron 120B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
+  { id: "nvidia:stepfun-ai/step-5-preview", name: "StepFun Step-5 (Preview)", shortName: "StepFun Step-5", icon: "https://www.google.com/s2/favicons?domain=stepfun.com&sz=128" },
+  { id: "nvidia:google/gemma-4-31b-it", name: "Gemma 4 31B (Google)", shortName: "Gemma 4 31B", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)", shortName: "Nemotron 550B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
   { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron 30B (Speed)", shortName: "Nemotron 30B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
 ];
@@ -1141,8 +1141,8 @@ const ParallelPipelineVisualizer = ({
           const current = next[modelId];
 
           const incrementRates: { [key: string]: number } = {
-            "nvidia:moonshotai/kimi-k3": 0.45,
-            "nvidia:nvidia/nemotron-3-super-120b-a12b": 0.25,
+            "nvidia:stepfun-ai/step-5-preview": 0.45,
+            "nvidia:google/gemma-4-31b-it": 0.25,
             "nvidia:nvidia/nemotron-3-ultra-550b-a55b": 0.1,
           };
           const increment = incrementRates[modelId] || 0.15;

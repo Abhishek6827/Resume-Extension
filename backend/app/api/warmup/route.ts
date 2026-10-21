@@ -5,8 +5,8 @@ import OpenAI from "openai";
 export const dynamic = "force-dynamic";
 
 const WARMUP_MODELS = [
-  { id: "nvidia/nemotron-3-super-120b-a12b", name: "Nemotron 120B" },
-  { id: "moonshotai/kimi-k3", name: "Kimi K3" },
+  { id: "google/gemma-4-31b-it", name: "Gemma 4 31B" },
+  { id: "stepfun-ai/step-5-preview", name: "StepFun Step-5" },
   { id: "nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B" },
   { id: "nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron 30B" },
 ];

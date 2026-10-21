@@ -9,8 +9,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 const AI_MODELS = [
-  { id: "nvidia:moonshotai/kimi-k3", name: "Kimi K3 (Moonshot AI)" },
-  { id: "nvidia:nvidia/nemotron-3-super-120b-a12b", name: "Nemotron 120B (Balanced)" },
+  { id: "nvidia:stepfun-ai/step-5-preview", name: "StepFun Step-5 (Preview)" },
+  { id: "nvidia:google/gemma-4-31b-it", name: "Gemma 4 31B (Google)" },
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)" },
   { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron 30B (Speed)" },
 ];
@@ -506,7 +506,7 @@ MANDATORY VERIFIED GITHUB SKILL BANK INTEGRATION:
 - Verified projects: ${topProjects}
 - MANDATORY IN-PLACE INJECTION & SWAPPING:
   1. TECHNICAL SKILLS: If the target JD requires technologies (e.g. Python, Django, REST APIs, Docker, PostgreSQL) that exist in the Verified GitHub Skill Bank, you MUST include them in the Technical Skills section under their proper category.
-  2. PROJECTS SECTION: If an existing resume project is low-relevance or lacks target JD technologies, SWAP it out with the most relevant verified GitHub project from the candidate's list above (e.g. YT-Automation, OpenJarvis, Kanban_WorkBoard). Keep exact LaTeX markup and bullet counts intact.
+  2. PROJECTS SECTION: If an existing resume project is low-relevance or lacks target JD technologies, SWAP it out with the most relevant verified GitHub project from the candidate's list above. Keep exact LaTeX markup and bullet counts intact.
   3. ABSOLUTE BAN ON SYNTHETIC / HALLUCINATED PROJECT NAMES: NEVER invent, fabricate, or make up synthetic project names (e.g. NEVER make up names like 'Video & Media Management Portal', 'CyberGuard AI', 'Fintech Payment Gateway', etc.). You MUST ONLY use the real, verified project names from the candidate's original resume or from the Verified Candidate GitHub Projects list above. Update the tech stack and bullet points of those real projects to match the JD requirements, but do NOT invent new projects.`;
     }
     const mustHave = Array.isArray(jdData.mustHaveSkills) ? jdData.mustHaveSkills : [];

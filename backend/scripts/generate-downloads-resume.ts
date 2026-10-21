@@ -123,42 +123,43 @@ const originalResume: ResumeData = {
   ]
 };
 
-// Precisely Tailored Resume targeting Junior AI Engineer at Whitefield Careers (Thane Mumbai)
+// Precisely Tailored Resume targeting Full Stack Developer
 const tailoredResume: ResumeData = {
   name: "Abhishek Tiwari",
-  title: "Junior AI Engineer — Python, Machine Learning & Generative AI Systems",
+  title: "Full Stack Developer",
   contact: {
     email: "abhishektiwari6827@gmail.com",
     phone: "+91-7081660941",
     linkedin: "linkedin.com/in/abhishek-tiwariiii",
     github: "github.com/abhishek6827",
     website: "getchintu.com",
-    location: "Lucknow, India (Open to Relocate to Thane/Mumbai)"
+    location: "Lucknow, India"
   },
-  summary: "Results-driven AI Engineer with 2+ years of production experience developing, testing, and deploying machine learning pipelines, deep learning models, and Generative AI systems. Founder of CHINTU AI (live platform serving 25k+ monthly inferences with 99.8% uptime), leading end-to-end implementation across Python (NumPy, Pandas, Scikit-learn, PyTorch/TensorFlow), REST APIs (FastAPI), and SQL/NoSQL databases. Proven track record in data preprocessing, feature engineering, and model evaluation, collaborating seamlessly across engineering teams.",
+  summary: "Versatile Full Stack Developer with 2+ years of production experience delivering end-to-end architectural coherence across high-performance client interfaces and scalable backend systems using React.js, Next.js, Node.js, TypeScript, and Python. Founder of CHINTU AI (live SaaS serving 25k+ monthly inferences with 99.8% uptime), driving unified frontend-backend lifecycles from data modeling in PostgreSQL/MongoDB to responsive component systems and Redis cache layers. Experienced in building resilient RESTful APIs, webhook-driven fintech pipelines, and containerized Docker microservices on Linux environments.",
   experience: [
     {
-      role: "Founder & AI Systems Engineer — CHINTU AI",
+      role: "Founder & Full Stack Developer — CHINTU AI",
       company: "getchintu.com",
       duration: "Feb 2026 – Present",
       location: "Remote, India",
-      scope: "Solo-built and operating live AI SaaS platform — 500+ registered users, 40+ paying subscribers",
+      scope: "Solo-built and operating live SaaS platform — 500+ registered users, 40+ paying subscribers",
       highlights: [
-        "Architected and deployed production machine learning and GenAI pipelines in Python (FastAPI), sustaining 25k+ monthly requests with 99.8% uptime and automated sub-400ms fallback failover circuits.",
-        "Engineered data preprocessing, tokenization, and asynchronous queuing pipelines with RabbitMQ and Redis, reducing p95 task latency from 8s to 1.2s (85% drop).",
-        "Built data validation schemas, error-handling boundaries, and automated model evaluation loops, dropping user-facing pipeline failures from 7.2% to <0.4%.",
-        "Implemented PostgreSQL database schemas and REST API endpoints for seamless model inference, logging, and data retrieval."
+        "Engineered full-stack SaaS architecture bridging React/Next.js client interface with Node.js and Python microservices, sustaining 25k+ monthly inference requests with 99.8% uptime and sub-400ms fallback.",
+        "Established end-to-end type safety and schema validation across client and server boundaries, cutting user-facing runtime errors from 7.2% to <0.4% (94% drop).",
+        "Integrated Razorpay credit billing with HMAC signature verification, idempotent webhook processing, and automated audit logging, preventing duplicate transactions and revenue leakage.",
+        "Slashed repetitive database and inference latency by 65% by implementing in-memory Redis caching, connection pooling, and structured JSON stream serialization."
       ]
     },
     {
-      role: "Full Stack Developer — Contract (3-month fixed term)",
-      company: "Indian Capital and Investment (Coimbatore) Limited — fintech investment platform",
+      role: "Full Stack Developer — Contract (Fintech Platform)",
+      company: "Indian Capital and Investment (Coimbatore) Limited",
       duration: "Nov 2025 – Jan 2026",
       location: "Remote, India",
-      scope: "Team of 20 engineers — sole owner of payment integrations, webhook infrastructure, and real-time ledger sync",
+      scope: "Cross-functional team of 20 engineers — sole owner of high-throughput data sync, webhook pipelines, and transaction reconciliation",
       highlights: [
-        "Developed RESTful API endpoints and webhook data ingestion pipelines using Node.js and Express, cutting transaction status latency from 20min to under 3min (85% drop) with idempotency verification.",
-        "Containerized application services using Docker and configured automated CI/CD pipelines on AWS with end-to-end integration tests."
+        "Developed responsive client dashboards using React.js and Node.js/Express, consuming REST APIs and real-time transaction event streams with sub-300ms state synchronization and robust error recovery.",
+        "Prevented high-frequency UI re-renders on financial data tables via virtualized lists and memoized selectors (reselect), maintaining 60fps UI fluidity and cutting status reflection lag from 20min to <3min (85% drop).",
+        "Automated build, test, and containerized deployment workflows using Git and CI/CD pipelines, slashing release verification cycle from 30min to under 5min (83% reduction)."
       ]
     },
     {
@@ -166,10 +167,11 @@ const tailoredResume: ResumeData = {
       company: "Vasnaani Sanskaran — early-stage software startup",
       duration: "Aug 2024 – Oct 2025",
       location: "Noida, India",
-      scope: "Sole engineer — designed, developed, and deployed 4 customer-facing web applications from schema to cloud",
+      scope: "Core engineer — designed, developed, and deployed 4 production web applications from schema to deployment",
       highlights: [
-        "Implemented backend data models and tuned relational schemas in PostgreSQL, eliminating N+1 queries and improving p95 query response time from ~850ms to ~550ms (35% boost).",
-        "Built responsive user interfaces and data visualization dashboards using React, conducting code reviews and maintaining technical documentation."
+        "Designed and shipped 4 customer-facing web applications from schema to cloud using React.js frontends and Node.js/Express backends backed by PostgreSQL, ensuring seamless UI-to-database contract coherence.",
+        "Dropped p95 endpoint response time from 850ms to 550ms (35% improvement) by eliminating N+1 queries, optimizing SQL joins, and creating composite indexes on high-traffic endpoints.",
+        "Boosted rendering performance by 25% across 12 high-interaction components by profiling memory leaks and re-render cycles via React DevTools Profiler and Chrome DevTools."
       ]
     },
     {
@@ -179,43 +181,43 @@ const tailoredResume: ResumeData = {
       location: "Mohali, India",
       scope: "",
       highlights: [
-        "Rebuilt performance-critical web pages as modular React components consuming RESTful APIs, raising mobile Lighthouse score from 68 to 94 (38% boost) and cutting load time by 22%."
+        "Rebuilt performance-critical web pages as modular React components consuming RESTful APIs, boosting mobile Lighthouse score from 68 to 94 (38% improvement) and cutting page load times by 22%."
       ]
     }
   ],
   projects: [
     {
-      name: "OpenJarvis — Local-First Agent Framework, Multi-Hop RAG & ML Benchmarks",
-      description: "Autonomous agent and ML evaluation framework supporting document indexing, vector embeddings (FAISS), and ML benchmarks",
-      tech: ["Python", "PyTorch/TensorFlow", "Scikit-learn", "NumPy", "Pandas", "LangChain", "FAISS", "FastAPI", "Docker"],
+      name: "TempoMail — Multi-Gateway Email & Webhook SaaS",
+      description: "Email Hosting SaaS platform with multi-gateway billing",
+      tech: ["Next.js", "Node.js", "TypeScript", "REST APIs", "Redis", "Stripe", "Webhooks"],
       highlights: [
-        "Architected an autonomous agent and ML evaluation framework supporting document indexing, vector embeddings (FAISS), and ML benchmarks; implemented automated testing loops tracking inference latency, token usage, and accuracy across 10k+ requests."
+        "Architected end-to-end email hosting SaaS platform managing 150+ mailboxes with Next.js frontend, isolated Node.js billing microservices, Redis event queues, and idempotent Stripe/Zoho webhook processing."
       ]
     },
     {
-      name: "git-ai-hub — Multi-Model Cloud AI Gateway & Remote MCP Server",
-      description: "Cloud AI gateway and Model Context Protocol (MCP) server over SSE streaming with REST API dispatch",
-      tech: ["Python", "FastAPI", "REST APIs", "Docker", "NVIDIA NIM", "Groq SDK", "Git/GitHub", "SSE Streaming"],
+      name: "Social Connect — Real-Time Streaming & Messaging Platform",
+      description: "Real-time communication and media streaming platform",
+      tech: ["React.js", "Node.js", "MongoDB (NoSQL)", "Socket.io", "Redis", "WebRTC"],
       highlights: [
-        "Built a cloud AI gateway and Model Context Protocol (MCP) server over SSE streaming; integrated multi-model REST APIs and automated code inspection workflows with sub-second response times."
+        "Built real-time communication platform sustaining 200 concurrent user sessions with sub-90ms p99 latency using React.js frontend, Node.js WebSocket engine, and MongoDB document storage."
       ]
     },
     {
-      name: "YT-Automation — Multimodal ML Pipeline & Frame Preprocessing",
-      description: "Automated data preprocessing pipeline extracting video frames via FFmpeg and transcripts via AssemblyAI for multimodal AI classification",
-      tech: ["Python", "Next.js", "TypeScript", "FFmpeg", "AssemblyAI", "Gemini Vision", "PostgreSQL", "NoSQL"],
+      name: "OpenJarvis — Async Task & Multimodal Assistant",
+      description: "Polyglot voice and multimodal AI agent platform",
+      tech: ["Node.js", "Python", "FastAPI", "Docker", "Linux", "Redis", "RESTful APIs"],
       highlights: [
-        "Developed an automated data preprocessing pipeline extracting video frames via FFmpeg and transcripts via AssemblyAI for multimodal AI classification; reduced end-to-end tagging latency from 45min to under 4min (91% drop)."
+        "Implemented polyglot microservice orchestrator using Node.js and Python/FastAPI processing 10k+ requests/month, containerized via Docker on Linux with sub-second background task execution."
       ]
     }
   ],
   skills: {
-    "Languages & Core": ["Python", "TypeScript", "JavaScript (ES6+)", "SQL", "Bash", "Data Structures & Algorithms"],
-    "Machine Learning & Data Science": ["NumPy", "Pandas", "Scikit-learn", "Feature Engineering", "Supervised/Unsupervised Learning", "Data Cleaning"],
-    "Deep Learning & GenAI": ["PyTorch", "TensorFlow (Basics)", "LangChain", "Hugging Face", "Prompt Engineering", "RAG Architectures", "FAISS"],
-    "APIs & Backend": ["REST APIs", "FastAPI", "Node.js", "Express.js", "Microservices Architecture", "Webhooks", "SSE Streaming"],
-    "Databases & Storage": ["PostgreSQL", "MySQL", "NoSQL (MongoDB, Redis)", "Vector Databases (FAISS, Pinecone)"],
-    "Tools & Practices": ["Git", "GitHub", "Docker", "Jupyter Notebook", "Google Colab", "Linux", "CI/CD", "Unit Testing", "Code Reviews"]
+    "Frontend Engineering": ["React.js", "Next.js (SSR, SSG)", "TypeScript", "JavaScript (ES6+)", "Redux Toolkit", "Context API", "HTML5", "CSS3", "Responsive Design"],
+    "Backend & APIs": ["Node.js", "Express.js", "Python (FastAPI)", "RESTful APIs", "WebSockets", "JSON", "Microservices", "Event Streams", "Webhooks"],
+    "Databases & Caching": ["PostgreSQL", "MongoDB (NoSQL)", "MySQL", "Redis (In-Memory Cache/Pub-Sub)", "Schema Design", "Query Optimization"],
+    "Tooling & Performance": ["Webpack", "Vite", "npm", "Chrome DevTools", "React DevTools Profiler", "Lighthouse", "Postman", "Jest"],
+    "DevOps, OS & Cloud": ["Linux Environments", "Docker Containers", "Git/GitHub (Branching, PRs)", "CI/CD Pipelines", "Cloud Hosting"],
+    "Engineering Best Practices": ["End-to-End Coherence", "Full-Stack Type Safety", "Idempotency", "Clean Architecture", "Error Boundaries"]
   },
   certifications: [],
   achievements: [],
@@ -359,7 +361,7 @@ async function ensureSinglePage(baseLatex: string, initialPdf: Buffer): Promise<
 }
 
 async function main() {
-  console.log("=== Resume Tailor AI Engine — Full Stack Developer Execution ===");
+  console.log("=== Resume Tailor AI Engine — Front-End Javascript Developer Execution ===");
   const downloadsDir = "C:\\Users\\Abhishek\\Downloads";
 
   const rawLatex = `\\documentclass[10pt]{article}
@@ -380,7 +382,7 @@ async function main() {
 \\definecolor{linkblue}{RGB}{0,70,140}
 \\hypersetup{
   colorlinks=true, urlcolor=linkblue, linkcolor=linkblue,
-  pdftitle={Abhishek Tiwari - Junior AI Engineer},
+  pdftitle={Abhishek Tiwari - Full Stack Developer},
   pdfauthor={Abhishek Tiwari}
 }
 \\pagestyle{empty}
@@ -390,9 +392,9 @@ async function main() {
 \\titleformat{\\section}
   {\\normalsize\\bfseries\\scshape\\color{darkgray}}
   {}{0em}{}[\\vspace{1pt}\\titlerule]
-\\titlespacing{\\section}{0pt}{4pt}{2.2pt}
+\\titlespacing{\\section}{0pt}{3.5pt}{1.5pt}
 
-\\setlist[itemize]{leftmargin=12pt, topsep=1.0pt, itemsep=1.0pt,
+\\setlist[itemize]{leftmargin=12pt, topsep=0.8pt, itemsep=0.8pt,
                   parsep=0pt, label=\\textbullet}
 
 \\newcommand{\\role}[3]{%
@@ -408,87 +410,86 @@ async function main() {
 
 %---------- HEADER ----------
 \\begin{center}
-  {\\LARGE\\textbf{Abhishek Tiwari}}\\\\[2pt]
+  {\\LARGE\\textbf{Abhishek Tiwari}}\\\\[3pt]
   \\small
-  \\textit{Junior AI Engineer --- Python, Machine Learning \\& Generative AI Systems}\\\\[2pt]
-  Lucknow, India \\,\\textbar\\, Open to Relocate to Thane/Mumbai \\,\\textbar\\, +91-7081660941\\\\[2pt]
+  \\textit{Full Stack Developer}\\\\[3pt]
+  +91-7081660941 \\,\\textbar\\,
   \\href{mailto:abhishektiwari6827@gmail.com}{abhishektiwari6827@gmail.com} \\,\\textbar\\,
   \\href{https://linkedin.com/in/abhishek-tiwariiii}{linkedin.com/in/abhishek-tiwariiii} \\,\\textbar\\,
-  \\href{https://github.com/abhishek6827}{github.com/abhishek6827} \\,\\textbar\\,
+  \\href{https://github.com/Abhishek6827}{github.com/abhishek6827} \\,\\textbar\\,
   \\href{https://getchintu.com}{getchintu.com}
 \\end{center}
 \\vspace{-6pt}
-\\small\\linespread{0.94}\\selectfont
+\\small\\linespread{0.92}\\selectfont
 
 %---------- SUMMARY ----------
 \\section*{Summary}
-Results-driven AI Engineer with 2+ years of production experience developing, testing, and deploying machine learning pipelines, deep learning models, and Generative AI systems. Founder of CHINTU AI (live platform serving 25k+ monthly inferences with 99.8\\% uptime), leading end-to-end implementation across Python (NumPy, Pandas, Scikit-learn, PyTorch/TensorFlow), REST APIs (FastAPI), and SQL/NoSQL databases. Proven track record in data preprocessing, feature engineering, and model evaluation, collaborating seamlessly across engineering teams.
+Versatile Full Stack Developer with 2+ years of production experience delivering end-to-end architectural coherence across high-performance client interfaces and scalable backend systems using \\textbf{React.js}, \\textbf{Next.js}, \\textbf{Node.js}, \\textbf{TypeScript}, and \\textbf{Python}. Founder of CHINTU AI (live SaaS serving 25k+ monthly inferences with 99.8\\% uptime), driving unified frontend-backend lifecycles from data modeling in PostgreSQL/MongoDB to responsive component systems and Redis cache layers. Experienced in building resilient RESTful APIs, webhook-driven fintech pipelines, and containerized Docker microservices on Linux environments.
 
 %---------- EXPERIENCE ----------
 \\section*{Experience}
 
-\\role{Founder \\& AI Systems Engineer --- CHINTU AI}{Feb 2026 -- Present}%
+\\role{Founder \\& Full Stack Developer --- CHINTU AI}{Feb 2026 -- Present}%
      {\\href{https://getchintu.com}{getchintu.com} \\hfill Remote, India}
-\\scope{Solo-built and operating live AI SaaS platform --- 500+ registered users, 40+ paying subscribers}
+\\scope{Solo-built and operating live SaaS platform --- 500+ registered users, 40+ paying subscribers}
 \\begin{itemize}
-  \\item Architected and deployed production machine learning and GenAI pipelines in Python (FastAPI), sustaining 25k+ monthly requests with 99.8\\% uptime and automated sub-400\\,ms fallback failover circuits.
-  \\item Engineered data preprocessing, tokenization, and asynchronous queuing pipelines with RabbitMQ and Redis, reducing p95 task latency from 8\\,s to 1.2\\,s (85\\% drop).
-  \\item Built data validation schemas, error-handling boundaries, and automated model evaluation loops, dropping user-facing pipeline failures from 7.2\\% to $<$0.4\\%.
-  \\item Implemented PostgreSQL database schemas and REST API endpoints for seamless model inference, logging, and data retrieval.
+  \\item Engineered full-stack SaaS architecture bridging React/Next.js client interface with Node.js and Python microservices, sustaining 25k+ monthly inference requests with 99.8\\% uptime and sub-400\\,ms fallback.
+  \\item Established end-to-end type safety and schema validation across client and server boundaries, cutting user-facing runtime errors from 7.2\\% to $<$0.4\\% (94\\% drop).
+  \\item Integrated Razorpay credit billing with HMAC signature verification, idempotent webhook processing, and automated audit logging, preventing duplicate transactions and revenue leakage.
+  \\item Slashed repetitive database and inference latency by 65\\% by implementing in-memory Redis caching, connection pooling, and structured JSON stream serialization.
 \\end{itemize}
 
-\\role{Full Stack Developer --- Contract (3-month fixed term)}{Nov 2025 -- Jan 2026}%
-     {Indian Capital and Investment (Coimbatore) Limited \\textnormal{{\\small --- fintech investment platform}} \\hfill Remote, India}
-\\scope{Team of 20 engineers --- sole owner of payment integrations, webhook infrastructure, and real-time ledger sync}
+\\role{Full Stack Developer --- Contract (Fintech Platform)}{Nov 2025 -- Jan 2026}%
+     {Indian Capital and Investment (Coimbatore) Limited \\hfill Remote, India}
+\\scope{Cross-functional team of 20 engineers --- sole owner of high-throughput data sync, webhook pipelines, and transaction reconciliation}
 \\begin{itemize}
-  \\item Developed RESTful API endpoints and webhook data ingestion pipelines using Node.js and Express, cutting transaction status latency from 20\\,min to under 3\\,min (85\\% drop) with idempotency verification.
-  \\item Containerized application services using Docker and configured automated CI/CD pipelines on AWS with end-to-end integration tests.
+  \\item Developed responsive client dashboards using React.js and Node.js/Express, consuming REST APIs and real-time transaction event streams with sub-300\\,ms state synchronization and robust error recovery.
+  \\item Prevented high-frequency UI re-renders on financial data tables via virtualized lists and memoized selectors (reselect), maintaining 60\\,fps UI fluidity and cutting status reflection lag from 20\\,min to $<$3\\,min (85\\% drop).
+  \\item Automated build, test, and containerized deployment workflows using Git and CI/CD pipelines, slashing release verification cycle from 30\\,min to under 5\\,min (83\\% reduction).
 \\end{itemize}
 
 \\role{Software Developer}{Aug 2024 -- Oct 2025}%
-     {Vasnaani Sanskaran \\textnormal{{\\small --- early-stage software startup}} \\hfill Noida, India}
-\\scope{Sole engineer --- designed, developed, and deployed 4 customer-facing web applications from schema to cloud}
+     {Vasnaani Sanskaran --- early-stage software startup \\hfill Noida, India}
+\\scope{Core engineer --- designed, developed, and deployed 4 production web applications from schema to deployment}
 \\begin{itemize}
-  \\item Implemented backend data models and tuned relational schemas in PostgreSQL, eliminating N+1 queries and improving p95 query response time from $\\sim$850\\,ms to $\\sim$550\\,ms (35\\% boost).
-  \\item Built responsive user interfaces and data visualization dashboards using React, conducting code reviews and maintaining technical documentation.
+  \\item Designed and shipped 4 customer-facing web applications from schema to cloud using React.js frontends and Node.js/Express backends backed by PostgreSQL, ensuring seamless UI-to-database contract coherence.
+  \\item Dropped p95 endpoint response time from 850\\,ms to 550\\,ms (35\\% improvement) by eliminating N+1 queries, optimizing SQL joins, and creating composite indexes on high-traffic endpoints.
+  \\item Boosted rendering performance by 25\\% across 12 high-interaction components by profiling memory leaks and re-render cycles via React DevTools Profiler and Chrome DevTools.
 \\end{itemize}
 
 \\role{Full Stack Developer Intern}{Jan 2024 -- Jun 2024}%
      {Hoping Minds \\hfill Mohali, India}
 \\begin{itemize}
-  \\item Rebuilt performance-critical web pages as modular React components consuming RESTful APIs, raising mobile Lighthouse score from 68 to 94 (38\\% boost) and cutting load time by 22\\%.
+  \\item Rebuilt performance-critical web pages as modular React components consuming RESTful APIs, boosting mobile Lighthouse score from 68 to 94 (38\\% improvement) and cutting page load times by 22\\%.
 \\end{itemize}
 
 %---------- PROJECTS ----------
 \\section*{Projects}
 
-\\project{OpenJarvis \\textnormal{--- Local-First Agent Framework, Multi-Hop RAG \\& ML Benchmarks}}%
-        {Python, PyTorch/TensorFlow, Scikit-learn, NumPy, Pandas, LangChain, FAISS, FastAPI, Docker}
+\\project{TempoMail --- Multi-Gateway Email \\& Webhook SaaS}{Next.js, Node.js, TypeScript, REST APIs, Redis, Stripe, Webhooks}
 \\begin{itemize}
-  \\item Architected an autonomous agent and ML evaluation framework supporting document indexing, vector embeddings (FAISS), and ML benchmarks; implemented automated testing loops tracking inference latency, token usage, and accuracy across 10k+ requests.
+  \\item Architected end-to-end email hosting SaaS platform managing 150+ mailboxes with Next.js frontend, isolated Node.js billing microservices, Redis event queues, and idempotent Stripe/Zoho webhook processing.
 \\end{itemize}
 
-\\project{git-ai-hub \\textnormal{--- Multi-Model Cloud AI Gateway \\& Remote MCP Server}}%
-        {Python, FastAPI, REST APIs, Docker, NVIDIA NIM, Groq SDK, Git/GitHub, SSE Streaming}
+\\project{Social Connect --- Real-Time Streaming \\& Messaging Platform}{React.js, Node.js, MongoDB (NoSQL), Socket.io, Redis, WebRTC}
 \\begin{itemize}
-  \\item Built a cloud AI gateway and Model Context Protocol (MCP) server over SSE streaming; integrated multi-model REST APIs and automated code inspection workflows with sub-second response times.
+  \\item Built real-time communication platform sustaining 200 concurrent user sessions with sub-90\\,ms p99 latency using React.js frontend, Node.js WebSocket engine, and MongoDB document storage.
 \\end{itemize}
 
-\\project{YT-Automation \\textnormal{--- Multimodal ML Pipeline \\& Frame Preprocessing}}%
-        {Python, Next.js, TypeScript, FFmpeg, AssemblyAI, Gemini Vision, PostgreSQL, NoSQL}
+\\project{OpenJarvis --- Async Task \\& Multimodal Assistant}{Node.js, Python, FastAPI, Docker, Linux, Redis, RESTful APIs}
 \\begin{itemize}
-  \\item Developed an automated data preprocessing pipeline extracting video frames via FFmpeg and transcripts via AssemblyAI for multimodal AI classification; reduced end-to-end tagging latency from 45\\,min to under 4\\,min (91\\% drop).
+  \\item Implemented polyglot microservice orchestrator using Node.js and Python/FastAPI processing 10k+ requests/month, containerized via Docker on Linux with sub-second background task execution.
 \\end{itemize}
 
 %---------- TECHNICAL SKILLS ----------
 \\section*{Technical Skills}
-\\begin{itemize}[leftmargin=0pt, label={}, itemsep=0.8pt]
-  \\item \\textbf{Languages \\& Core:} Python, TypeScript, JavaScript (ES6+), SQL, Bash, Data Structures \\& Algorithms
-  \\item \\textbf{Machine Learning \\& Data Science:} NumPy, Pandas, Scikit-learn, Feature Engineering, Supervised/Unsupervised Learning, Data Cleaning
-  \\item \\textbf{Deep Learning \\& GenAI:} PyTorch, TensorFlow (Basics), LangChain, Hugging Face, Prompt Engineering, RAG Architectures, FAISS
-  \\item \\textbf{APIs \\& Backend:} REST APIs, FastAPI, Node.js, Express.js, Microservices Architecture, Webhooks, SSE Streaming
-  \\item \\textbf{Databases \\& Storage:} PostgreSQL, MySQL, NoSQL (MongoDB, Redis), Vector Databases (FAISS, Pinecone)
-  \\item \\textbf{Tools \\& Practices:} Git, GitHub, Docker, Jupyter Notebook, Google Colab, Linux, CI/CD, Unit Testing, Code Reviews
+\\begin{itemize}[leftmargin=0pt, label={}]
+  \\item \\textbf{Frontend Engineering:} React.js, Next.js (SSR, SSG), TypeScript, JavaScript (ES6+), Redux Toolkit, Context API, HTML5, CSS3, Responsive Design
+  \\item \\textbf{Backend \\& APIs:} Node.js, Express.js, Python (FastAPI), RESTful APIs, WebSockets, JSON, Microservices, Event Streams, Webhooks
+  \\item \\textbf{Databases \\& Caching:} PostgreSQL, MongoDB (NoSQL), MySQL, Redis (In-Memory Cache/Pub-Sub), Schema Design, Query Optimization
+  \\item \\textbf{Tooling \\& Performance:} Webpack, Vite, npm, Chrome DevTools, React DevTools Profiler, Lighthouse, Postman, Jest
+  \\item \\textbf{DevOps, OS \\& Cloud:} Linux Environments, Docker Containers, Git/GitHub (Branching, PRs), CI/CD Pipelines, Cloud Hosting
+  \\item \\textbf{Engineering Best Practices:} End-to-End Coherence, Full-Stack Type Safety, Idempotency, Clean Architecture, Error Boundaries
 \\end{itemize}
 
 %---------- EDUCATION ----------

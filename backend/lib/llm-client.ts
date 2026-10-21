@@ -84,7 +84,7 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
   const keys = getNvidiaApiKeys();
   if (keys.length === 0) throw new Error("No NVIDIA_API_KEY set");
 
-  const modelToUse = forceModel || "moonshotai/kimi-k3";
+  const modelToUse = forceModel || "stepfun-ai/step-5-preview";
 
   const cleanedUserMessage = options.userMessage
     .replace(/\r\n/g, "\n")
@@ -119,12 +119,13 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
         };
 
         // Specific model configurations as specified in NVIDIA specs
-        if (modelToUse === "moonshotai/kimi-k3" || modelToUse.includes("kimi")) {
+        if (modelToUse === "stepfun-ai/step-5-preview" || modelToUse.includes("step")) {
           requestOptions.temperature = 0.6;
           requestOptions.max_tokens = options.maxTokens ?? 16384;
           requestOptions.stream = true;
-        } else if (modelToUse === "nvidia/nemotron-3-super-120b-a12b" || modelToUse.includes("120b")) {
-          requestOptions.temperature = 0.2;
+        } else if (modelToUse === "google/gemma-4-31b-it" || modelToUse.includes("gemma")) {
+          requestOptions.temperature = 0.5;
+          requestOptions.top_p = 1.0;
           requestOptions.max_tokens = options.maxTokens ?? 16384;
           requestOptions.stream = true;
         } else if (modelToUse === "nvidia/nemotron-3-ultra-550b-a55b" || modelToUse.includes("550b")) {
@@ -269,7 +270,7 @@ async function tryProvider(options: LLMCallOptions, modelId: string): Promise<LL
  * Call LLM directly with NO fallback. Throws exact error immediately on failure.
  */
 export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
-  const modelToUse = options.modelSelection?.primaryModel || "nvidia:moonshotai/kimi-k3";
+  const modelToUse = options.modelSelection?.primaryModel || "nvidia:stepfun-ai/step-5-preview";
 
   console.log(`[LLM] Calling Model (${modelToUse})...`);
   try {
