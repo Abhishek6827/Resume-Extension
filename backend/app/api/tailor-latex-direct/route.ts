@@ -88,23 +88,34 @@ function fallbackKeywordEvaluation(latex: string, jdData: any) {
   const lowerJd = jdText.toLowerCase();
   const lowerLatex = latex.toLowerCase();
 
-  const commonKeywords = [
-    "Java", "React", "React.js", "MongoDB", "NoSQL", "REST APIs", "REST API", "Microservices",
-    "Agile", "Scalable", "High-performance", "Spring Boot", "TypeScript", "JavaScript",
-    "Node.js", "Docker", "Kubernetes", "AWS", "SQL", "PostgreSQL", "Git", "CI/CD", "Python"
+  // Dynamically extract requirements from the actual JD object
+  const mustHave = Array.isArray(jdData?.mustHaveSkills) ? jdData.mustHaveSkills : [];
+  const niceToHave = Array.isArray(jdData?.niceToHaveSkills) ? jdData.niceToHaveSkills : [];
+  const jdKeywords = Array.isArray(jdData?.keywords) ? jdData.keywords : [];
+  const dynamicJdSkills = Array.from(new Set([...mustHave, ...niceToHave, ...jdKeywords]))
+    .map(s => String(s).trim())
+    .filter(s => s.length >= 2);
+
+  // If the parsed JD provided real skills, evaluate strictly against THEM!
+  const targetKeywords = dynamicJdSkills.length > 0 ? dynamicJdSkills : [
+    "Python", "Java", "TypeScript", "JavaScript", "C++", "C#", "Go", "Rust", "React",
+    "Docker", "Kubernetes", "AWS", "SQL", "PostgreSQL", "Git", "CI/CD", "REST APIs"
   ];
 
   const matched: string[] = [];
   const missing: string[] = [];
 
-  commonKeywords.forEach((kw) => {
+  targetKeywords.forEach((kw) => {
     const kwLower = kw.toLowerCase();
-    if (lowerJd.includes(kwLower)) {
-      if (lowerLatex.includes(kwLower)) {
-        if (!matched.includes(kw)) matched.push(kw);
-      } else {
-        if (!missing.includes(kw)) missing.push(kw);
-      }
+    const escaped = kwLower.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const isPresent = kwLower === "c++" || kwLower === "c#" || kwLower === ".net"
+      ? new RegExp("(?:^|[\\s/,()])" + escaped + "(?:$|[\\s/,()])", "i").test(lowerLatex)
+      : new RegExp("\\b" + escaped + "\\b", "i").test(lowerLatex) || lowerLatex.includes(kwLower);
+
+    if (isPresent) {
+      if (!matched.includes(kw)) matched.push(kw);
+    } else {
+      if (!missing.includes(kw)) missing.push(kw);
     }
   });
 
@@ -448,8 +459,14 @@ function findRelevantSkillBankItems(skillBank: any, jdData: any) {
       score += 15;
     }
 
-    if (proj.description && matchKw("django") && proj.description.toLowerCase().includes("django")) {
-      score += 20;
+    if (proj.description) {
+      const descLower = proj.description.toLowerCase();
+      for (const sk of pSkills) {
+        if (sk && matchKw(sk) && descLower.includes(sk)) {
+          score += 15;
+          break;
+        }
+      }
     }
 
     if (proj.name && matchKw(proj.name.toLowerCase())) {
@@ -578,19 +595,18 @@ CORE IN-PLACE TAILORING RULES:
      * You may swap out any low-relevance project with any matching verified project from the candidate's GitHub Skill Bank, keeping the exact LaTeX \\project{...}{...} command and bullet structure.
    - In project bullet points: describe realistic technical actions with the specific project's allocated stack (e.g., designing GraphQL queries/mutations, deploying containerized pods in Kubernetes, building RESTful microservices, optimizing algorithms).
 
-4. TECHNICAL SKILLS SECTION (DYNAMIC DOMAIN ALIGNMENT & COMPACT EXCELLENCE):
-   - Categorize and format skills to directly match the target role and domain. Replace or adapt generic categories to showcase the target domain!
-     * For AI / Machine Learning / Data Science roles:
-       - \\item \\textbf{Machine Learning \\& Deep Learning:} PyTorch, TensorFlow, Keras, Scikit-learn, XGBoost, LightGBM, Hugging Face
-       - \\item \\textbf{Data Engineering \\& MLOps:} Kubeflow, MLflow, Airflow, Docker, Kubernetes, Linux, CI/CD, Data Pipelines
-       - \\item \\textbf{Data Analysis \\& Visualization:} Pandas, NumPy, Matplotlib, Seaborn, Feature Engineering, SQL
-       - \\item \\textbf{AI \\& LLM Architectures:} LangChain, RAG Systems, Vector Databases (Pinecone, ChromaDB, FAISS), Fine-Tuning
-       - \\item \\textbf{Languages \\& Frameworks:} Python, C++, SQL, FastAPI, REST APIs, Microservices
-     * For Full-Stack / Backend / Cloud roles: Adapt categories accordingly (e.g. Languages, Backend & Microservices, Frontend, Cloud & DevOps, Databases, Distributed Systems).
-   - MANDATORY 100% COVERAGE OF TARGET JD MUST-HAVES:
+4. TECHNICAL SKILLS SECTION (100% DYNAMIC & DRIVEN BY TARGET JD REQUIREMENTS):
+   - ABSOLUTE BAN ON STATIC / HARDCODED SKILL LISTS:
+     Do NOT output generic pre-canned tech stacks. Every single skill category and item MUST be dynamically derived from the TARGET JD REQUIREMENTS CHECKLIST and the candidate's verified background.
+   - DYNAMIC DOMAIN CATEGORIZATION:
+     * Analyze the target role (${roleTarget}) and the TARGET JD REQUIREMENTS CHECKLIST.
+     * Dynamically create 5-6 clean, logical categories that directly mirror the target JD's domain and stack (e.g., Core Languages, Primary Frameworks & Libraries, Cloud & Infrastructure, Databases & Data Stores, Architecture & Systems).
+     * Name each category cleanly and professionally according to what this specific job requires (e.g., if mobile, feature Mobile Engineering; if ML/AI, feature Machine Learning & Data Pipelines; if backend, feature Backend & Microservices; if DevOps/Cloud, feature Cloud, Containers & CI/CD; etc.).
+   - MANDATORY 100% INCLUSION OF TARGET JD SKILLS:
      * Cross-check the TARGET JD REQUIREMENTS CHECKLIST.
-     * EVERY mandatory framework, library, and tool (especially ${allJdRequirements.slice(0, 15).join(", ")}) MUST be included in the Technical Skills section under its appropriate category. Never leave out core frameworks!
-   - AVOID BLOAT: Keep each skill line to 1 physical line (~65-78 characters). Lead with the target JD's required technologies!
+     * EVERY mandatory programming language, framework, database, library, and tool required by this specific JD (especially ${allJdRequirements.slice(0, 15).join(", ")}) MUST be explicitly included in the Technical Skills section under its most appropriate category.
+     * Prioritize the target JD's required technologies at the beginning of each category line.
+   - LINE DENSITY & FORMAT: Keep each skill line strictly on 1 physical line (~65-78 characters). Lead with the target JD's required technologies!
 
 5. PROFESSIONAL SUMMARY & SENIORITY PRESERVATION (CRITICAL):
    - Rewrite the summary to highlight the candidate's target engineering title, production experience (2+ years), and primary domain/stack focus in strictly 3 compact lines (~45-55 words).

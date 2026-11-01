@@ -282,8 +282,14 @@ export function matchSkillBankWithJD(skillBank: SkillBank, jdText: string | any)
       score += 15;
     }
 
-    if (proj.description && (matchesKeyword(lowerJd, "django") && proj.description.toLowerCase().includes("django"))) {
-      score += 20;
+    if (proj.description) {
+      const descLower = proj.description.toLowerCase();
+      for (const skill of pSkills) {
+        if (skill && matchesKeyword(lowerJd, skill) && descLower.includes(skill.toLowerCase())) {
+          score += 15;
+          break;
+        }
+      }
     }
 
     if (proj.name && matchesKeyword(lowerJd, proj.name)) {

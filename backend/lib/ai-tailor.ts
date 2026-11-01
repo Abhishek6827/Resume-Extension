@@ -741,14 +741,12 @@ export async function tailorSkillsWithAI(
 
 CRITICAL MANDATORY RULES:
 0. PROACTIVE RED FLAG FIXING: Fix skill clutter or missing JD keywords by placing JD-required skills first, grouping them logically into clean categories, and removing version bloat.
-1. LOGICAL CATEGORY PLACEMENT: Place skills into their proper logical categories:
-   - Languages: Java, C#, TypeScript, JavaScript, Python, C/C++, SQL
-   - Backend: Spring Boot, .NET Core, Node.js, Express.js, GraphQL, REST APIs, Microservices
-   - Frontend: React.js, Next.js, Angular, HTML5, CSS3, Redux
-   - Cloud & DevOps: Kubernetes, Docker, AWS, Azure, GCP, CI/CD, GitHub Actions, Git
-   - Databases: PostgreSQL, MongoDB, MySQL, SQL Server, Redis, Query Optimization
-   - Core Concepts: Distributed Systems, High Throughput, Concurrency, Large-Scale Design, Security
-2. JD SKILLS FIRST: Within each skill category, place JD-matching skills at the VERY BEGINNING.
+1. DYNAMIC CATEGORY PLACEMENT (100% DRIVEN BY TARGET JD):
+   - Dynamically create 5-6 clean, logical categories that directly mirror the target JD's required technologies and domain (e.g., Core Languages, Primary Frameworks, Cloud & DevOps, Databases, Distributed Systems).
+   - Do NOT use static or hardcoded category names. Every category title and its contents must adapt dynamically to the target Job Description.
+2. JD SKILLS FIRST & 100% COVERAGE:
+   - Within each skill category, place JD-matching skills at the VERY BEGINNING.
+   - Include every mandatory skill, framework, and tool mentioned in the target JD requirements under its most appropriate category.
 3. AVOID KITCHEN-SINK BLOAT: Limit each category strictly to 5 to 6 highly relevant skills to keep the resume clean and credible. Do not dump every possible language or framework.
 4. MODERN AI & TOOLS: If including AI or developer tooling, use professional category names (e.g. "AI & LLM Integration: OpenAI API, LangChain, Prompt Engineering, Vector Search" or "Developer Tools: Git, Docker, Postman, Linux") rather than listing IDE plugins as core standalone categories.
 5. DEDUPLICATION RULE: A skill MUST ONLY appear in ONE category.
