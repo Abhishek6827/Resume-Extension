@@ -34,28 +34,86 @@ function stripThinkTags(text: string): string {
 }
 
 /**
+ * Helper to repair truncated JSON with unbalanced quotes, brackets, and braces
+ */
+function repairTruncatedJSON(str: string): string {
+  let cleaned = str.trim();
+  const firstBrace = cleaned.indexOf("{");
+  if (firstBrace === -1) return cleaned;
+  cleaned = cleaned.substring(firstBrace);
+
+  let inString = false;
+  let escaped = false;
+  const stack: ("{" | "[")[] = [];
+
+  for (let i = 0; i < cleaned.length; i++) {
+    const ch = cleaned[i];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (ch === "\\") {
+      escaped = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (!inString) {
+      if (ch === "{") stack.push("{");
+      else if (ch === "[") stack.push("[");
+      else if (ch === "}" && stack[stack.length - 1] === "{") stack.pop();
+      else if (ch === "]" && stack[stack.length - 1] === "[") stack.pop();
+    }
+  }
+
+  if (inString) {
+    cleaned += '"';
+  }
+
+  // Trim trailing comma or dangling colon before closing containers
+  cleaned = cleaned.replace(/,\s*$/, "");
+
+  while (stack.length > 0) {
+    const top = stack.pop();
+    cleaned = cleaned.replace(/,\s*$/, "");
+    if (top === "[") {
+      cleaned += "]";
+    } else if (top === "{") {
+      cleaned += "}";
+    }
+  }
+
+  return cleaned.replace(/,\s*([\}\]])/g, "$1");
+}
+
+/**
  * Extract JSON object from a response that may be wrapped in markdown fences
  */
 export function extractJSON(text: string): string {
   const cleaned = stripThinkTags(text);
   const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
   if (jsonMatch) {
-    return jsonMatch[0].replace(/,\s*([\}\]])/g, "$1");
+    const candidate = jsonMatch[0].replace(/,\s*([\}\]])/g, "$1");
+    try {
+      JSON.parse(candidate);
+      return candidate;
+    } catch {
+      try {
+        const repaired = repairTruncatedJSON(candidate);
+        JSON.parse(repaired);
+        return repaired;
+      } catch {
+        // Fall through to full scan
+      }
+    }
   }
 
   const firstBrace = cleaned.indexOf("{");
   if (firstBrace !== -1) {
-    let str = cleaned.substring(firstBrace);
-    const quoteMatches = str.match(/(?<!\\)"/g) || [];
-    if (quoteMatches.length % 2 !== 0) {
-      str += '"';
-    }
-    const openBraces = (str.match(/\{/g) || []).length;
-    const closeBraces = (str.match(/\}/g) || []).length;
-    for (let i = 0; i < openBraces - closeBraces; i++) {
-      str += "}";
-    }
-    return str.replace(/,\s*([\}\]])/g, "$1");
+    const repaired = repairTruncatedJSON(cleaned.substring(firstBrace));
+    return repaired;
   }
 
   throw new Error("No JSON object found in LLM response");
@@ -230,9 +288,13 @@ async function tryGroq(options: LLMCallOptions, forceModel?: string): Promise<LL
           { role: "user", content: cleanedUserMessage },
         ],
         temperature: options.temperature ?? 0.3,
-        max_tokens: options.maxTokens ?? 3500,
+        max_tokens: options.maxTokens ?? 4096,
         stream: false,
       };
+
+      if (options.jsonMode) {
+        requestOptions.response_format = { type: "json_object" };
+      }
 
       const response = await groq.chat.completions.create(requestOptions) as any;
       let content = response.choices?.[0]?.message?.content || "";
@@ -301,4 +363,3 @@ export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse>
     throw err;
   }
 }
-

@@ -578,16 +578,19 @@ CORE IN-PLACE TAILORING RULES:
      * You may swap out any low-relevance project with any matching verified project from the candidate's GitHub Skill Bank, keeping the exact LaTeX \\project{...}{...} command and bullet structure.
    - In project bullet points: describe realistic technical actions with the specific project's allocated stack (e.g., designing GraphQL queries/mutations, deploying containerized pods in Kubernetes, building RESTful microservices, optimizing algorithms).
 
-4. TECHNICAL SKILLS SECTION (FOCUSED, CREDIBLE & COMPACT):
-   - Place skills in logically correct categories:
-     * Languages: Java, C\\#, TypeScript, JavaScript, Python, C/C++, SQL, Kotlin, Swift
-     * Backend: Spring Boot, .NET Core, ASP.NET, Node.js, Express.js, GraphQL, REST APIs, Microservices
-     * Frontend: React.js, Next.js, Angular, HTML5, CSS3, Redux
-     * Cloud \\& DevOps: Kubernetes, Docker, AWS, Azure, GCP, CI/CD, GitHub Actions, Git
-     * Databases: PostgreSQL, MongoDB, MySQL, SQL Server, Redis, Query Optimization
-     * Core Concepts: Distributed Systems, High Throughput, Concurrency, System Design, Security, Microservices
-   - AVOID KITCHEN-SINK BLOAT: Keep each skill category line strictly on 1 physical line with 5-6 core, high-relevance technologies (~50-65 chars). Do NOT dump every existing technology into one resume. Lead with the target JD's required technologies!
-   - MODERN AI / DEVELOPER TOOLS: Do not list simple IDE plugins as standalone skill categories. If including AI tooling, format as practical engineering competencies (e.g. \\textbf{AI \\& LLM Integration:} OpenAI API, LangChain, Prompt Engineering, Vector Search, AI-Assisted Workflows) or combine under \\textbf{Developer Tools:}.
+4. TECHNICAL SKILLS SECTION (DYNAMIC DOMAIN ALIGNMENT & COMPACT EXCELLENCE):
+   - Categorize and format skills to directly match the target role and domain. Replace or adapt generic categories to showcase the target domain!
+     * For AI / Machine Learning / Data Science roles:
+       - \\item \\textbf{Machine Learning \\& Deep Learning:} PyTorch, TensorFlow, Keras, Scikit-learn, XGBoost, LightGBM, Hugging Face
+       - \\item \\textbf{Data Engineering \\& MLOps:} Kubeflow, MLflow, Airflow, Docker, Kubernetes, Linux, CI/CD, Data Pipelines
+       - \\item \\textbf{Data Analysis \\& Visualization:} Pandas, NumPy, Matplotlib, Seaborn, Feature Engineering, SQL
+       - \\item \\textbf{AI \\& LLM Architectures:} LangChain, RAG Systems, Vector Databases (Pinecone, ChromaDB, FAISS), Fine-Tuning
+       - \\item \\textbf{Languages \\& Frameworks:} Python, C++, SQL, FastAPI, REST APIs, Microservices
+     * For Full-Stack / Backend / Cloud roles: Adapt categories accordingly (e.g. Languages, Backend & Microservices, Frontend, Cloud & DevOps, Databases, Distributed Systems).
+   - MANDATORY 100% COVERAGE OF TARGET JD MUST-HAVES:
+     * Cross-check the TARGET JD REQUIREMENTS CHECKLIST.
+     * EVERY mandatory framework, library, and tool (especially ${allJdRequirements.slice(0, 15).join(", ")}) MUST be included in the Technical Skills section under its appropriate category. Never leave out core frameworks!
+   - AVOID BLOAT: Keep each skill line to 1 physical line (~65-78 characters). Lead with the target JD's required technologies!
 
 5. PROFESSIONAL SUMMARY & SENIORITY PRESERVATION (CRITICAL):
    - Rewrite the summary to highlight the candidate's target engineering title, production experience (2+ years), and primary domain/stack focus in strictly 3 compact lines (~45-55 words).
@@ -604,9 +607,10 @@ CORE IN-PLACE TAILORING RULES:
        - NEVER allow a bullet to spill onto a new line by just 1-3 trailing words ("widows").
      * Technical Skills: Keep each skill line to strictly 1 physical line (max 55-60 characters). Do NOT create multi-line skill dumps.
      * Summary: Limit to strictly 3 compact lines (~45 words).
-   - STRICT CHARACTER BUDGET:
+   - TARGET CHARACTER BUDGET:
      * The original LaTeX has ${latexLength} characters.
-     * Your tailored LaTeX MUST be <= ${Math.round(latexLength * 0.94)} characters (Target budget: ~${Math.round(latexLength * 0.88)} to ${Math.round(latexLength * 0.93)} characters). A 6-12% buffer is required to guarantee zero 2nd-page spillover after keyword injection.
+     * Target tailored length: between ${Math.round(latexLength * 0.95)} and ${latexLength} characters (~95% to 100% of original length).
+     * DO NOT over-truncate or drop required technical tools (do NOT drop below ${Math.round(latexLength * 0.92)} chars). Keep bullets dense and quantified.
    - DO NOT alter preamble, geometry, margins, packages, or vertical spacing.
    - DO NOT add extra blank lines between sections or around itemize blocks.
 
@@ -658,7 +662,7 @@ ${latex}`;
             });
 
             const generateWithRetry = async (): Promise<string> => {
-              const maxAttempts = 3;
+              const maxAttempts = 2;
               let currentPrompt = systemPrompt;
               let tailored = "";
 
@@ -672,34 +676,28 @@ ${latex}`;
 
                 tailored = cleanLatexResponse(response.content);
 
-                const targetBudget = Math.round(latexLength * 0.94);
-                if (tailored.length <= targetBudget) {
+                // Accept if within 3% of original length (fits on 1 page with standard squeeze)
+                const budgetThreshold = Math.round(latexLength * 1.03);
+                if (tailored.length <= budgetThreshold) {
                   break;
                 }
 
-                // Last attempt — no point building a retry prompt
+                // Last attempt — stop
                 if (attempt >= maxAttempts - 1) break;
 
-                const excess = tailored.length - targetBudget;
-                console.warn(`[Stream Retry] Model ${model.name} exceeded budget by ${excess} chars (${tailored.length}/${targetBudget}). Attempt ${attempt + 2}/${maxAttempts}...`);
+                const excess = tailored.length - latexLength;
+                console.warn(`[Stream Retry] Model ${model.name} exceeded budget by ${excess} chars (${tailored.length}/${latexLength}). Attempt ${attempt + 2}/${maxAttempts}...`);
 
-                sendEvent({ modelId: model.id, progress: 30 + (attempt + 1) * 15, phase: `Compacting (retry ${attempt + 1})` });
+                sendEvent({ modelId: model.id, progress: 45, phase: "Tightening fit" });
 
-                currentPrompt = `You are an expert ATS specialist and senior LaTeX editor.
-CRITICAL 1-PAGE CHARACTER & LINE OVERFLOW (ATTEMPT ${attempt + 2}/${maxAttempts}):
-Your generated LaTeX was ${tailored.length} characters long, which is ${excess} characters OVER the strict 1-page budget (${targetBudget} characters).
+                // Retain entire systemPrompt with all JD requirements, and append compaction directive
+                currentPrompt = `${systemPrompt}
 
-TO GUARANTEE THE RESUME FITS ON EXACTLY 1 PAGE WHILE RETAINING HIGH CREDIBILITY:
-1. SWAP IN-PLACE & COMPACT: Keep single-line bullets under 75-80 characters, and 2-line bullets under 140-145 characters so they never wrap an extra line. Retain Google XYZ formula (accomplished X, measured by Y, by doing Z). Remove filler words, but retain key technical achievements. NEVER write robotic meta-phrases like "applied Data Structures, Algorithms" or "conducted task estimation".
-2. PROJECT TECH HEADERS: Keep strictly to 4-5 core JD technologies per project subtitle.
-3. SKILL ROWS: Keep each skill category to 1 single line (max 5-6 core tools, max 55-60 chars). Lead with target JD skills.
-4. SUMMARY: Limit summary to strictly 3 compact, focused lines (~45 words).
-5. DO NOT add extra bullets or projects. Keep the exact count as the original template.
-6. DO NOT alter preamble, geometry, margins, packages, or vertical spacing.
-7. DO NOT add extra blank lines between sections or around itemize blocks.
-
-You MUST produce the full LaTeX document with total length <= ${targetBudget} characters.
-Return ONLY the raw tailored LaTeX string from \\documentclass to \\end{document}. No markdown fences, no explanations.`;
+CRITICAL COMPACTION INSTRUCTION (Attempt 2/2):
+Your previous output was ${tailored.length} characters (slightly over the ${latexLength} character budget).
+DO NOT DROP any target JD keywords or frameworks (especially ${allJdRequirements.slice(0, 10).join(", ")}).
+Keep all technical achievements and Google XYZ format intact, but tighten sentence phrasing and trim redundant filler words so total length is between ${Math.round(latexLength * 0.95)} and ${latexLength} characters.
+Output full document from \\documentclass to \\end{document}.`;
               }
 
               return tailored;
@@ -709,16 +707,16 @@ Return ONLY the raw tailored LaTeX string from \\documentclass to \\end{document
               if (modelTimer) clearTimeout(modelTimer);
             });
 
-            const lengthExceeded = tailoredLatex.length > latexLength;
+            const lengthExceeded = tailoredLatex.length > Math.round(latexLength * 1.04);
 
             sendEvent({ modelId: model.id, progress: 80, phase: "ATS Checking" });
 
             const evaluation = await evaluateTailoredResume(tailoredLatex, jdData);
 
-            // Calculate composite score with length penalty if generated LaTeX exceeds original limit
+            // Calculate composite score with length penalty ONLY if genuinely exceeding 1-page tolerance (> 4%)
             let rawScore = evaluation.score;
             if (lengthExceeded) {
-              rawScore = Math.max(0, rawScore - 15);
+              rawScore = Math.max(0, rawScore - 10);
             }
             const finalScore = Math.max(0, Math.min(100, Math.round(rawScore)));
 

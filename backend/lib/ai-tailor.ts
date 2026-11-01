@@ -310,9 +310,14 @@ export function extractJobTitleFromText(text: string): string {
 export function fallbackParseJD(rawText: string): JDData {
   const jobTitle = extractJobTitleFromText(rawText);
   const commonKeywords = [
-    "Java", "React", "React.js", "MongoDB", "NoSQL", "REST APIs", "REST API", "Microservices",
-    "Agile", "Scalable", "High-performance", "Spring Boot", "TypeScript", "JavaScript",
-    "Node.js", "Docker", "Kubernetes", "AWS", "SQL", "PostgreSQL", "Git", "CI/CD", "Python"
+    "Python", "PyTorch", "TensorFlow", "Keras", "Scikit-learn", "XGBoost", "LightGBM", "Pandas", "NumPy",
+    "Matplotlib", "Seaborn", "Kubeflow", "MLflow", "Airflow", "Docker", "Kubernetes", "AWS", "Azure", "GCP",
+    "CI/CD", "Git", "SQL", "PostgreSQL", "MySQL", "MongoDB", "NoSQL", "Redis", "REST APIs", "REST API",
+    "GraphQL", "FastAPI", "Flask", "Django", "Node.js", "Express.js", "React", "React.js", "Next.js",
+    "TypeScript", "JavaScript", "Java", "Spring Boot", "C++", "C#", ".NET", "Golang", "LangChain",
+    "RAG", "FAISS", "ChromaDB", "Pinecone", "LLMs", "Prompt Engineering", "MLOps", "Data Pipelines",
+    "Feature Engineering", "Hyperparameter Tuning", "Model Monitoring", "Microservices", "Distributed Systems",
+    "Concurrency", "High-performance", "Scalable", "Agile"
   ];
   const lower = rawText.toLowerCase();
   const matched = commonKeywords.filter(k => lower.includes(k.toLowerCase()));
@@ -320,8 +325,8 @@ export function fallbackParseJD(rawText: string): JDData {
   return {
     jobTitle: jobTitle || "",
     company: "",
-    mustHaveSkills: matched.slice(0, 10),
-    niceToHaveSkills: matched.slice(10),
+    mustHaveSkills: matched.slice(0, 15),
+    niceToHaveSkills: matched.slice(15),
     responsibilities: [],
     keywords: matched,
   };
@@ -354,7 +359,8 @@ Return ONLY a valid JSON object matching this exact structure (no markdown wrapp
       systemPrompt,
       userMessage: `Job Description:\n${rawText}`,
       modelSelection: { primaryModel: "groq:openai/gpt-oss-120b" },
-      maxTokens: 2048,
+      maxTokens: 4096,
+      jsonMode: true,
     });
 
     const jsonStr = extractJSON(response.content);

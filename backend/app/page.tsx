@@ -494,6 +494,7 @@ const PipelineVisualizer = ({ status }: { status: string }) => {
   const isFinished = ["compiling", "success"].includes(status);
 
   const getBranchState = (branch: "summary" | "experience" | "projects" | "skills" | "matchScore") => {
+    if (status === "error") return { active: false, done: false, ready: false, log: "Generation halted.", progress: 0 };
     if (isFinished) return { active: false, done: true, ready: false, log: "Completed.", progress: 100 };
     if (status === "parsing") return { active: false, done: false, ready: false, log: "Pending...", progress: 0 };
     if (status === "compiling") return { active: false, done: true, ready: false, log: "Completed.", progress: 100 };
@@ -2519,7 +2520,7 @@ export default function Home() {
         const sortedResults = sortLeaderboardResults(accumulatedResults);
 
         if (sortedResults.length === 0) {
-          throw new Error("All models failed to generate tailored LaTeX");
+          throw new Error("Generation stream was interrupted or timed out before completion. Please retry.");
         }
 
         setTailoredResumes(sortedResults);
@@ -2974,6 +2975,28 @@ export default function Home() {
                 />
               ) : (
                 <PipelineVisualizer status={status} />
+              )}
+
+              {/* Error banner when generation encounters an issue */}
+              {status === "error" && (
+                <div className="flex flex-col items-center gap-3 w-full max-w-2xl mx-auto p-4 sm:p-5 rounded-2xl bg-red-500/10 border border-red-500/30 text-center animate-in fade-in mt-4">
+                  <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-sm sm:text-base">
+                    <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    Generation Interrupted
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                    {errorMessage || "The model took too long to respond or the connection was interrupted. Please retry."}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleGenerate}
+                    className="mt-1 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs sm:text-sm font-bold shadow-md shadow-indigo-500/20 transition-all cursor-pointer"
+                  >
+                    Retry Generation
+                  </button>
+                </div>
               )}
 
               {/* Leaderboard/Detailed Reports (shown as soon as results are generated) */}
