@@ -522,7 +522,7 @@ MANDATORY VERIFIED GITHUB SKILL BANK INTEGRATION:
 - Verified candidate skills: ${topSkills}
 - Verified projects: ${topProjects}
 - MANDATORY IN-PLACE INJECTION & SWAPPING:
-  1. TECHNICAL SKILLS: If the target JD requires technologies (e.g. Python, Django, REST APIs, Docker, PostgreSQL) that exist in the Verified GitHub Skill Bank, you MUST include them in the Technical Skills section under their proper category.
+  1. TECHNICAL SKILLS: If the target JD requires technologies from the TARGET JD REQUIREMENTS CHECKLIST that exist in the Verified GitHub Skill Bank, you MUST include them in the Technical Skills section under their proper category.
   2. PROJECTS SECTION: If an existing resume project is low-relevance or lacks target JD technologies, SWAP it out with the most relevant verified GitHub project from the candidate's list above. Keep exact LaTeX markup and bullet counts intact.
   3. ABSOLUTE BAN ON SYNTHETIC / HALLUCINATED PROJECT NAMES: NEVER invent, fabricate, or make up synthetic project names (e.g. NEVER make up names like 'Video & Media Management Portal', 'CyberGuard AI', 'Fintech Payment Gateway', etc.). You MUST ONLY use the real, verified project names from the candidate's original resume or from the Verified Candidate GitHub Projects list above. Update the tech stack and bullet points of those real projects to match the JD requirements, but do NOT invent new projects.`;
     }
@@ -602,14 +602,17 @@ CORE IN-PLACE TAILORING RULES:
      * Analyze the target role (${roleTarget}) and the TARGET JD REQUIREMENTS CHECKLIST.
      * Dynamically create 5-6 clean, logical categories that directly mirror the target JD's domain and stack (e.g., Core Languages, Primary Frameworks & Libraries, Cloud & Infrastructure, Databases & Data Stores, Architecture & Systems).
      * Name each category cleanly and professionally according to what this specific job requires (e.g., if mobile, feature Mobile Engineering; if ML/AI, feature Machine Learning & Data Pipelines; if backend, feature Backend & Microservices; if DevOps/Cloud, feature Cloud, Containers & CI/CD; etc.).
-   - MANDATORY 100% INCLUSION OF TARGET JD SKILLS:
-     * Cross-check the TARGET JD REQUIREMENTS CHECKLIST.
-     * EVERY mandatory programming language, framework, database, library, and tool required by this specific JD (especially ${allJdRequirements.slice(0, 15).join(", ")}) MUST be explicitly included in the Technical Skills section under its most appropriate category.
+   - ZERO MISSING KEYWORDS MANDATE (100% COVERAGE CRITICAL):
+     * The ATS evaluation engine evaluates the resume against EVERY single requirement in the TARGET JD REQUIREMENTS CHECKLIST.
+     * Any missing skill appears in "Areas for Improvement" and docks the candidate's ATS score!
+     * Target requirements to cover: ${allJdRequirements.join(", ")}.
+     * You MUST ensure that 100% of the tools, libraries, languages, and platforms extracted from the JD are explicitly included in either the Technical Skills section or woven into Experience/Project bullets.
+     * In particular, data manipulation & analysis libraries (e.g., Pandas, NumPy, Matplotlib), core ML/DL frameworks (e.g., PyTorch, TensorFlow, Keras, Scikit-learn, XGBoost), MLOps/Data orchestration (e.g., MLflow, Kubeflow, Airflow), and foundational developer tools (e.g., Git, Docker, Kubernetes, CI/CD, Cloud providers) MUST NEVER BE OMITTED if present in the target JD requirements!
      * Prioritize the target JD's required technologies at the beginning of each category line.
-   - LINE DENSITY & FORMAT: Keep each skill line strictly on 1 physical line (~65-78 characters). Lead with the target JD's required technologies!
+   - LINE DENSITY & FORMAT: Keep each skill line to 1 full, dense physical line (~85-110 characters, holding 6-8 core tools per category).
 
 5. PROFESSIONAL SUMMARY & SENIORITY PRESERVATION (CRITICAL):
-   - Rewrite the summary to highlight the candidate's target engineering title, production experience (2+ years), and primary domain/stack focus in strictly 3 compact lines (~45-55 words).
+   - Rewrite the summary to highlight the candidate's target engineering title, production experience (2+ years), and primary domain/stack focus in strictly 3 full, dense lines (~65-75 words, ~400-450 characters).
    - ABSOLUTE BAN ON SENIORITY DOWNGRADING: NEVER downgrade the candidate into a "Fresher", "Student", or "Junior/Beginner" even if the target JD role title or requirement mentions "Fresher", "Junior", or "0-1 years". If applying to an entry-level/fresher JD, frame the candidate as a high-velocity full-stack engineer with strong core fundamentals, live production/founder track record, and immediate day-one delivery capability.
    - Keep it targeted and cohesive—do not list 6 competing backend frameworks in a single sentence.
 
@@ -618,15 +621,15 @@ CORE IN-PLACE TAILORING RULES:
    - EXACT STRUCTURE PRESERVATION:
      * Keep the EXACT same number of \\item bullets per job and project as the original template. NEVER add extra bullets.
      * Match the physical line-count of each bullet in the original:
-       - Single-line bullets: keep strictly under 75-80 characters.
-       - 2-line bullets: keep strictly under 140-145 characters so they never wrap an extra line.
+       - Single-line bullets: keep between 88 and 105 characters (fills the physical line edge-to-edge without wrapping).
+       - 2-line bullets: keep between 180 and 205 characters (fills two full lines cleanly without spilling onto line 3).
        - NEVER allow a bullet to spill onto a new line by just 1-3 trailing words ("widows").
-     * Technical Skills: Keep each skill line to strictly 1 physical line (max 55-60 characters). Do NOT create multi-line skill dumps.
-     * Summary: Limit to strictly 3 compact lines (~45 words).
+     * Technical Skills: Keep each skill line to 1 full physical line (~85-110 characters, holding 6-8 core tools per category). Do NOT create multi-line skill dumps.
+     * Summary: Exactly 3 full, dense lines (~65-75 words, ~400-450 characters).
    - TARGET CHARACTER BUDGET:
      * The original LaTeX has ${latexLength} characters.
-     * Target tailored length: between ${Math.round(latexLength * 0.95)} and ${latexLength} characters (~95% to 100% of original length).
-     * DO NOT over-truncate or drop required technical tools (do NOT drop below ${Math.round(latexLength * 0.92)} chars). Keep bullets dense and quantified.
+     * Target tailored length: between ${Math.round(latexLength * 0.96)} and ${latexLength} characters (~96% to 100% of original length).
+     * DO NOT UNDERFILL (CRITICAL): Do NOT drop below ${Math.round(latexLength * 0.94)} characters! An underfilled resume leaves an empty gap at the bottom of the page and drops necessary JD keywords. Keep bullets dense and quantified.
    - DO NOT alter preamble, geometry, margins, packages, or vertical spacing.
    - DO NOT add extra blank lines between sections or around itemize blocks.
 
@@ -674,7 +677,7 @@ ${latex}`;
 
             let modelTimer: NodeJS.Timeout | null = null;
             const modelTimeoutPromise = new Promise<never>((_, reject) => {
-              modelTimer = setTimeout(() => reject(new Error(`Model ${model.name} timed out after 600 seconds`)), 600000);
+              modelTimer = setTimeout(() => reject(new Error(`Model ${model.name} timed out after 90 seconds`)), 90000);
             });
 
             const generateWithRetry = async (): Promise<string> => {
@@ -693,7 +696,7 @@ ${latex}`;
                 tailored = cleanLatexResponse(response.content);
 
                 // Accept if within 3% of original length (fits on 1 page with standard squeeze)
-                const budgetThreshold = Math.round(latexLength * 1.03);
+                const budgetThreshold = Math.round(latexLength * 1.07);
                 if (tailored.length <= budgetThreshold) {
                   break;
                 }
@@ -711,8 +714,8 @@ ${latex}`;
 
 CRITICAL COMPACTION INSTRUCTION (Attempt 2/2):
 Your previous output was ${tailored.length} characters (slightly over the ${latexLength} character budget).
-DO NOT DROP any target JD keywords or frameworks (especially ${allJdRequirements.slice(0, 10).join(", ")}).
-Keep all technical achievements and Google XYZ format intact, but tighten sentence phrasing and trim redundant filler words so total length is between ${Math.round(latexLength * 0.95)} and ${latexLength} characters.
+DO NOT DROP any target JD keywords, frameworks, or libraries (${allJdRequirements.join(", ")}).
+Keep all technical achievements and Google XYZ format intact, but tighten sentence phrasing and trim redundant filler words so total length is between ${Math.round(latexLength * 0.96)} and ${latexLength} characters.
 Output full document from \\documentclass to \\end{document}.`;
               }
 

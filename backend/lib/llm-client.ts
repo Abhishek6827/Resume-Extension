@@ -34,10 +34,37 @@ function stripThinkTags(text: string): string {
 }
 
 /**
- * Helper to repair truncated JSON with unbalanced quotes, brackets, and braces
+ * Repair truncated or malformed JSON from LLMs.
+ * Handles unclosed quotes, unclosed objects/arrays, and unescaped quotes in string elements.
  */
+function repairUnescapedQuotes(str: string): string {
+  const lines = str.split("\n");
+  const repairedLines = lines.map(line => {
+    // Array string element: e.g. \s*"value",?
+    const arrayMatch = line.match(/^(\s*)"(.*)"(\s*,?\s*)$/);
+    if (arrayMatch) {
+      const leading = arrayMatch[1];
+      const inner = arrayMatch[2];
+      const trailing = arrayMatch[3];
+      const escapedInner = inner.replace(/(?<!\\)"/g, '\\"');
+      return `${leading}"${escapedInner}"${trailing}`;
+    }
+    // Object string property: e.g. \s*"key"\s*:\s*"(.*)"(\s*,?\s*)$
+    const propMatch = line.match(/^(\s*"[^"]+"\s*:\s*)"(.*)"(\s*,?\s*)$/);
+    if (propMatch) {
+      const prefix = propMatch[1];
+      const val = propMatch[2];
+      const suffix = propMatch[3];
+      const escapedVal = val.replace(/(?<!\\)"/g, '\\"');
+      return `${prefix}"${escapedVal}"${suffix}`;
+    }
+    return line;
+  });
+  return repairedLines.join("\n");
+}
+
 function repairTruncatedJSON(str: string): string {
-  let cleaned = str.trim();
+  let cleaned = repairUnescapedQuotes(str.trim());
   const firstBrace = cleaned.indexOf("{");
   if (firstBrace === -1) return cleaned;
   cleaned = cleaned.substring(firstBrace);
@@ -157,7 +184,7 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
     const nvidia = new OpenAI({
       baseURL: "https://integrate.api.nvidia.com/v1",
       apiKey,
-      timeout: 600000,
+      timeout: 90000,
       maxRetries: 2,
     });
 
