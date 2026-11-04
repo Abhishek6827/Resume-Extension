@@ -677,6 +677,7 @@ ${latex}`;
 
         // Run all models in parallel, updating progress on key milestones
         const promises = targetModels.map(async (model, index) => {
+          let actualModelName = model.name;
           try {
             if (index > 0) {
               await new Promise((r) => setTimeout(r, index * 600));
@@ -702,6 +703,7 @@ ${latex}`;
                   jsonMode: false,
                 });
 
+                if (response.provider === "gemini" && response.model) { actualModelName = "Gemini (" + response.model + ")"; }
                 tailored = cleanLatexResponse(response.content);
 
                 // Accept if within 3% of original length (fits on 1 page with standard squeeze)
@@ -753,7 +755,7 @@ Output full document from \\documentclass to \\end{document}.`;
 
             const result: TailoredResult = {
               modelId: model.id,
-              modelName: model.name,
+              modelName: actualModelName,
               candidateName,
               jobTitle,
               latex: tailoredLatex,
@@ -781,7 +783,7 @@ Output full document from \\documentclass to \\end{document}.`;
             const jobTitle = jdData?.jobTitle || "";
             const errorResult: TailoredResult = {
               modelId: model.id,
-              modelName: model.name,
+              modelName: actualModelName,
               candidateName,
               jobTitle,
               latex: "",

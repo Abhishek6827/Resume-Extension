@@ -433,6 +433,47 @@ async function tryGeminiCascade(options: LLMCallOptions, preferredModel?: string
           stream: false,
         };
 
+        // Model-specific settings configured via switch case
+        switch (geminiModel) {
+          case "gemini-4-argon":
+            requestOptions.temperature = 0.2;
+            requestOptions.max_tokens = options.maxTokens ?? 16384;
+            break;
+          case "gemini-3.1-pro-preview":
+            requestOptions.temperature = 0.2;
+            requestOptions.max_tokens = options.maxTokens ?? 16384;
+            break;
+          case "gemini-3.6-flash":
+            requestOptions.temperature = 0.2;
+            requestOptions.max_tokens = options.maxTokens ?? 16384;
+            break;
+          case "gemini-3.5-flash":
+            requestOptions.temperature = 0.25;
+            requestOptions.max_tokens = options.maxTokens ?? 16384;
+            break;
+          case "gemini-2.5-flash":
+            requestOptions.temperature = 0.3;
+            requestOptions.max_tokens = options.maxTokens ?? 16384;
+            break;
+          case "gemini-3-flash-preview":
+            requestOptions.temperature = 0.2;
+            requestOptions.max_tokens = options.maxTokens ?? 16384;
+            break;
+          case "gemini-3.5-flash-lite":
+            requestOptions.temperature = 0.3;
+            requestOptions.max_tokens = options.maxTokens ?? 8192;
+            break;
+          case "gemini-3.1-flash-lite":
+            requestOptions.temperature = 0.3;
+            requestOptions.max_tokens = options.maxTokens ?? 8192;
+            break;
+          case "gemini-2.5-flash-lite":
+          default:
+            requestOptions.temperature = 0.3;
+            requestOptions.max_tokens = options.maxTokens ?? 8192;
+            break;
+        }
+
         if (options.jsonMode) {
           requestOptions.response_format = { type: "json_object" };
         }
@@ -469,25 +510,22 @@ async function tryGeminiCascade(options: LLMCallOptions, preferredModel?: string
  * Route a model call to the correct provider based on prefix ("groq:", "gemini:", or "nvidia:")
  */
 async function tryProvider(options: LLMCallOptions, modelId: string): Promise<LLMResponse> {
-  if (modelId.startsWith("groq:")) {
-    return tryGroq(options, modelId.substring(5));
+  const providerType: "groq" | "gemini" | "nvidia" = modelId.startsWith("groq:")
+    ? "groq"
+    : (modelId.startsWith("gemini:") || modelId === "gemini" || modelId.includes("gemini") || modelId === "nvidia:google/gemma-4-31b-it" || modelId.includes("gemma"))
+    ? "gemini"
+    : "nvidia";
+
+  switch (providerType) {
+    case "groq":
+      return tryGroq(options, modelId.substring(5));
+    case "gemini":
+      return tryGeminiCascade(options);
+    case "nvidia":
+    default:
+      const nvidiaModel = modelId.startsWith("nvidia:") ? modelId.substring(7) : modelId;
+      return tryNvidia(options, nvidiaModel);
   }
-  // Gemini provider or replacing Gemma 4
-  if (
-    modelId.startsWith("gemini:") ||
-    modelId === "gemini" ||
-    modelId.includes("gemini") ||
-    modelId === "nvidia:google/gemma-4-31b-it" ||
-    modelId.includes("gemma")
-  ) {
-    const specific = modelId.startsWith("gemini:")
-      ? modelId.substring(7)
-      : (modelId.includes("gemma") ? undefined : modelId);
-    return tryGeminiCascade(options, specific);
-  }
-  // Default: NVIDIA (strip "nvidia:" prefix if present)
-  const nvidiaModel = modelId.startsWith("nvidia:") ? modelId.substring(7) : modelId;
-  return tryNvidia(options, nvidiaModel);
 }
 
 /**

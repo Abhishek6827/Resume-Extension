@@ -31,27 +31,7 @@ export const GEMINI_CODING_CASCADE = [
   "gemini-2.5-flash-lite",
 ] as const;
 
-export const GEMINI_CASCADE_MODELS = [
-  { id: "gemini:cascade", name: "Gemini Cascade (Google)", shortName: "Google Gemini", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
-  { id: "gemini:gemini-4-argon", name: "Gemini 4 Argon (Google)", shortName: "Gemini 4 Argon", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
-  { id: "gemini:gemini-3.1-pro-preview", name: "Gemini 3.1 Pro (Preview)", shortName: "Gemini 3.1 Pro", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
-  { id: "gemini:gemini-3.6-flash", name: "Gemini 3.6 Flash (Google)", shortName: "Gemini 3.6 Flash", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
-  { id: "gemini:gemini-3.5-flash", name: "Gemini 3.5 Flash (Google)", shortName: "Gemini 3.5 Flash", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
-  { id: "gemini:gemini-2.5-flash", name: "Gemini 2.5 Flash (Google)", shortName: "Gemini 2.5 Flash", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
-  { id: "gemini:gemini-3-flash-preview", name: "Gemini 3 Flash (Preview)", shortName: "Gemini 3 Flash", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
-  { id: "gemini:gemini-3.5-flash-lite", name: "Gemini 3.5 Flash Lite (Google)", shortName: "Gemini 3.5 Flash Lite", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
-  { id: "gemini:gemini-3.1-flash-lite", name: "Gemini 3.1 Flash Lite (Google)", shortName: "Gemini 3.1 Flash Lite", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
-  { id: "gemini:gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite (Google)", shortName: "Gemini 2.5 Flash Lite", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
-];
-
-const RESUME_DROPDOWN_OPTIONS = [
-  RESUME_MODELS[0],
-  ...GEMINI_CASCADE_MODELS,
-  RESUME_MODELS[2],
-  RESUME_MODELS[3],
-];
-
-const ALL_MODELS = [...RESUME_MODELS, ...GEMINI_CASCADE_MODELS, ...COVER_LETTER_MODELS];
+const ALL_MODELS = [...RESUME_MODELS, ...COVER_LETTER_MODELS];
 
 function extractCandidateNameFromLatex(latex: string): string {
   if (!latex) return "";
@@ -1867,7 +1847,7 @@ export default function Home() {
     const savedModel = localStorage.getItem("primaryModel");
     if (savedModel) {
       const normModel = savedModel === "nvidia:google/gemma-4-31b-it" ? "gemini:cascade" : savedModel;
-      if (RESUME_DROPDOWN_OPTIONS.some(m => m.id === normModel)) setPrimaryModel(normModel);
+      if (RESUME_MODELS.some(m => m.id === normModel)) setPrimaryModel(normModel);
     }
 
     const savedAutoRun = localStorage.getItem("isAutoRun");
@@ -2396,7 +2376,7 @@ export default function Home() {
       setTailoredResumes([]);
       setSelectedResultIndex(0);
 
-      const modelsForInit = isAutoRun ? RESUME_MODELS : (RESUME_DROPDOWN_OPTIONS.find(m => m.id === primaryModel) ? [RESUME_DROPDOWN_OPTIONS.find(m => m.id === primaryModel)!] : [RESUME_MODELS[0]]);
+      const modelsForInit = isAutoRun ? RESUME_MODELS : (RESUME_MODELS.find(m => m.id === primaryModel) ? [RESUME_MODELS.find(m => m.id === primaryModel)!] : [RESUME_MODELS[0]]);
       const initialProgress = modelsForInit.reduce((acc, m) => ({ ...acc, [m.id]: 0 }), {});
       const initialPhases = modelsForInit.reduce((acc, m) => ({ ...acc, [m.id]: "Queued" }), {});
       setParallelProgress(initialProgress);
@@ -2495,7 +2475,7 @@ export default function Home() {
         let buffer = "";
         const accumulatedResults: any[] = [];
 
-        const targetModels = isAutoRun ? RESUME_MODELS : (RESUME_DROPDOWN_OPTIONS.find(m => m.id === primaryModel) ? [RESUME_DROPDOWN_OPTIONS.find(m => m.id === primaryModel)!] : [RESUME_MODELS[0]]);
+        const targetModels = isAutoRun ? RESUME_MODELS : (RESUME_MODELS.find(m => m.id === primaryModel) ? [RESUME_MODELS.find(m => m.id === primaryModel)!] : [RESUME_MODELS[0]]);
 
         const currentProgress: { [key: string]: number } = {};
         targetModels.forEach(m => currentProgress[m.id] = 0);
@@ -2970,7 +2950,7 @@ export default function Home() {
                         triggerWarmup(val);
                       }
                     }}
-                    options={RESUME_DROPDOWN_OPTIONS}
+                    options={RESUME_MODELS}
                     focusColor="hover:bg-indigo-500/10"
                   />
                 </div>
@@ -3006,7 +2986,7 @@ export default function Home() {
                   targetModels={
                     retryingModels.size > 0
                       ? ALL_MODELS.filter(m => retryingModels.has(m.id))
-                      : isAutoRun ? RESUME_MODELS : (RESUME_DROPDOWN_OPTIONS.find(m => m.id === primaryModel) ? [RESUME_DROPDOWN_OPTIONS.find(m => m.id === primaryModel)!] : [RESUME_MODELS[0]])
+                      : isAutoRun ? RESUME_MODELS : (RESUME_MODELS.find(m => m.id === primaryModel) ? [RESUME_MODELS.find(m => m.id === primaryModel)!] : [RESUME_MODELS[0]])
                   }
                 />
               ) : (
