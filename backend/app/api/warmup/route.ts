@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 const WARMUP_MODELS = [
   { id: "gemini:cascade", name: "Gemini Cascade", provider: "gemini" },
   { id: "stepfun-ai/step-5-preview", name: "StepFun Step-5" },
-  { id: "nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B" },
+  { id: "mistralai/mistral-large-4-1t-a52b", name: "Mistral Large 4" },
   { id: "nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron 30B" },
 ];
 

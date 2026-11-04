@@ -2,7 +2,7 @@
 // Supported providers:
 // NVIDIA NIM:
 //   - nvidia/nemotron-3-super-120b-a12b (Balanced / 120B)
-//   - nvidia/nemotron-3-ultra-550b-a55b (Quality / 550B)
+//   - mistralai/mistral-large-4-1t-a52b (Quality / Mistral Large 4)
 // Groq:
 //   - qwen/qwen3.8-27b (Fast / Cover Letter)
 //   - openai/gpt-oss-120b (Quality / Cover Letter)
@@ -237,11 +237,20 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
           requestOptions.top_p = 1.0;
           requestOptions.max_tokens = options.maxTokens ?? 16384;
           requestOptions.stream = true;
-        } else if (modelToUse === "nvidia/nemotron-3-ultra-550b-a55b" || modelToUse.includes("550b")) {
-          requestOptions.temperature = 0.2;
-          requestOptions.top_p = 0.95;
-          requestOptions.max_tokens = options.maxTokens ?? 16384;
+        } else if (
+          modelToUse === "mistralai/mistral-large-4-1t-a52b" ||
+          modelToUse.includes("mistral") ||
+          modelToUse === "nvidia/nemotron-3-ultra-550b-a55b" ||
+          modelToUse.includes("550b")
+        ) {
+          requestOptions.model = "mistralai/mistral-large-4-1t-a52b";
+          requestOptions.temperature = 0.5;
+          requestOptions.top_p = 1.0;
+          requestOptions.max_tokens = options.maxTokens ?? 4096;
           requestOptions.stream = false;
+          requestOptions.frequency_penalty = 0;
+          requestOptions.presence_penalty = 0;
+          requestOptions.reasoning_effort = "high";
         } else if (modelToUse === "nvidia/nemotron-3.5-lightning-30b-a3b" || modelToUse.includes("nemotron-3.5")) {
           requestOptions.temperature = 1;
           requestOptions.top_p = 0.95;

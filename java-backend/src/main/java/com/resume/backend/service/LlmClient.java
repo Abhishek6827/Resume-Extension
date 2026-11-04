@@ -62,7 +62,7 @@ public class LlmClient {
         }
 
         try {
-            return tryNvidia(systemPrompt, userMessage, "nvidia/nemotron-3-ultra-550b-a55b");
+            return tryNvidia(systemPrompt, userMessage, "mistralai/mistral-large-4-1t-a52b");
         } catch (Exception e) {
             System.err.println("[LLM] Global Nvidia fallback failed: " + e.getMessage());
             throw new RuntimeException("All LLM providers failed.");
@@ -103,10 +103,10 @@ public class LlmClient {
                     return (String) message.get("content");
                 })
                 .block();
-                
+
         return extractJson(rawResponse);
     }
-    
+
     private String extractJson(String text) {
         if (text == null) return "{}";
         text = text.replaceAll("(?s)<think>.*?</think>", "").trim();
@@ -120,9 +120,9 @@ public class LlmClient {
 
     private String tryGroq(String systemPrompt, String userMessage, String modelName) {
         if (modelName != null && modelName.contains("gemma")) {
-            modelName = "llama-3.3-70b-versatile"; 
+            modelName = "llama-3.3-70b-versatile";
         }
-        
+
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", modelName != null ? modelName : "llama-3.3-70b-versatile");
         requestBody.put("messages", List.of(
@@ -131,19 +131,19 @@ public class LlmClient {
         ));
         requestBody.put("temperature", 0.7);
         requestBody.put("response_format", Map.of("type", "json_object"));
-        
+
         return executePost(groqUrl, groqApiKey, requestBody);
     }
 
     private String tryNvidia(String systemPrompt, String userMessage, String modelName) {
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", modelName != null ? modelName : "nvidia/nemotron-3-ultra-550b-a55b");
+        requestBody.put("model", modelName != null ? modelName : "mistralai/mistral-large-4-1t-a52b");
         requestBody.put("messages", List.of(
                 Map.of("role", "system", "content", systemPrompt),
                 Map.of("role", "user", "content", userMessage)
         ));
         requestBody.put("temperature", 0.7);
-        
+
         return executePost(nvidiaUrl, nvidiaApiKey, requestBody);
     }
 
@@ -156,7 +156,7 @@ public class LlmClient {
         ));
         requestBody.put("temperature", 0.7);
         requestBody.put("response_format", Map.of("type", "json_object"));
-        
+
         return executePost(cerebrasUrl, cerebrasApiKey, requestBody);
     }
 
@@ -168,7 +168,7 @@ public class LlmClient {
                 Map.of("role", "user", "content", userMessage)
         ));
         requestBody.put("temperature", 0.7);
-        
+
         return executePost(openrouterUrl, openrouterApiKey, requestBody);
     }
 }

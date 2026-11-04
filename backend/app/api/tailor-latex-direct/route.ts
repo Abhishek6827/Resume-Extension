@@ -11,7 +11,7 @@ export const maxDuration = 300;
 const AI_MODELS = [
   { id: "nvidia/nemotron-3.5-super-vl-120b-a12b", name: "StepFun Step-5 (Preview)" },
   { id: "gemini:cascade", name: "Gemini Cascade (Google)" },
-  { id: "mistralai/mistral-large-4-1t-a52b", name: "Nemotron 550B (Quality)" },
+  { id: "mistralai/mistral-large-4-1t-a52b", name: "Mistral Large 4 (Quality)" },
   { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron 30B (Speed)" },
 ];
 
