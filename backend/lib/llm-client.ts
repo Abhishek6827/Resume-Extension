@@ -208,7 +208,7 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
     const nvidia = new OpenAI({
       baseURL: "https://integrate.api.nvidia.com/v1",
       apiKey,
-      timeout: 200000,
+      timeout: 500000,
       maxRetries: 2,
     });
 
