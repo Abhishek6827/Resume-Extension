@@ -687,7 +687,7 @@ ${latex}`;
 
             let modelTimer: NodeJS.Timeout | null = null;
             const modelTimeoutPromise = new Promise<never>((_, reject) => {
-              modelTimer = setTimeout(() => reject(new Error(`Model ${model.name} timed out after 90 seconds`)), 90000);
+              modelTimer = setTimeout(() => reject(new Error(`Model ${model.name} timed out after 200 seconds`)), 200000);
             });
 
             const generateWithRetry = async (): Promise<string> => {

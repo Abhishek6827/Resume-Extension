@@ -208,7 +208,7 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
     const nvidia = new OpenAI({
       baseURL: "https://integrate.api.nvidia.com/v1",
       apiKey,
-      timeout: 90000,
+      timeout: 200000,
       maxRetries: 2,
     });
 
@@ -246,11 +246,11 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
           requestOptions.model = "mistralai/mistral-large-4-1t-a52b";
           requestOptions.temperature = 0.5;
           requestOptions.top_p = 1.0;
-          requestOptions.max_tokens = options.maxTokens ?? 4096;
-          requestOptions.stream = false;
+          requestOptions.max_tokens = options.maxTokens ?? 16384;
+          requestOptions.stream = true;
           requestOptions.frequency_penalty = 0;
           requestOptions.presence_penalty = 0;
-          requestOptions.reasoning_effort = "high";
+          requestOptions.reasoning_effort = "low";
         } else if (modelToUse === "nvidia/nemotron-3.5-lightning-30b-a3b" || modelToUse.includes("nemotron-3.5")) {
           requestOptions.temperature = 1;
           requestOptions.top_p = 0.95;
