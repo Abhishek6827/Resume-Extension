@@ -41,7 +41,16 @@ function sanitizeLatex(raw: string): string {
     .replace(/¡/g, 'under ')
     .replace(/<(?=\s*\d|\s*min|\s*ms|\s*\$)/gi, 'under ')
     .replace(/>(?=\s*\d|\s*min|\s*ms|\s*\$)/gi, 'over ')
-    .replace(/(\d+)\s*%(?!\w)/g, '$1\\%');
+    .replace(/\u202F/g, ' ')
+    .replace(/\u00A0/g, ' ')
+    .replace(/\u200B/g, '')
+    .replace(/\u2011/g, '-')
+    .replace(/\u2013/g, '--')
+    .replace(/\u2014/g, '---')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/[\u2022\u25CF\u25CB\u25E6]/g, '')
+    .replace(/(?<!\\)\\\[(-?\d+(?:\.\d+)?(?:pt|em|ex|in|cm|mm))\]/g, (_, space) => `\\\\[${space}]`);
 
   if (!cleaned.includes("microtype") && cleaned.includes("\\documentclass")) {
     cleaned = cleaned.replace(
@@ -52,6 +61,10 @@ function sanitizeLatex(raw: string): string {
 
   cleaned = cleaned
     .replace(/^\s*%.*$/gm, "")
+    .replace(/(?<!\\)&/g, () => '\\&')
+    .replace(/(?<!\\)%/g, () => '\\%')
+    .replace(/(?<!\\)#/g, () => '\\#')
+    .replace(/(?<!\\)_/g, () => '\\_')
     .replace(/\n\s*\n+(\\begin\{itemize\})/g, '\n$1')
     .replace(/(\\begin\{itemize\})\n\s*\n+/g, '$1\n')
     .replace(/(\\item[^\n]*)\n\s*\n+(\s*\\item)/g, '$1\n$2')
@@ -111,34 +124,47 @@ function applySqueezeLevel(latex: string, level: number): string {
   return latex;
 }
 
-async function compileLatex(latex: string): Promise<{ ok: boolean; status: number; pdfBuffer?: ArrayBuffer; errText?: string }> {
-  try {
-    const compileUrl = `https://texlive.net/cgi-bin/latexcgi`;
-    const formData = new FormData();
-    formData.append("filecontents[]", latex);
-    formData.append("filename[]", "document.tex");
-    formData.append("engine", "pdflatex");
-    formData.append("return", "pdf");
+async function compileLatex(latex: string, retries = 2): Promise<{ ok: boolean; status: number; pdfBuffer?: ArrayBuffer; errText?: string }> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const compileUrl = `https://texlive.net/cgi-bin/latexcgi`;
+      const formData = new FormData();
+      formData.append("filecontents[]", latex);
+      formData.append("filename[]", "document.tex");
+      formData.append("engine", "pdflatex");
+      formData.append("return", "pdf");
 
-    const compileRes = await fetch(compileUrl, {
-      method: "POST",
-      body: formData,
-      headers: {
-        "Accept": "application/pdf, text/plain",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+      const compileRes = await fetch(compileUrl, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Accept": "application/pdf, text/plain",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+      });
+
+      if (!compileRes.ok || !compileRes.headers.get("content-type")?.includes("application/pdf")) {
+        const errText = await compileRes.text().catch(() => "Unknown compilation error");
+        if (attempt < retries) {
+          console.warn(`[generate-latex-pdf] Compilation attempt ${attempt} failed. Retrying...`);
+          await new Promise(r => setTimeout(r, 1200));
+          continue;
+        }
+        return { ok: false, status: compileRes.status, errText };
       }
-    });
 
-    if (!compileRes.ok || !compileRes.headers.get("content-type")?.includes("application/pdf")) {
-      const errText = await compileRes.text().catch(() => "Unknown compilation error");
-      return { ok: false, status: compileRes.status, errText };
+      const pdfBuffer = await compileRes.arrayBuffer();
+      return { ok: true, status: compileRes.status, pdfBuffer };
+    } catch (err: any) {
+      if (attempt < retries) {
+        console.warn(`[generate-latex-pdf] Network error attempt ${attempt}: ${err?.message}. Retrying...`);
+        await new Promise(r => setTimeout(r, 1200));
+        continue;
+      }
+      return { ok: false, status: 500, errText: err?.message || String(err) };
     }
-
-    const pdfBuffer = await compileRes.arrayBuffer();
-    return { ok: true, status: compileRes.status, pdfBuffer };
-  } catch (err: any) {
-    return { ok: false, status: 500, errText: err?.message || String(err) };
   }
+  return { ok: false, status: 500, errText: "Compilation failed after retries" };
 }
 
 async function ensureSinglePagePdf(baseLatex: string, initialBuffer: ArrayBuffer): Promise<ArrayBuffer> {

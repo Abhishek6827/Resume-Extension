@@ -64,11 +64,18 @@ function cleanLatexResponse(rawText: string): string {
     .replace(/<(?=\s*\d|\s*min|\s*ms|\s*\$)/gi, 'under ')
     .replace(/>(?=\s*\d|\s*min|\s*ms|\s*\$)/gi, 'over ');
 
-  // 5. Escape unescaped % signs (e.g. 25% -> 25\%) so LaTeX doesn't comment out the rest of the line
-  cleaned = cleaned.replace(/(\d+)\s*%(?!\w)/g, '$1\\%');
-
-  // 6. Strip standalone LaTeX comments and trim redundant formatting bloat
+  // 5. Strip standalone LaTeX comments and trim redundant formatting bloat
   cleaned = cleaned.replace(/^\s*%.*$/gm, '');
+
+  // 6. Escape unescaped special LaTeX characters outside macros
+  cleaned = cleaned
+    .replace(/(?<!\\)&/g, () => '\\&')
+    .replace(/(?<!\\)%/g, () => '\\%')
+    .replace(/(?<!\\)#/g, () => '\\#')
+    .replace(/(?<!\\)_/g, () => '\\_')
+    .replace(/(?<!\\)\\\[(-?\d+(?:\.\d+)?(?:pt|em|ex|in|cm|mm))\]/g, (_, space) => `\\\\[${space}]`)
+    .replace(/[\u2022\u25CF\u25CB\u25E6]/g, '')
+    .replace(/\u00A0/g, ' ');
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
   cleaned = cleaned.replace(/[ \t]+$/gm, '');
   cleaned = cleaned.replace(/[ \t]+\\\\/g, '\\\\');

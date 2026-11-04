@@ -1983,6 +1983,7 @@ export default function Home() {
     setStatus("idle");
     setErrorMessage("");
     setPdfUrl(null);
+    setErrorMessage("");
     setDownloadName("");
     setParsedJobTitle("");
     setGeneratedLatexLength(null);
@@ -2201,6 +2202,7 @@ export default function Home() {
 
     setIsCompilingSelected(true);
     setPdfUrl(null);
+    setErrorMessage("");
 
     try {
       const compileRes = await fetch(`${API_BASE_URL}/api/generate-latex-pdf`, {
@@ -2212,6 +2214,7 @@ export default function Home() {
       if (!compileRes.ok) {
         const errDetails = await compileRes.json().catch(() => ({}));
         setPdfUrl(null);
+    setErrorMessage("");
         setErrorMessage(`LaTeX compilation error for ${result.modelName}: ${errDetails.error || "Syntax error in generated LaTeX"}`);
         return;
       }
@@ -2372,6 +2375,7 @@ export default function Home() {
       setErrorMessage("");
       setStatus("parsing");
       setPdfUrl(null);
+    setErrorMessage("");
       setGeneratedLatexLength(null);
       setTailoredResumes([]);
       setSelectedResultIndex(0);
@@ -2551,24 +2555,10 @@ export default function Home() {
             extractCandidateNameFromLatex(bestResult.latex) ||
             (file ? extractCandidateNameFromFilename(file.name) : "");
           setDownloadName(formatResumeFilename(resCand));
-
           setGeneratedLatexLength(bestResult.generatedLength);
-          setStatus("compiling");
-          const compileRes = await fetch(`${API_BASE_URL}/api/generate-latex-pdf`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ latex: bestResult.latex, enforceSinglePage: true }),
-          });
 
-          if (!compileRes.ok) {
-            const errDetails = await compileRes.json();
-            console.error("LaTeX compilation failed:", errDetails);
-            // Don't throw, just set status to success so the dashboard shows the error state
-          } else {
-            const blob = await compileRes.blob();
-            const url = URL.createObjectURL(blob);
-            setPdfUrl(url);
-          }
+          // Automatically compile the PDF for the top-ranked model
+          await compilePdfForIndex(0, sortedResults);
         }
 
         setStatus("success");
@@ -3206,13 +3196,20 @@ export default function Home() {
                                 </a>
                               </div>
                             ) : (
-                              <button
-                                type="button"
-                                onClick={() => compilePdfForIndex(selectedResultIndex, tailoredResumes)}
-                                className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center w-auto mx-auto min-h-[40px] flex items-center justify-center cursor-pointer"
-                              >
-                                Compile PDF
-                              </button>
+                              <div className="flex flex-col items-center gap-1.5 w-full">
+                                <button
+                                  type="button"
+                                  onClick={() => compilePdfForIndex(selectedResultIndex, tailoredResumes)}
+                                  className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 text-center w-auto mx-auto min-h-[40px] flex items-center justify-center cursor-pointer"
+                                >
+                                  Compile PDF
+                                </button>
+                                {errorMessage && (
+                                  <span className="text-[11px] text-red-500 dark:text-red-400 font-medium text-center px-2">
+                                    {errorMessage}
+                                  </span>
+                                )}
+                              </div>
                             )}
                           </div>
 
