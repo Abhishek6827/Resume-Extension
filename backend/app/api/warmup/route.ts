@@ -5,7 +5,7 @@ import OpenAI from "openai";
 export const dynamic = "force-dynamic";
 
 const WARMUP_MODELS = [
-  { id: "google/gemma-4-31b-it", name: "Gemma 4 31B" },
+  { id: "gemini:cascade", name: "Gemini Cascade", provider: "gemini" },
   { id: "stepfun-ai/step-5-preview", name: "StepFun Step-5" },
   { id: "nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B" },
   { id: "nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron 30B" },
@@ -17,7 +17,8 @@ export async function OPTIONS(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const apiKey = process.env.NVIDIA_API_KEY;
-  if (!apiKey) {
+  const geminiKey = process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY_2;
+  if (!apiKey && !geminiKey) {
     return NextResponse.json({ error: "No NVIDIA_API_KEY" }, { status: 500, headers: getCorsHeaders(request) });
   }
 
@@ -26,9 +27,10 @@ export async function GET(request: NextRequest) {
 
   let targetModels = WARMUP_MODELS;
   if (requestedModel) {
-    const clean = requestedModel.replace(/^nvidia:/, "").toLowerCase();
+    const clean = requestedModel.replace(/^(nvidia|gemini):/, "").toLowerCase();
+    const isGeminiMatch = clean.includes("gemini") || clean.includes("cascade") || clean.includes("gemma");
     const matched = WARMUP_MODELS.filter(
-      (m) => m.id.toLowerCase() === clean || m.id.toLowerCase().includes(clean) || m.name.toLowerCase() === clean
+      (m) => (isGeminiMatch && m.id.includes("gemini")) || m.id.toLowerCase() === clean || m.id.toLowerCase().includes(clean) || m.name.toLowerCase() === clean
     );
     if (matched.length > 0) {
       targetModels = matched;
@@ -81,7 +83,22 @@ export async function GET(request: NextRequest) {
           for (let attempt = 1; attempt <= 2; attempt++) {
             const start = Date.now();
             try {
-              await nvidia.chat.completions.create(requestOptions);
+              if (model.id.includes("gemini") || model.id.includes("cascade")) {
+                if (!geminiKey) throw new Error("No GEMINI_API_KEY configured");
+                const gemini = new OpenAI({
+                  baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+                  apiKey: geminiKey,
+                  timeout: 15000,
+                  maxRetries: 0,
+                });
+                await gemini.chat.completions.create({
+                  model: "gemini-3.6-flash",
+                  messages: [{ role: "user", content: "hi" }],
+                  max_tokens: 1,
+                });
+              } else {
+                await nvidia.chat.completions.create(requestOptions);
+              }
               latency = Date.now() - start;
               success = true;
               console.log(`[Warmup] ${model.name} ready (${latency}ms)`);

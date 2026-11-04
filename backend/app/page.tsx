@@ -8,7 +8,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 const RESUME_MODELS = [
   { id: "nvidia:stepfun-ai/step-5-preview", name: "StepFun Step-5 (Preview)", shortName: "StepFun Step-5", icon: "https://www.google.com/s2/favicons?domain=stepfun.com&sz=128" },
-  { id: "nvidia:google/gemma-4-31b-it", name: "Gemma 4 31B (Google)", shortName: "Gemma 4 31B", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
+  { id: "gemini:cascade", name: "Gemini Cascade (Google)", shortName: "Google Gemini", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
   { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)", shortName: "Nemotron 550B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
   { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron 30B (Speed)", shortName: "Nemotron 30B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
 ];
@@ -19,7 +19,39 @@ const COVER_LETTER_MODELS = [
 
 ];
 
-const ALL_MODELS = [...RESUME_MODELS, ...COVER_LETTER_MODELS];
+export const GEMINI_CODING_CASCADE = [
+  "gemini-4-argon",
+  "gemini-3.1-pro-preview",
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+  "gemini-2.5-flash",
+  "gemini-3-flash-preview",
+  "gemini-3.5-flash-lite",
+  "gemini-3.1-flash-lite",
+  "gemini-2.5-flash-lite",
+] as const;
+
+export const GEMINI_CASCADE_MODELS = [
+  { id: "gemini:cascade", name: "Gemini Cascade (Google)", shortName: "Google Gemini", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
+  { id: "gemini:gemini-4-argon", name: "Gemini 4 Argon (Google)", shortName: "Gemini 4 Argon", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
+  { id: "gemini:gemini-3.1-pro-preview", name: "Gemini 3.1 Pro (Preview)", shortName: "Gemini 3.1 Pro", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
+  { id: "gemini:gemini-3.6-flash", name: "Gemini 3.6 Flash (Google)", shortName: "Gemini 3.6 Flash", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
+  { id: "gemini:gemini-3.5-flash", name: "Gemini 3.5 Flash (Google)", shortName: "Gemini 3.5 Flash", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
+  { id: "gemini:gemini-2.5-flash", name: "Gemini 2.5 Flash (Google)", shortName: "Gemini 2.5 Flash", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
+  { id: "gemini:gemini-3-flash-preview", name: "Gemini 3 Flash (Preview)", shortName: "Gemini 3 Flash", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
+  { id: "gemini:gemini-3.5-flash-lite", name: "Gemini 3.5 Flash Lite (Google)", shortName: "Gemini 3.5 Flash Lite", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
+  { id: "gemini:gemini-3.1-flash-lite", name: "Gemini 3.1 Flash Lite (Google)", shortName: "Gemini 3.1 Flash Lite", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
+  { id: "gemini:gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite (Google)", shortName: "Gemini 2.5 Flash Lite", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
+];
+
+const RESUME_DROPDOWN_OPTIONS = [
+  RESUME_MODELS[0],
+  ...GEMINI_CASCADE_MODELS,
+  RESUME_MODELS[2],
+  RESUME_MODELS[3],
+];
+
+const ALL_MODELS = [...RESUME_MODELS, ...GEMINI_CASCADE_MODELS, ...COVER_LETTER_MODELS];
 
 function extractCandidateNameFromLatex(latex: string): string {
   if (!latex) return "";
@@ -1143,10 +1175,11 @@ const ParallelPipelineVisualizer = ({
 
           const incrementRates: { [key: string]: number } = {
             "nvidia:stepfun-ai/step-5-preview": 0.45,
-            "nvidia:google/gemma-4-31b-it": 0.25,
+            "gemini:cascade": 0.35,
+            "nvidia:google/gemma-4-31b-it": 0.35,
             "nvidia:nvidia/nemotron-3-ultra-550b-a55b": 0.1,
           };
-          const increment = incrementRates[modelId] || 0.15;
+          const increment = modelId.startsWith("gemini:") ? 0.35 : (incrementRates[modelId] || 0.15);
 
           if (target === 100) {
             next[modelId] = 100;
@@ -1832,7 +1865,10 @@ export default function Home() {
     if (savedLatex) setLatexText(savedLatex);
 
     const savedModel = localStorage.getItem("primaryModel");
-    if (savedModel && RESUME_MODELS.some(m => m.id === savedModel)) setPrimaryModel(savedModel);
+    if (savedModel) {
+      const normModel = savedModel === "nvidia:google/gemma-4-31b-it" ? "gemini:cascade" : savedModel;
+      if (RESUME_DROPDOWN_OPTIONS.some(m => m.id === normModel)) setPrimaryModel(normModel);
+    }
 
     const savedAutoRun = localStorage.getItem("isAutoRun");
     if (savedAutoRun !== null) setIsAutoRun(savedAutoRun === "true");
@@ -2360,7 +2396,7 @@ export default function Home() {
       setTailoredResumes([]);
       setSelectedResultIndex(0);
 
-      const modelsForInit = isAutoRun ? RESUME_MODELS : RESUME_MODELS.filter(m => m.id === primaryModel);
+      const modelsForInit = isAutoRun ? RESUME_MODELS : (RESUME_DROPDOWN_OPTIONS.find(m => m.id === primaryModel) ? [RESUME_DROPDOWN_OPTIONS.find(m => m.id === primaryModel)!] : [RESUME_MODELS[0]]);
       const initialProgress = modelsForInit.reduce((acc, m) => ({ ...acc, [m.id]: 0 }), {});
       const initialPhases = modelsForInit.reduce((acc, m) => ({ ...acc, [m.id]: "Queued" }), {});
       setParallelProgress(initialProgress);
@@ -2459,7 +2495,7 @@ export default function Home() {
         let buffer = "";
         const accumulatedResults: any[] = [];
 
-        const targetModels = isAutoRun ? RESUME_MODELS : RESUME_MODELS.filter(m => m.id === primaryModel);
+        const targetModels = isAutoRun ? RESUME_MODELS : (RESUME_DROPDOWN_OPTIONS.find(m => m.id === primaryModel) ? [RESUME_DROPDOWN_OPTIONS.find(m => m.id === primaryModel)!] : [RESUME_MODELS[0]]);
 
         const currentProgress: { [key: string]: number } = {};
         targetModels.forEach(m => currentProgress[m.id] = 0);
@@ -2934,7 +2970,7 @@ export default function Home() {
                         triggerWarmup(val);
                       }
                     }}
-                    options={RESUME_MODELS}
+                    options={RESUME_DROPDOWN_OPTIONS}
                     focusColor="hover:bg-indigo-500/10"
                   />
                 </div>
@@ -2969,8 +3005,8 @@ export default function Home() {
                   candidateName={extractCandidateNameFromLatex(latexText) || (tailoredResumes.length > 0 ? (tailoredResumes[selectedResultIndex]?.candidateName || tailoredResumes[0]?.candidateName) : "")}
                   targetModels={
                     retryingModels.size > 0
-                      ? RESUME_MODELS.filter(m => retryingModels.has(m.id))
-                      : isAutoRun ? RESUME_MODELS : RESUME_MODELS.filter(m => m.id === primaryModel)
+                      ? ALL_MODELS.filter(m => retryingModels.has(m.id))
+                      : isAutoRun ? RESUME_MODELS : (RESUME_DROPDOWN_OPTIONS.find(m => m.id === primaryModel) ? [RESUME_DROPDOWN_OPTIONS.find(m => m.id === primaryModel)!] : [RESUME_MODELS[0]])
                   }
                 />
               ) : (

@@ -6,9 +6,33 @@
 // Groq:
 //   - qwen/qwen3.8-27b (Fast / Cover Letter)
 //   - openai/gpt-oss-120b (Quality / Cover Letter)
+// Gemini Cascade (Chintu AI Coding Specialist cascade Strongest → Weakest):
+//   - gemini-4-argon
+//   - gemini-3.1-pro-preview
+//   - gemini-3.6-flash
+//   - gemini-3.5-flash
+//   - gemini-2.5-flash
+//   - gemini-3-flash-preview
+//   - gemini-3.5-flash-lite
+//   - gemini-3.1-flash-lite
+//   - gemini-2.5-flash-lite
 
 import OpenAI from "openai";
 import type { LLMResponse } from "./types";
+
+// ─── Gemini Coding Cascade (Strongest → Weaker → Weakest) ─────
+// Exact descending order from Chintu AI's Coding Specialist
+export const GEMINI_CODING_CASCADE = [
+  "gemini-4-argon",
+  "gemini-3.1-pro-preview",
+  "gemini-3.6-flash",
+  "gemini-3.5-flash",
+  "gemini-2.5-flash",
+  "gemini-3-flash-preview",
+  "gemini-3.5-flash-lite",
+  "gemini-3.1-flash-lite",
+  "gemini-2.5-flash-lite",
+] as const;
 
 interface LLMCallOptions {
   systemPrompt: string;
@@ -344,11 +368,122 @@ async function tryGroq(options: LLMCallOptions, forceModel?: string): Promise<LL
 }
 
 /**
- * Route a model call to the correct provider based on prefix ("groq:" or "nvidia:")
+ * Get Gemini API keys from env, rotating through available keys
+ */
+function getGeminiApiKeys(): string[] {
+  const keys: string[] = [];
+  const k1 = process.env.GEMINI_API_KEY;
+  const k2 = process.env.GEMINI_API_KEY_2;
+  const k3 = process.env.GEMINI_API_KEY_3;
+  if (k1) keys.push(k1);
+  if (k2) keys.push(k2);
+  if (k3) keys.push(k3);
+  return keys;
+}
+
+/**
+ * Call Google Gemini with cascade fallback across models in descending order (Strongest → Weakest).
+ * Automatically switches to the next working model on quota (429), overload (503), or transient failure,
+ * exactly like Coding Specialist in Chintu AI.
+ */
+async function tryGeminiCascade(options: LLMCallOptions, preferredModel?: string): Promise<LLMResponse> {
+  const keys = getGeminiApiKeys();
+  if (keys.length === 0) {
+    throw new Error("No GEMINI_API_KEY set. Please configure GEMINI_API_KEY in backend/.env.local");
+  }
+
+  const cleanedUserMessage = options.userMessage
+    .replace(/\r\n/g, "\n")
+    .replace(/\n+/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .trim();
+
+  // If a specific model was requested that is in the cascade, prioritize it; otherwise use the full descending cascade
+  let cascade: readonly string[] = GEMINI_CODING_CASCADE;
+  if (preferredModel && preferredModel !== "cascade" && preferredModel !== "google" && !preferredModel.includes("gemma")) {
+    const cleanModel = preferredModel.replace(/^gemini:/, "");
+    if ((GEMINI_CODING_CASCADE as readonly string[]).includes(cleanModel)) {
+      cascade = [cleanModel, ...GEMINI_CODING_CASCADE.filter((m) => m !== cleanModel)];
+    }
+  }
+
+  let lastError: any = null;
+
+  for (let keyIdx = 0; keyIdx < keys.length; keyIdx++) {
+    const apiKey = keys[keyIdx];
+    const client = new OpenAI({
+      baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+      apiKey,
+      timeout: 12000,
+      maxRetries: 0,
+    });
+
+    for (const geminiModel of cascade) {
+      try {
+        console.log(`[Gemini Cascade] Trying model: ${geminiModel} (Key ${keyIdx + 1}/${keys.length})...`);
+
+        const requestOptions: any = {
+          model: geminiModel,
+          messages: [
+            { role: "system", content: options.systemPrompt },
+            { role: "user", content: cleanedUserMessage },
+          ],
+          temperature: options.temperature ?? 0.2,
+          max_tokens: options.maxTokens ?? 16384,
+          stream: false,
+        };
+
+        if (options.jsonMode) {
+          requestOptions.response_format = { type: "json_object" };
+        }
+
+        const response = await client.chat.completions.create(requestOptions) as any;
+        let content = response.choices?.[0]?.message?.content || "";
+        content = stripThinkTags(content);
+
+        if (!content || content.trim().length === 0) {
+          console.warn(`[Gemini Cascade] Model ${geminiModel} returned empty output. Switching to next model...`);
+          continue;
+        }
+
+        console.log(`[Gemini Cascade] ✓ Success with model: ${geminiModel}`);
+        return {
+          content,
+          provider: "gemini",
+          model: geminiModel,
+        };
+      } catch (err: any) {
+        lastError = err;
+        const msg = err?.message || String(err);
+        const status = err?.status || err?.statusCode || "err";
+        console.warn(`[Gemini Cascade] Model ${geminiModel} failed (${status}): ${msg.slice(0, 100)}. Switching to next model...`);
+        continue;
+      }
+    }
+  }
+
+  throw lastError || new Error("All Gemini cascade models failed");
+}
+
+/**
+ * Route a model call to the correct provider based on prefix ("groq:", "gemini:", or "nvidia:")
  */
 async function tryProvider(options: LLMCallOptions, modelId: string): Promise<LLMResponse> {
   if (modelId.startsWith("groq:")) {
     return tryGroq(options, modelId.substring(5));
+  }
+  // Gemini provider or replacing Gemma 4
+  if (
+    modelId.startsWith("gemini:") ||
+    modelId === "gemini" ||
+    modelId.includes("gemini") ||
+    modelId === "nvidia:google/gemma-4-31b-it" ||
+    modelId.includes("gemma")
+  ) {
+    const specific = modelId.startsWith("gemini:")
+      ? modelId.substring(7)
+      : (modelId.includes("gemma") ? undefined : modelId);
+    return tryGeminiCascade(options, specific);
   }
   // Default: NVIDIA (strip "nvidia:" prefix if present)
   const nvidiaModel = modelId.startsWith("nvidia:") ? modelId.substring(7) : modelId;
