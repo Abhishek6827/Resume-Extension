@@ -11,7 +11,7 @@ export const maxDuration = 300;
 const AI_MODELS = [
   { id: "nvidia:stepfun-ai/step-5-preview", name: "StepFun Step-5 (Preview)" },
   { id: "gemini:cascade", name: "Gemini Cascade (Google)" },
-  { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)" },
+  { id: "mistralai/mistral-large-4-1t-a52b", name: "Nemotron 550B (Quality)" },
   { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron 30B (Speed)" },
 ];
 
@@ -652,15 +652,15 @@ ${latex}`;
 
     const targetModels = Array.isArray(modelsToRun) && modelsToRun.length > 0
       ? modelsToRun.map(id => {
-          const normId = id === "nvidia:google/gemma-4-31b-it" ? "gemini:cascade" : id;
-          const found = AI_MODELS.find(m => m.id === normId);
-          if (found) return found;
-          if (normId.startsWith("gemini:")) {
-            const clean = normId.replace("gemini:", "");
-            return { id: normId, name: `Gemini ${clean} (Google)` };
-          }
-          return { id: normId, name: normId };
-        })
+        const normId = id === "nvidia:google/gemma-4-31b-it" ? "gemini:cascade" : id;
+        const found = AI_MODELS.find(m => m.id === normId);
+        if (found) return found;
+        if (normId.startsWith("gemini:")) {
+          const clean = normId.replace("gemini:", "");
+          return { id: normId, name: `Gemini ${clean} (Google)` };
+        }
+        return { id: normId, name: normId };
+      })
       : AI_MODELS;
 
     const encoder = new TextEncoder();

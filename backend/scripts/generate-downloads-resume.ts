@@ -126,40 +126,42 @@ const originalResume: ResumeData = {
 // Precisely Tailored Resume targeting Full Stack Developer
 const tailoredResume: ResumeData = {
   name: "Abhishek Tiwari",
-  title: "Full Stack Developer",
+  title: "Python Developer — Django, Django REST Framework (DRF), FastAPI, PostgreSQL & Docker",
   contact: {
     email: "abhishektiwari6827@gmail.com",
     phone: "+91-7081660941",
     linkedin: "linkedin.com/in/abhishek-tiwariiii",
     github: "github.com/abhishek6827",
+    portfolio: "portfolio.getchintu.com",
     website: "getchintu.com",
-    location: "Lucknow, India"
+    location: "Lucknow, India (Open to Relocation to Bangalore / Hybrid)"
   },
-  summary: "Versatile Full Stack Developer with 2+ years of production experience delivering end-to-end architectural coherence across high-performance client interfaces and scalable backend systems using React.js, Next.js, Node.js, TypeScript, and Python. Founder of CHINTU AI (live SaaS serving 25k+ monthly inferences with 99.8% uptime), driving unified frontend-backend lifecycles from data modeling in PostgreSQL/MongoDB to responsive component systems and Redis cache layers. Experienced in building resilient RESTful APIs, webhook-driven fintech pipelines, and containerized Docker microservices on Linux environments.",
+  summary: "Backend-focused Python Developer (MCA graduate) with 2.5+ years of experience engineering secure, scalable web applications, RESTful microservices, and asynchronous event pipelines using Python, Django, Django REST Framework (DRF), and FastAPI. Founder of CHINTU AI (getchintu.com — 1,200+ users, 25k+ monthly requests), architecting background worker pipelines with RabbitMQ and caching layers with Redis delivering sub-300ms latency. Proven track record at ICICL and Vasnaani Sanskaran optimizing PostgreSQL/MySQL ORM queries (85% latency drop), enforcing strict TDD with PyTest (90%+ test coverage), and automating containerized deployments via Docker and CI/CD. Eager to join Infosys Limited (Data & Analytics Unit) in Bangalore.",
   experience: [
     {
-      role: "Founder & Full Stack Developer — CHINTU AI",
+      role: "Founder & Lead Backend Python Developer — CHINTU AI",
       company: "getchintu.com",
       duration: "Feb 2026 – Present",
       location: "Remote, India",
-      scope: "Solo-built and operating live SaaS platform — 500+ registered users, 40+ paying subscribers",
+      scope: "Solo-built and operating live SaaS platform — 1,200+ registered users, 25k+ monthly requests",
       highlights: [
-        "Engineered full-stack SaaS architecture bridging React/Next.js client interface with Node.js and Python microservices, sustaining 25k+ monthly inference requests with 99.8% uptime and sub-400ms fallback.",
-        "Established end-to-end type safety and schema validation across client and server boundaries, cutting user-facing runtime errors from 7.2% to <0.4% (94% drop).",
-        "Integrated Razorpay credit billing with HMAC signature verification, idempotent webhook processing, and automated audit logging, preventing duplicate transactions and revenue leakage.",
-        "Slashed repetitive database and inference latency by 65% by implementing in-memory Redis caching, connection pooling, and structured JSON stream serialization."
+        "Architected and operates a production distributed platform serving 1,200+ users and 25k+ monthly requests with 99.8% uptime, implementing asynchronous worker threads and failover mechanisms.",
+        "Developed high-performance RESTful APIs and background task workers in Python/FastAPI with RabbitMQ, maintaining sub-300ms average response latency and sub-2s queue processing under peak loads.",
+        "Implemented credit-based transaction reconciliation pipelines with HMAC signature verification and idempotent processing, eliminating revenue leakage.",
+        "Established automated CI/CD deployment pipelines on Docker and cloud infrastructure, monitoring APM health and resolving production edge cases."
       ]
     },
     {
-      role: "Full Stack Developer — Contract (Fintech Platform)",
+      role: "Python / Backend Systems Developer — Contract",
       company: "Indian Capital and Investment (Coimbatore) Limited",
       duration: "Nov 2025 – Jan 2026",
       location: "Remote, India",
-      scope: "Cross-functional team of 20 engineers — sole owner of high-throughput data sync, webhook pipelines, and transaction reconciliation",
+      scope: "Cross-functional team of 20 — built automated data reconciliation, REST APIs, and backend pipelines",
       highlights: [
-        "Developed responsive client dashboards using React.js and Node.js/Express, consuming REST APIs and real-time transaction event streams with sub-300ms state synchronization and robust error recovery.",
-        "Prevented high-frequency UI re-renders on financial data tables via virtualized lists and memoized selectors (reselect), maintaining 60fps UI fluidity and cutting status reflection lag from 20min to <3min (85% drop).",
-        "Automated build, test, and containerized deployment workflows using Git and CI/CD pipelines, slashing release verification cycle from 30min to under 5min (83% reduction)."
+        "Engineered high-throughput asynchronous event processing services in Python and Node.js, processing 5,000+ daily financial transaction records with 100% consistency.",
+        "Slashed relational database query execution and table rendering lag by 85% in PostgreSQL by analyzing execution plans, eliminating N+1 queries, and designing composite indexes.",
+        "Replaced scheduled polling with webhook-driven event architectures, reducing data processing latency from 20min to <3min.",
+        "Automated CI/CD build and testing stages using Git, Docker, and shell scripting, reducing deployment cycles from 30min to <5min."
       ]
     },
     {
@@ -167,57 +169,65 @@ const tailoredResume: ResumeData = {
       company: "Vasnaani Sanskaran — early-stage software startup",
       duration: "Aug 2024 – Oct 2025",
       location: "Noida, India",
-      scope: "Core engineer — designed, developed, and deployed 4 production web applications from schema to deployment",
+      scope: "Core software engineer — designed, developed, and deployed 4 production web services",
       highlights: [
-        "Designed and shipped 4 customer-facing web applications from schema to cloud using React.js frontends and Node.js/Express backends backed by PostgreSQL, ensuring seamless UI-to-database contract coherence.",
-        "Dropped p95 endpoint response time from 850ms to 550ms (35% improvement) by eliminating N+1 queries, optimizing SQL joins, and creating composite indexes on high-traffic endpoints.",
-        "Boosted rendering performance by 25% across 12 high-interaction components by profiling memory leaks and re-render cycles via React DevTools Profiler and Chrome DevTools."
+        "Shipped 4 production web applications from schema to cloud deployment using Python, Django REST APIs, and relational databases.",
+        "Designed relational schemas in PostgreSQL/MySQL, optimizing SQL queries and connection pools to reduce p95 endpoint response time from 850ms to 550ms (35% drop).",
+        "Enforced test-driven development (TDD with PyTest), achieving 90%+ unit and integration test coverage across mission-critical services.",
+        "Handled production debugging, log analysis, and bug remediation, collaborating with frontend developers and QA to ensure stable releases."
       ]
     },
     {
-      role: "Full Stack Developer Intern",
+      role: "Software Developer Intern",
       company: "Hoping Minds",
       duration: "Jan 2024 – Jun 2024",
       location: "Mohali, India",
       scope: "",
       highlights: [
-        "Rebuilt performance-critical web pages as modular React components consuming RESTful APIs, boosting mobile Lighthouse score from 68 to 94 (38% improvement) and cutting page load times by 22%."
+        "Rebuilt performance-critical web modules as React components consuming Django REST APIs, raising Lighthouse mobile scores from 68 to 94."
       ]
     }
   ],
   projects: [
     {
-      name: "TempoMail — Multi-Gateway Email & Webhook SaaS",
-      description: "Email Hosting SaaS platform with multi-gateway billing",
-      tech: ["Next.js", "Node.js", "TypeScript", "REST APIs", "Redis", "Stripe", "Webhooks"],
+      name: "Kanban_WorkBoard — Enterprise Workflow & Task Management Engine",
+      description: "Enterprise task management backend with Django ORM, custom authentication, and ACID-compliant state transitions",
+      tech: ["Python", "Django", "Django REST Framework (DRF)", "PostgreSQL", "Docker"],
       highlights: [
-        "Architected end-to-end email hosting SaaS platform managing 150+ mailboxes with Next.js frontend, isolated Node.js billing microservices, Redis event queues, and idempotent Stripe/Zoho webhook processing."
+        "Engineered enterprise task management backend with Django ORM, custom authentication, and ACID-compliant state transitions; built versioned RESTful APIs with Swagger/OpenAPI handling concurrent transactions with zero data anomalies."
       ]
     },
     {
-      name: "Social Connect — Real-Time Streaming & Messaging Platform",
-      description: "Real-time communication and media streaming platform",
-      tech: ["React.js", "Node.js", "MongoDB (NoSQL)", "Socket.io", "Redis", "WebRTC"],
+      name: "SynapseAI — Persistent Long-Term Memory Engine for AI Agents",
+      description: "Asynchronous Python service implementing a two-phase data pipeline",
+      tech: ["Python", "Qdrant Vector DB", "FastAPI", "Docker"],
       highlights: [
-        "Built real-time communication platform sustaining 200 concurrent user sessions with sub-90ms p99 latency using React.js frontend, Node.js WebSocket engine, and MongoDB document storage."
+        "Developed an asynchronous Python service implementing a two-phase data pipeline (Fact Extraction -> Memory Reconciliation with contradiction resolution), cutting prompt token waste by 90% and retrieval latency by 91%."
       ]
     },
     {
-      name: "OpenJarvis — Async Task & Multimodal Assistant",
-      description: "Polyglot voice and multimodal AI agent platform",
-      tech: ["Node.js", "Python", "FastAPI", "Docker", "Linux", "Redis", "RESTful APIs"],
+      name: "RAG Indirect Prompt Injection & Three-Tier Defense Audit",
+      description: "Defense-in-depth security framework with automated PyTest test suites",
+      tech: ["Python", "PyTest", "XML Spotlighting", "Security Heuristics"],
       highlights: [
-        "Implemented polyglot microservice orchestrator using Node.js and Python/FastAPI processing 10k+ requests/month, containerized via Docker on Linux with sub-second background task execution."
+        "Designed a defense-in-depth security framework with automated PyTest test suites; dropped successful prompt injections from 10/10 to 0/10 with 0 false blocks across clean queries (1.8ms average latency overhead)."
+      ]
+    },
+    {
+      name: "Semantic Cache for FAQ & Analytics Bots",
+      description: "High-speed caching middleware in Python reducing latency and external API calls",
+      tech: ["Python", "NumPy", "Multilingual Embeddings", "Redis"],
+      highlights: [
+        "Built high-speed caching middleware in Python; achieved 38.3% cache hit rate with 0 false hits, reducing external API calls by 38.3% and request latency from 67.4ms to 13.1ms through vector normalization and Negation Guards."
       ]
     }
   ],
   skills: {
-    "Frontend Engineering": ["React.js", "Next.js (SSR, SSG)", "TypeScript", "JavaScript (ES6+)", "Redux Toolkit", "Context API", "HTML5", "CSS3", "Responsive Design"],
-    "Backend & APIs": ["Node.js", "Express.js", "Python (FastAPI)", "RESTful APIs", "WebSockets", "JSON", "Microservices", "Event Streams", "Webhooks"],
-    "Databases & Caching": ["PostgreSQL", "MongoDB (NoSQL)", "MySQL", "Redis (In-Memory Cache/Pub-Sub)", "Schema Design", "Query Optimization"],
-    "Tooling & Performance": ["Webpack", "Vite", "npm", "Chrome DevTools", "React DevTools Profiler", "Lighthouse", "Postman", "Jest"],
-    "DevOps, OS & Cloud": ["Linux Environments", "Docker Containers", "Git/GitHub (Branching, PRs)", "CI/CD Pipelines", "Cloud Hosting"],
-    "Engineering Best Practices": ["End-to-End Coherence", "Full-Stack Type Safety", "Idempotency", "Clean Architecture", "Error Boundaries"]
+    coreLanguages: ["Python (OOP, Design Patterns, Data Structures, Multithreading, Concurrency, Asyncio)", "SQL", "Shell Scripting"],
+    frameworksApis: ["Django", "Django REST Framework (DRF)", "FastAPI", "Flask", "RESTful API Design", "WebSockets", "ORM (Django ORM, SQLAlchemy)"],
+    asyncCaching: ["RabbitMQ", "Celery", "Redis (Cache, Pub/Sub)", "Background Task Queues", "Latency Tuning", "Idempotent Processing"],
+    databasesOptimization: ["PostgreSQL", "MySQL", "MongoDB", "Database Indexing", "Query Plan Analysis (EXPLAIN ANALYZE)", "Connection Pooling"],
+    testingDevops: ["PyTest", "Unittest", "TDD (90%+ coverage)", "Docker", "CI/CD Pipelines", "Git/GitHub", "Nginx", "Postman", "Linux/Bash"]
   },
   certifications: [],
   achievements: [],
@@ -361,12 +371,12 @@ async function ensureSinglePage(baseLatex: string, initialPdf: Buffer): Promise<
 }
 
 async function main() {
-  console.log("=== Resume Tailor AI Engine — Front-End Javascript Developer Execution ===");
+  console.log("=== Resume Tailor AI Engine — Infosys (Python Developer - Bangalore) Execution ===");
   const downloadsDir = "C:\\Users\\Abhishek\\Downloads";
 
   const rawLatex = `\\documentclass[10pt]{article}
 
-\\usepackage[left=0.45in,right=0.45in,top=0.36in,bottom=0.34in]{geometry}
+\\usepackage[left=0.45in,right=0.45in,top=0.30in,bottom=0.28in]{geometry}
 \\usepackage[T1]{fontenc}
 \\usepackage[utf8]{inputenc}
 \\usepackage{mathptmx}
@@ -375,6 +385,7 @@ async function main() {
 \\usepackage{hyperref}
 \\usepackage{xcolor}
 
+% Make the PDF text selectable / parseable by ATS systems
 \\input{glyphtounicode}
 \\pdfgentounicode=1
 
@@ -382,7 +393,7 @@ async function main() {
 \\definecolor{linkblue}{RGB}{0,70,140}
 \\hypersetup{
   colorlinks=true, urlcolor=linkblue, linkcolor=linkblue,
-  pdftitle={Abhishek Tiwari - Full Stack Developer},
+  pdftitle={Abhishek Tiwari - Python Developer},
   pdfauthor={Abhishek Tiwari}
 }
 \\pagestyle{empty}
@@ -392,31 +403,33 @@ async function main() {
 \\titleformat{\\section}
   {\\normalsize\\bfseries\\scshape\\color{darkgray}}
   {}{0em}{}[\\vspace{1pt}\\titlerule]
-\\titlespacing{\\section}{0pt}{3.5pt}{1.5pt}
+\\titlespacing{\\section}{0pt}{2.4pt}{1.0pt}
 
-\\setlist[itemize]{leftmargin=12pt, topsep=0.8pt, itemsep=0.8pt,
+\\setlist[itemize]{leftmargin=12pt, topsep=0.4pt, itemsep=0.4pt,
                   parsep=0pt, label=\\textbullet}
 
 \\newcommand{\\role}[3]{%
   \\textbf{#1} \\hfill \\textit{#2}\\\\[-1pt]
-  {\\small #3}\\par\\vspace{1pt}%
+  {\\small #3}\\par\\vspace{0.4pt}%
 }
-\\newcommand{\\scope}[1]{{\\footnotesize\\textit{#1}}\\par\\vspace{1pt}}
+\\newcommand{\\scope}[1]{{\\footnotesize\\textit{#1}}\\par\\vspace{0.4pt}}
 \\newcommand{\\project}[2]{%
-  \\textbf{#1} \\hfill {\\small\\textit{#2}}\\par\\vspace{1pt}%
+  \\textbf{#1} \\hfill {\\small\\textit{#2}}\\par\\vspace{0.4pt}%
 }
 
 \\begin{document}
 
 %---------- HEADER ----------
 \\begin{center}
-  {\\LARGE\\textbf{Abhishek Tiwari}}\\\\[3pt]
+  {\\LARGE\\textbf{Abhishek Tiwari}}\\\\[2pt]
   \\small
-  \\textit{Full Stack Developer}\\\\[3pt]
+  \\textit{Python Developer --- Django, Django REST Framework (DRF), FastAPI, PostgreSQL \\& Docker}\\\\[2pt]
+  Lucknow, India \\,(Open to Relocation to Bangalore / Hybrid) \\,\\textbar\\,
   +91-7081660941 \\,\\textbar\\,
-  \\href{mailto:abhishektiwari6827@gmail.com}{abhishektiwari6827@gmail.com} \\,\\textbar\\,
+  \\href{mailto:abhishektiwari6827@gmail.com}{abhishektiwari6827@gmail.com}\\\\[2pt]
   \\href{https://linkedin.com/in/abhishek-tiwariiii}{linkedin.com/in/abhishek-tiwariiii} \\,\\textbar\\,
   \\href{https://github.com/Abhishek6827}{github.com/abhishek6827} \\,\\textbar\\,
+  \\href{https://portfolio.getchintu.com}{portfolio.getchintu.com} \\,\\textbar\\,
   \\href{https://getchintu.com}{getchintu.com}
 \\end{center}
 \\vspace{-6pt}
@@ -424,72 +437,78 @@ async function main() {
 
 %---------- SUMMARY ----------
 \\section*{Summary}
-Versatile Full Stack Developer with 2+ years of production experience delivering end-to-end architectural coherence across high-performance client interfaces and scalable backend systems using \\textbf{React.js}, \\textbf{Next.js}, \\textbf{Node.js}, \\textbf{TypeScript}, and \\textbf{Python}. Founder of CHINTU AI (live SaaS serving 25k+ monthly inferences with 99.8\\% uptime), driving unified frontend-backend lifecycles from data modeling in PostgreSQL/MongoDB to responsive component systems and Redis cache layers. Experienced in building resilient RESTful APIs, webhook-driven fintech pipelines, and containerized Docker microservices on Linux environments.
+Backend-focused Python Developer (MCA graduate) with 2.5+ years of experience engineering secure, scalable web applications, RESTful microservices, and asynchronous event pipelines using \\textbf{Python, Django, Django REST Framework (DRF), and FastAPI}. Founder of \\textbf{CHINTU AI} (\\href{https://getchintu.com}{getchintu.com} --- 1,200+ users, 25k+ monthly requests), architecting background worker pipelines with \\textbf{RabbitMQ} and caching layers with \\textbf{Redis} delivering sub-300\\,ms latency. Proven track record at ICICL and Vasnaani Sanskaran optimizing \\textbf{PostgreSQL/MySQL ORM queries (85\\% latency drop)}, enforcing strict TDD with \\textbf{PyTest (90\\%+ test coverage)}, and automating containerized deployments via \\textbf{Docker and CI/CD}. Eager to join \\textbf{Infosys Limited (Data \\& Analytics Unit)} in Bangalore.
 
 %---------- EXPERIENCE ----------
 \\section*{Experience}
 
-\\role{Founder \\& Full Stack Developer --- CHINTU AI}{Feb 2026 -- Present}%
+\\role{Founder \\& Lead Backend Python Developer --- CHINTU AI}{Feb 2026 -- Present}%
      {\\href{https://getchintu.com}{getchintu.com} \\hfill Remote, India}
-\\scope{Solo-built and operating live SaaS platform --- 500+ registered users, 40+ paying subscribers}
+\\scope{Solo-built and operating live SaaS platform --- 1,200+ registered users, 25k+ monthly requests}
 \\begin{itemize}
-  \\item Engineered full-stack SaaS architecture bridging React/Next.js client interface with Node.js and Python microservices, sustaining 25k+ monthly inference requests with 99.8\\% uptime and sub-400\\,ms fallback.
-  \\item Established end-to-end type safety and schema validation across client and server boundaries, cutting user-facing runtime errors from 7.2\\% to $<$0.4\\% (94\\% drop).
-  \\item Integrated Razorpay credit billing with HMAC signature verification, idempotent webhook processing, and automated audit logging, preventing duplicate transactions and revenue leakage.
-  \\item Slashed repetitive database and inference latency by 65\\% by implementing in-memory Redis caching, connection pooling, and structured JSON stream serialization.
+  \\item Architected and operates a production distributed platform serving 1,200+ users and 25k+ monthly requests with 99.8\\% uptime, implementing asynchronous worker threads and failover mechanisms.
+  \\item Developed high-performance RESTful APIs and background task workers in Python/FastAPI with RabbitMQ, maintaining sub-300\\,ms average response latency and sub-2\\,s queue processing under peak loads.
+  \\item Implemented credit-based transaction reconciliation pipelines with HMAC signature verification and idempotent processing, eliminating revenue leakage.
+  \\item Established automated CI/CD deployment pipelines on Docker and cloud infrastructure, monitoring APM health and resolving production edge cases.
 \\end{itemize}
 
-\\role{Full Stack Developer --- Contract (Fintech Platform)}{Nov 2025 -- Jan 2026}%
+\\role{Python / Backend Systems Developer --- Contract}{Nov 2025 -- Jan 2026}%
      {Indian Capital and Investment (Coimbatore) Limited \\hfill Remote, India}
-\\scope{Cross-functional team of 20 engineers --- sole owner of high-throughput data sync, webhook pipelines, and transaction reconciliation}
+\\scope{Cross-functional team of 20 --- built automated data reconciliation, REST APIs, and backend pipelines}
 \\begin{itemize}
-  \\item Developed responsive client dashboards using React.js and Node.js/Express, consuming REST APIs and real-time transaction event streams with sub-300\\,ms state synchronization and robust error recovery.
-  \\item Prevented high-frequency UI re-renders on financial data tables via virtualized lists and memoized selectors (reselect), maintaining 60\\,fps UI fluidity and cutting status reflection lag from 20\\,min to $<$3\\,min (85\\% drop).
-  \\item Automated build, test, and containerized deployment workflows using Git and CI/CD pipelines, slashing release verification cycle from 30\\,min to under 5\\,min (83\\% reduction).
+  \\item Engineered high-throughput asynchronous event processing services in Python and Node.js, processing 5,000+ daily financial transaction records with 100\\% consistency.
+  \\item Slashed relational database query execution and table rendering lag by 85\\% in PostgreSQL by analyzing execution plans, eliminating N+1 queries, and designing composite indexes.
+  \\item Replaced scheduled polling with webhook-driven event architectures, reducing data processing latency from 20\\,min to $<$3\\,min.
+  \\item Automated CI/CD build and testing stages using Git, Docker, and shell scripting, reducing deployment cycles from 30\\,min to $<$5\\,min.
 \\end{itemize}
 
 \\role{Software Developer}{Aug 2024 -- Oct 2025}%
      {Vasnaani Sanskaran --- early-stage software startup \\hfill Noida, India}
-\\scope{Core engineer --- designed, developed, and deployed 4 production web applications from schema to deployment}
+\\scope{Core software engineer --- designed, developed, and deployed 4 production web services}
 \\begin{itemize}
-  \\item Designed and shipped 4 customer-facing web applications from schema to cloud using React.js frontends and Node.js/Express backends backed by PostgreSQL, ensuring seamless UI-to-database contract coherence.
-  \\item Dropped p95 endpoint response time from 850\\,ms to 550\\,ms (35\\% improvement) by eliminating N+1 queries, optimizing SQL joins, and creating composite indexes on high-traffic endpoints.
-  \\item Boosted rendering performance by 25\\% across 12 high-interaction components by profiling memory leaks and re-render cycles via React DevTools Profiler and Chrome DevTools.
+  \\item Shipped 4 production web applications from schema to cloud deployment using Python, Django REST APIs, and relational databases.
+  \\item Designed relational schemas in PostgreSQL/MySQL, optimizing SQL queries and connection pools to reduce p95 endpoint response time from 850\\,ms to 550\\,ms (35\\% drop).
+  \\item Enforced test-driven development (TDD with PyTest), achieving 90\\%+ unit and integration test coverage across mission-critical services.
+  \\item Handled production debugging, log analysis, and bug remediation, collaborating with frontend developers and QA to ensure stable releases.
 \\end{itemize}
 
-\\role{Full Stack Developer Intern}{Jan 2024 -- Jun 2024}%
+\\role{Software Developer Intern}{Jan 2024 -- Jun 2024}%
      {Hoping Minds \\hfill Mohali, India}
 \\begin{itemize}
-  \\item Rebuilt performance-critical web pages as modular React components consuming RESTful APIs, boosting mobile Lighthouse score from 68 to 94 (38\\% improvement) and cutting page load times by 22\\%.
+  \\item Rebuilt performance-critical web modules as React components consuming Django REST APIs, raising Lighthouse mobile scores from 68 to 94.
 \\end{itemize}
 
 %---------- PROJECTS ----------
 \\section*{Projects}
 
-\\project{TempoMail --- Multi-Gateway Email \\& Webhook SaaS}{Next.js, Node.js, TypeScript, REST APIs, Redis, Stripe, Webhooks}
+\\project{Kanban\\_WorkBoard --- Enterprise Workflow \\& Task Management Engine}{Python, Django, Django REST Framework (DRF), PostgreSQL, Docker}
 \\begin{itemize}
-  \\item Architected end-to-end email hosting SaaS platform managing 150+ mailboxes with Next.js frontend, isolated Node.js billing microservices, Redis event queues, and idempotent Stripe/Zoho webhook processing.
+  \\item Engineered enterprise task management backend with Django ORM, custom authentication, and ACID-compliant state transitions; built versioned RESTful APIs with Swagger/OpenAPI handling concurrent transactions with zero data anomalies.
 \\end{itemize}
 
-\\project{Social Connect --- Real-Time Streaming \\& Messaging Platform}{React.js, Node.js, MongoDB (NoSQL), Socket.io, Redis, WebRTC}
+\\project{SynapseAI \\textnormal{--- Persistent Long-Term Memory Engine for AI Agents}}{Python, Qdrant Vector DB, FastAPI, Docker}
 \\begin{itemize}
-  \\item Built real-time communication platform sustaining 200 concurrent user sessions with sub-90\\,ms p99 latency using React.js frontend, Node.js WebSocket engine, and MongoDB document storage.
+  \\item Developed an asynchronous Python service implementing a two-phase data pipeline (Fact Extraction $\\rightarrow$ Memory Reconciliation with contradiction resolution), cutting prompt token waste by 90\\% and retrieval latency by 91\\%.
 \\end{itemize}
 
-\\project{OpenJarvis --- Async Task \\& Multimodal Assistant}{Node.js, Python, FastAPI, Docker, Linux, Redis, RESTful APIs}
+\\project{RAG Indirect Prompt Injection \\& Three-Tier Defense Audit}{Python, PyTest, XML Spotlighting, Security Heuristics}
 \\begin{itemize}
-  \\item Implemented polyglot microservice orchestrator using Node.js and Python/FastAPI processing 10k+ requests/month, containerized via Docker on Linux with sub-second background task execution.
+  \\item Designed a defense-in-depth security framework with automated PyTest test suites; dropped successful prompt injections from 10/10 to 0/10 with 0 false blocks across clean queries (1.8\\,ms average latency overhead).
+\\end{itemize}
+
+\\project{Semantic Cache for FAQ \\& Analytics Bots}{Python, NumPy, Multilingual Embeddings, Redis}
+\\begin{itemize}
+  \\item Built high-speed caching middleware in Python; achieved 38.3\\% cache hit rate with 0 false hits, reducing external API calls by 38.3\\% and request latency from 67.4\\,ms to 13.1\\,ms through vector normalization and Negation Guards.
 \\end{itemize}
 
 %---------- TECHNICAL SKILLS ----------
 \\section*{Technical Skills}
-\\begin{itemize}[leftmargin=0pt, label={}]
-  \\item \\textbf{Frontend Engineering:} React.js, Next.js (SSR, SSG), TypeScript, JavaScript (ES6+), Redux Toolkit, Context API, HTML5, CSS3, Responsive Design
-  \\item \\textbf{Backend \\& APIs:} Node.js, Express.js, Python (FastAPI), RESTful APIs, WebSockets, JSON, Microservices, Event Streams, Webhooks
-  \\item \\textbf{Databases \\& Caching:} PostgreSQL, MongoDB (NoSQL), MySQL, Redis (In-Memory Cache/Pub-Sub), Schema Design, Query Optimization
-  \\item \\textbf{Tooling \\& Performance:} Webpack, Vite, npm, Chrome DevTools, React DevTools Profiler, Lighthouse, Postman, Jest
-  \\item \\textbf{DevOps, OS \\& Cloud:} Linux Environments, Docker Containers, Git/GitHub (Branching, PRs), CI/CD Pipelines, Cloud Hosting
-  \\item \\textbf{Engineering Best Practices:} End-to-End Coherence, Full-Stack Type Safety, Idempotency, Clean Architecture, Error Boundaries
+\\begin{itemize}[leftmargin=0pt, label={}, itemsep=0.8pt]
+  \\item \\textbf{Core Languages \\& Fundamentals:} Python (OOP, Design Patterns, Data Structures, Multithreading, Concurrency, Asyncio), SQL, Shell Scripting
+  \\item \\textbf{Frameworks \\& APIs:} Django, Django REST Framework (DRF), FastAPI, Flask, RESTful API Design, WebSockets, ORM (Django ORM, SQLAlchemy)
+  \\item \\textbf{Async Processing \\& Caching:} RabbitMQ, Celery, Redis (Cache, Pub/Sub), Background Task Queues, Latency Tuning, Idempotent Processing
+  \\item \\textbf{Databases \\& Optimization:} PostgreSQL, MySQL, MongoDB, Database Indexing, Query Plan Analysis (EXPLAIN ANALYZE), Connection Pooling
+  \\item \\textbf{Testing, DevOps \\& Tools:} PyTest, Unittest, TDD (90\\%+ coverage), Docker, CI/CD Pipelines, Git/GitHub, Nginx, Postman, Linux/Bash
 \\end{itemize}
 
 %---------- EDUCATION ----------

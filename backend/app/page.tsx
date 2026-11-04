@@ -9,7 +9,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 const RESUME_MODELS = [
   { id: "nvidia:stepfun-ai/step-5-preview", name: "StepFun Step-5 (Preview)", shortName: "StepFun Step-5", icon: "https://www.google.com/s2/favicons?domain=stepfun.com&sz=128" },
   { id: "gemini:cascade", name: "Gemini Cascade (Google)", shortName: "Google Gemini", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
-  { id: "nvidia:nvidia/nemotron-3-ultra-550b-a55b", name: "Nemotron 550B (Quality)", shortName: "Nemotron 550B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
+  { id: "mistralai/mistral-large-4-1t-a52b", name: "Nemotron 550B (Quality)", shortName: "Nemotron 550B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
   { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron 30B (Speed)", shortName: "Nemotron 30B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
 ];
 
@@ -1073,7 +1073,7 @@ const ParallelPipelineVisualizer = ({
   candidateName?: string;
   retryingModels?: Set<string>;
 }) => {
-  const [selectedTab, setSelectedTab] = useState<string>(targetModels.length > 0 ? targetModels[0].id : "nvidia:nvidia/nemotron-3-ultra-550b-a55b");
+  const [selectedTab, setSelectedTab] = useState<string>(targetModels.length > 0 ? targetModels[0].id : "mistralai/mistral-large-4-1t-a52b");
 
   useEffect(() => {
     if (targetModels.length > 0 && !targetModels.find((m: any) => m.id === selectedTab)) {
@@ -1157,7 +1157,7 @@ const ParallelPipelineVisualizer = ({
             "nvidia:stepfun-ai/step-5-preview": 0.45,
             "gemini:cascade": 0.35,
             "nvidia:google/gemma-4-31b-it": 0.35,
-            "nvidia:nvidia/nemotron-3-ultra-550b-a55b": 0.1,
+            "mistralai/mistral-large-4-1t-a52b": 0.1,
           };
           const increment = modelId.startsWith("gemini:") ? 0.35 : (incrementRates[modelId] || 0.15);
 
