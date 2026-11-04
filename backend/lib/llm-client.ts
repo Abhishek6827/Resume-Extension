@@ -513,8 +513,8 @@ async function tryProvider(options: LLMCallOptions, modelId: string): Promise<LL
   const providerType: "groq" | "gemini" | "nvidia" = modelId.startsWith("groq:")
     ? "groq"
     : (modelId.startsWith("gemini:") || modelId === "gemini" || modelId.includes("gemini") || modelId === "nvidia:google/gemma-4-31b-it" || modelId.includes("gemma"))
-    ? "gemini"
-    : "nvidia";
+      ? "gemini"
+      : "nvidia";
 
   switch (providerType) {
     case "groq":
@@ -532,7 +532,7 @@ async function tryProvider(options: LLMCallOptions, modelId: string): Promise<LL
  * Call LLM directly with NO fallback. Throws exact error immediately on failure.
  */
 export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
-  const modelToUse = options.modelSelection?.primaryModel || "nvidia:stepfun-ai/step-5-preview";
+  const modelToUse = options.modelSelection?.primaryModel || "nvidia/nemotron-3.5-super-vl-120b-a12b";
 
   console.log(`[LLM] Calling Model (${modelToUse})...`);
   try {
