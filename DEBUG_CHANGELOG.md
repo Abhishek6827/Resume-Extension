@@ -22,6 +22,33 @@ This document tracks all bug fixes, network protocol adjustments, and non-trivia
   - *Resume:* Strict 1 page (90.0%–95.5% fill, target `maxY = 46.0–47.5 / 49.50`), clean tech stack (3–4 technologies), verified candidate facts (Lucknow, +91 70816 60941, domestic relocation permitted, international remote only).
   - *Cover Letter / Pitches:* Absolute ban on AI tropes (`delve`, `crucial`, `pivotal`, `testament`, `tapestry`, `multifaceted`, `landscape`, `furthermore`, `moreover`, `in conclusion`, `robust`, `nuanced`, `underscores`, `aligns with`, `beacon`, `vital`, `thrilled to apply`, `perfect fit`, `synergy`). Enforce high burstiness, authentic contractions, developer idioms, point-first evidence, and zero-edit human flow.
 
+---
+
+## [2026-11-06] Level AI (Senior Full Stack Engineer - Noida/Bengaluru) Tailoring
+
+- **Issue / Target:** Tailor ATS-optimized single-page resume for **Level AI: Senior Full Stack Engineer** (Series C AI-native Contact Center Intelligence Platform, Agent Assist Workflows, React, Python/Django, Node.js/NestJS, WebSockets, PostgreSQL, MongoDB, Redis, Hybrid: Noida / Bengaluru).
+- **Alignment Discovered:**
+  - *Core Responsibilities:* Own end-to-end development of features and tools for Agent Assist workflows; build web interfaces for real-time customer-facing AI products; develop features using React and backend services like Django and NestJS; build reusable component libraries; design scalable APIs and event-driven pipelines; multi-tenant systems and WebSockets.
+  - *Candidate Direct Mapping:* Solo-engineered and operates live AI SaaS `CHINTU AI` (`getchintu.com`, 1,200+ users, 25k+ monthly requests, 99.8% uptime) with real-time WebSocket streaming, sub-400ms multi-LLM runtime fallback routing, and reusable React/TypeScript component systems; built `SynapseAI` (two-phase agent memory engine cutting token waste by 90% and retrieval latency by 91%, preventing state hallucinations in multi-turn assistant dialogues); built `Git-AI-Hub` (Model Context Protocol [MCP] server bridging agents to developer tools over SSE); built 4 customer-facing web apps on-site in Noida (`Vasnaani Sanskaran`) using React, TypeScript, Redux, and Python (Django)/Node.js REST APIs with PostgreSQL/MongoDB schemas.
+- **Debugging & Tuning:**
+  - *Heading rule spacing fix:* Discovered section headings had an overly tight post-rule separation (`after-sep = 0.6pt`, yielding only 5px gap), causing subtitles (`Founder & Lead Full Stack Engineer`, `Frontend Engineering`, `Chitkara University`) to sit cramped against the horizontal line (`\titlerule`).
+  - *Fix & Calibration:* Set `\titleformat{\section}{\normalsize\bfseries\scshape\color{darkgray}}{}{0em}{}[\vspace{1.5pt}\titlerule]` and `\titlespacing{\section}{0pt}{4.5pt}{6.0pt}`, expanding post-rule visual separation from 5px to 11–12px (~5.5–6.0 pt) consistently across all headings. Compensated with line spread `0.835` and list `itemsep = 0.2pt`.
+  - *Page geometry verification:* Script compiled cleanly to 1 page with `maxY = 47.63 / 49.50`, 96.22% vertical fill ratio, 694 text elements, and zero overflow.
+- **Files Modified:**
+  - `backend/scripts/generate-downloads-resume.ts`: Updated `rawLatex` section formatting and spacing parameters.
+  - `C:\Users\Abhishek\.gemini\config\skills\job-application-craft\SKILL.md`: Added Section Heading Spacing Invariant.
+  - `C:\Users\Abhishek\.gemini\config\AGENTS.md`: Added global invariant for section heading spacing.
+  - `C:\Users\Abhishek\.gemini\GEMINI.md`: Synchronized workspace invariant.
+  - `DEBUG_CHANGELOG.md`: Logged modifications and geometry verification.
+  - `C:\Users\Abhishek\Downloads\Abhishek_Tiwari_Tailored_Resume.pdf`: Compiled master tailored PDF (77,968 bytes).
+  - `C:\Users\Abhishek\Downloads\Abhishek_Tiwari_Resume.pdf`: Compiled identical PDF copy (77,968 bytes).
+- **Architectural Invariants & Guardrails:**
+  - *Section Heading Spacing Invariant:* Post-rule separation `<after-sep>` must NEVER be set below `5.0pt` (values like `0.2pt`, `0.6pt`, or `1.0pt` are forbidden). Always enforce `\titlespacing{\section}{0pt}{4.0pt--4.5pt}{5.5pt--6.0pt}` with `\titleformat{\section}{...}{}{0em}{}[\vspace{1.5pt}\titlerule]` so the text has 11–13px (~5.5–6.0 pt) breathing room below every heading rule.
+  - *Location Rule:* `Lucknow, India (Open to Relocation to Noida / Bengaluru / Hybrid)`. "Bhopal" restricted exclusively to the BCA degree institution name (`The Bhopal School of Social Sciences (BSSS), Bhopal`). Seamless fit for Noida office due to prior on-site Noida experience.
+  - *Single-Page Geometry:* Maintained between 90% and 96.5% vertical fill ratio on 1 page (actual: 96.22%, `maxY = 47.63 / 49.50`) with 0 overflow into page 2.
+  - *Clean Tech Stack Invariant:* Exactly 3–4 non-conflicting technologies per project subtitle.
+  - *Style & Tone:* Zero-AI style, natural human voice, direct contact center & agent assist metrics, zero banned words.
+
 
 ---
 

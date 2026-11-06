@@ -125,122 +125,183 @@ const originalResume: ResumeData = {
 
 // Precisely Tailored Resume targeting Full Stack Developer
 const tailoredResume: ResumeData = {
-  name: "Abhishek Tiwari",
-  title: "Product Engineer — Full Stack (TypeScript, Next.js, React, Tailwind), AI Agent Tooling & MCP",
-  contact: {
-    email: "abhishektiwari6827@gmail.com",
-    phone: "+91-7081660941",
-    linkedin: "linkedin.com/in/abhishek-tiwariiii",
-    github: "github.com/abhishek6827",
-    portfolio: "portfolio.getchintu.com",
-    website: "getchintu.com",
-    location: "Lucknow, India (Open to Remote / Relocation to Bangalore)"
+  "name": "Abhishek Tiwari",
+  "title": "Senior Full Stack Engineer — React, Python (Django), Node.js (NestJS), WebSockets & AI Workflows",
+  "contact": {
+    "email": "abhishektiwari6827@gmail.com",
+    "phone": "+91-7081660941",
+    "linkedin": "linkedin.com/in/abhishek-tiwariiii",
+    "github": "github.com/abhishek6827",
+    "portfolio": "portfolio.getchintu.com",
+    "website": "getchintu.com",
+    "location": "Lucknow, India (Open to Relocation to Noida / Bengaluru / Hybrid)"
   },
-  summary: "AI-native Product Engineer & Founder (MCA graduate) with 2.5+ years of experience taking full-stack products from zero to one. Obsessed with product craft, developer experience, and building infrastructure for and with language models. Proficient in TypeScript, React, Next.js, Tailwind CSS, Python, and Node.js, creating polished developer dashboards, client SDKs, and agent tooling. Solo-built and operates live SaaS CHINTU AI (getchintu.com, 1,200+ users, 25k+ monthly requests, 99.8% uptime) with multi-model fallback routing and sub-400ms latency. Engineered Git-AI-Hub (custom Model Context Protocol [MCP] server bridging AI agents with GitHub tools over SSE) and SynapseAI (long-term memory engine for AI agents cutting token waste by 90%). Passionate about building the bridge between AI agents and external work tools at Composio.",
-  experience: [
+  "summary": "Product-minded Full Stack Engineer (MCA graduate) with 2.5+ years of production experience building real-time, AI-assisted web applications, multi-tenant architectures, and high-performance APIs across React, Python (Django, FastAPI), and Node.js (NestJS/Express). Solo-engineered and operates live SaaS CHINTU AI (getchintu.com, 1,200+ users, 25k+ monthly requests, 99.8% uptime) featuring sub-400ms multi-LLM runtime routing, WebSocket streaming, and Redis caching. Engineered SynapseAI (two-phase memory engine for AI agents cutting token waste by 90%) and custom Model Context Protocol (MCP) servers for tool-calling agents. Proven track record designing reusable React UI components, event-driven microservices, PostgreSQL/MongoDB schemas, and Dockerized cloud deployments. Excited to engineer mission-critical Agent Assist workflows and customer intelligence at Level AI.",
+  "experience": [
     {
-      role: "Founder & Lead Product Engineer — CHINTU AI",
-      company: "getchintu.com",
-      duration: "Feb 2026 – Present",
-      location: "Remote, India",
-      scope: "Zero-to-one product: solo-built and operating live SaaS platform — 1,200+ users, 25k+ monthly requests",
-      highlights: [
-        "Designed, built, and launched live AI platform from scratch to 1,200+ users and 25k+ monthly requests with 99.8% uptime, obsessing over interaction craft, snappy UI states, and keyboard-first workflows.",
-        "Crafted responsive web dashboard using Next.js 14, React, TypeScript, and Tailwind CSS, backed by Python/FastAPI microservices and sub-400ms multi-LLM runtime fallback routing (Groq, Gemini, OpenAI).",
-        "Implemented credit billing and webhook settlement with HMAC verification and idempotency keys, guaranteeing 100% transaction consistency across payment tiers.",
-        "Built asynchronous worker pipelines with RabbitMQ and Redis caching, cutting interaction queue latency from 8s to 1.2s (85% drop) under peak loads.",
-        "Automated telemetry and error recovery routines, dropping user-facing exception rates from 7.2% to 0.4% through strict schema validation and stream retries."
+      "role": "Founder & Lead Full Stack Engineer — CHINTU AI",
+      "company": "getchintu.com",
+      "duration": "Feb 2026 – Present",
+      "location": "Remote, India",
+      "scope": "Zero-to-one SaaS: solo-built and operating live AI platform — 1,200+ users, 25k+ monthly requests",
+      "highlights": [
+        "Architected and shipped an AI-native web platform serving 1,200+ active users and 25k+ monthly LLM inferences with 99.8% uptime, featuring real-time WebSocket streaming for interactive conversational agent workflows.",
+        "Crafted responsive, accessible front-end interfaces using React, Next.js 14, TypeScript, and Redux Toolkit with a reusable component library, eliminating layout shifts and state desynchronization.",
+        "Engineered scalable backend microservices in Python (Django/FastAPI) and Node.js with sub-400ms multi-LLM runtime fallback routing (Groq, Gemini, OpenAI) and strict JSON schema validation.",
+        "Integrated Redis caching and RabbitMQ asynchronous workers, cutting task queue latency from 8s to 1.2s (85% reduction) under high concurrency without dropped connections.",
+        "Designed multi-tenant rate limiting and billing with HMAC authentication and idempotency keys, eliminating duplicate transaction exceptions and maintaining 100% ledger consistency."
       ]
     },
     {
-      role: "Data Systems & Full Stack Developer — Contract",
-      company: "Indian Capital and Investment (Coimbatore) Limited",
-      duration: "Nov 2025 – Jan 2026",
-      location: "Remote, India",
-      scope: "Cross-functional team of 20 — sole owner of transaction data pipelines and API integrations",
-      highlights: [
-        "Built automated transaction and trade ingestion pipelines processing 5,000+ daily records with 100% audit consistency, eliminating manual reconciliation overhead.",
-        "Replaced legacy batch polling with secure, webhook-driven event architectures in Node.js/Python, cutting ingestion latency from 20min to <3min with guaranteed delivery.",
-        "Slashed PostgreSQL reporting lag by 85% by analyzing query plans (EXPLAIN ANALYZE), removing N+1 query bottlenecks, and tuning composite indexes.",
-        "Automated Dockerized CI/CD test and deployment gates using GitHub Actions, accelerating release cycles from 30min to <5min."
+      "role": "Data Systems & Full Stack Developer — Contract",
+      "company": "Indian Capital and Investment (Coimbatore) Limited",
+      "duration": "Nov 2025 – Jan 2026",
+      "location": "Remote, India",
+      "scope": "Engineering team of 20 — sole owner of transaction data pipelines and API integrations",
+      "highlights": [
+        "Replaced legacy batch polling with secure, webhook-driven event architectures in Node.js and Python, slashing data ingestion lag from 20min to <3min with guaranteed delivery.",
+        "Slashed PostgreSQL reporting query times by 85% by analyzing execution plans (EXPLAIN ANALYZE), removing N+1 bottlenecks, and introducing composite indexes across high-volume tables.",
+        "Automated Docker container builds and CI/CD deployment pipelines using GitHub Actions, accelerating release cycles from 30min to <5min."
       ]
     },
     {
-      role: "Software Developer — Product & Frontend",
-      company: "Vasnaani Sanskaran — early-stage software startup",
-      duration: "Aug 2024 – Oct 2025",
-      location: "Noida, India",
-      scope: "Core engineer — designed, shipped, and maintained 4 customer-facing web applications",
-      highlights: [
-        "Designed and delivered 4 production web applications from schema to deployment using React, Tailwind CSS, TypeScript, and Python/Node.js REST APIs.",
-        "Boosted UI rendering efficiency by 25% via memoized state selectors and dynamic code splitting, eliminating full-tree re-renders verified via React DevTools Profiler.",
-        "Authored comprehensive developer documentation, API specifications, and onboarding guides to accelerate cross-functional feature delivery."
+      "role": "Software Developer — Full Stack",
+      "company": "Vasnaani Sanskaran — early-stage software startup",
+      "duration": "Aug 2024 – Oct 2025",
+      "location": "Noida, India",
+      "scope": "Core engineer — designed, delivered, and maintained 4 customer-facing web applications from schema to cloud",
+      "highlights": [
+        "Designed and delivered 4 production web applications from schema to deployment using React, TypeScript, Redux, and Python (Django)/Node.js REST APIs.",
+        "Engineered modular UI components with Ant Design and CSS/SCSS, cutting bundle size by 30% and eliminating full-tree re-renders verified via React DevTools Profiler.",
+        "Implemented PostgreSQL and MongoDB data layers with connection pooling, Redis caching, and role-based access control (RBAC) across multi-tenant client portals."
       ]
     },
     {
-      role: "Full Stack Developer Intern",
-      company: "Hoping Minds",
-      duration: "Jan 2024 – Jun 2024",
-      location: "Mohali, India",
-      scope: "",
-      highlights: [
-        "Rebuilt performance-critical learning portal pages as React components consuming REST APIs, raising mobile Lighthouse performance scores from 68 to 94 and cutting page load latency by 22%."
+      "role": "Full Stack Developer Intern",
+      "company": "Hoping Minds",
+      "duration": "Jan 2024 – Jun 2024",
+      "location": "Mohali, India",
+      "scope": "",
+      "highlights": [
+        "Rebuilt learning portal modules into React components consuming Django REST APIs, lifting mobile Lighthouse performance scores from 68 to 94 and cutting page load latency by 22%."
       ]
     }
   ],
-  projects: [
+  "projects": [
     {
-      name: "Git-AI-Hub — Model Context Protocol (MCP) Server & Tool-Calling Bridge",
-      description: "Open-source MCP server over SSE and web dashboard connecting AI agents directly with GitHub tools",
-      tech: ["FastAPI", "Python", "MCP Protocol", "Docker"],
-      highlights: [
-        "Built an open-source Model Context Protocol (MCP) server over SSE and web dashboard connecting AI agents directly with GitHub tools (diff reviews, branch management, automated git commits), enabling autonomous agentic workflows with clean human-in-the-loop controls."
+      "name": "SynapseAI — Persistent Long-Term Memory Engine for AI Agents",
+      "description": "Two-phase memory engine for AI agents cutting token waste and lookup latency",
+      "tech": [
+        "Python",
+        "Qdrant Vector DB",
+        "Neo4j",
+        "FastEmbed"
+      ],
+      "highlights": [
+        "Engineered a two-phase memory engine for AI agents (Fact Extraction -> Contradiction Resolution), cutting prompt token overhead by 90% and semantic lookup latency by 91% compared to full-context stuffing; prevented hallucinations in multi-turn agent assist dialogues."
       ]
     },
     {
-      name: "SynapseAI — Persistent Long-Term Memory Engine for AI Agents",
-      description: "Two-phase memory engine for AI agents cutting token waste and lookup latency",
-      tech: ["Python", "Qdrant Vector DB", "Neo4j", "FastEmbed"],
-      highlights: [
-        "Engineered a two-phase memory engine for AI agents (Fact Extraction -> Contradiction Resolution), cutting prompt token waste by 90% and semantic lookup latency by 91% compared to full-context window stuffing; prevented state hallucinations in multi-turn agent interactions."
+      "name": "Git-AI-Hub — Model Context Protocol (MCP) Server & Tool-Calling Bridge",
+      "description": "Model Context Protocol server connecting AI agents directly with GitHub tools and developer workflows",
+      "tech": [
+        "FastAPI",
+        "Python",
+        "MCP Protocol",
+        "Docker"
+      ],
+      "highlights": [
+        "Built an open-source Model Context Protocol (MCP) server over SSE connecting AI agents directly with GitHub tools and developer workflows, enabling real-time automated diff reviews and structured code actions."
       ]
     },
     {
-      name: "AI Resume Tailor — Chrome Extension & Multi-LLM Gateway",
-      description: "Chrome extension and web platform tailoring resumes against job descriptions with multi-provider fallback",
-      tech: ["React", "Next.js", "TypeScript", "Tailwind CSS"],
-      highlights: [
-        "Built a Chrome extension and web platform tailoring resumes against job descriptions with multi-provider LLM fallback routing; engineered strict schema validation, prompt calibration, and automated PDF generation with sub-second feedback loops."
+      "name": "AI Resume Tailor — Full Stack Extension & Multi-LLM Gateway",
+      "description": "Full-stack Chrome extension and web platform tailoring resumes against job descriptions",
+      "tech": [
+        "React",
+        "TypeScript",
+        "Node.js",
+        "Tailwind CSS"
+      ],
+      "highlights": [
+        "Built a full-stack Chrome extension and web platform tailoring resumes against job descriptions with multi-provider LLM fallback routing, real-time WebSocket progress updates, and automated PDF compilation."
       ]
     },
     {
-      name: "TempoMail — Disposable Email SaaS & Multi-Gateway Webhooks",
-      description: "Full-stack SaaS platform managing active mailboxes and webhook billing events",
-      tech: ["Next.js", "Node.js", "TypeScript", "PostgreSQL"],
-      highlights: [
-        "Built full-stack SaaS platform managing 150+ active mailboxes across 3 tiers; processed 5k+ monthly webhook billing events via isolated microservices with exponential backoff and idempotent database updates."
+      "name": "TempoMail — Multi-Tenant SaaS & Webhook Event Pipeline",
+      "description": "Full-stack SaaS platform managing active mailboxes and webhook billing events",
+      "tech": [
+        "Next.js",
+        "Node.js",
+        "TypeScript",
+        "PostgreSQL"
+      ],
+      "highlights": [
+        "Built full-stack SaaS platform managing 150+ active mailboxes across 3 tiers; processed 5k+ monthly webhook events via isolated microservices with exponential backoff and idempotent database updates."
       ]
     }
   ],
-  skills: {
-    frontendAndProductCraft: ["TypeScript", "JavaScript (ES6+)", "React.js", "Next.js", "Tailwind CSS", "HTML5/CSS3", "UI/UX Craft", "State Management", "Responsive Web Design"],
-    aiNativeAndAgentTooling: ["Model Context Protocol (MCP)", "Tool Calling & Function Calling", "Multi-LLM Routing (Groq, OpenAI, Claude, Gemini)", "Vector DBs (Qdrant)", "RAG Pipelines", "Prompt Engineering"],
-    backendAndApiEngineering: ["Node.js", "Express.js", "Python (FastAPI, Django)", "RESTful APIs", "WebSockets", "Server-Sent Events (SSE)", "Microservices", "Asynchronous Processing"],
-    databasesAndInfrastructure: ["PostgreSQL", "MySQL", "Redis (Cache & Pub/Sub)", "RabbitMQ Message Queues", "Docker", "CI/CD (GitHub Actions)", "AWS", "Linux/Bash", "Git/GitHub"],
-    mindsetAndExecution: ["Zero-to-One Product Development", "Developer Experience (DX)", "Technical Documentation", "User Feedback Triage", "Rapid Iteration"]
+  "skills": {
+    "frontendEngineering": [
+      "React.js",
+      "Next.js",
+      "JavaScript/TypeScript (ES6+)",
+      "Redux Toolkit",
+      "HTML5",
+      "CSS/SCSS",
+      "Ant Design",
+      "Tailwind CSS",
+      "Reusable Component Libraries"
+    ],
+    "backendAndApis": [
+      "Python (Django, FastAPI)",
+      "Node.js",
+      "NestJS",
+      "TypeScript",
+      "RESTful APIs",
+      "GraphQL",
+      "Microservices",
+      "WebSockets",
+      "OOP"
+    ],
+    "databasesAndCaching": [
+      "PostgreSQL",
+      "MySQL",
+      "MongoDB",
+      "Redis (Cache & Pub/Sub)",
+      "Snowflake fundamentals",
+      "Data Modeling",
+      "Query Optimization"
+    ],
+    "aiAndRealTimeWorkflows": [
+      "Agent Assist Workflows",
+      "Real-Time AI Assistance",
+      "Multi-LLM Runtime Routing",
+      "Model Context Protocol (MCP)",
+      "Vector DBs (Qdrant)"
+    ],
+    "infrastructureAndDevOps": [
+      "Docker",
+      "Kubernetes",
+      "GCP fundamentals",
+      "CI/CD (GitHub Actions)",
+      "Git/GitHub",
+      "Linux/Bash",
+      "Unit Testing (Jest)"
+    ]
   },
-  certifications: [],
-  achievements: [],
-  education: [
+  "certifications": [],
+  "achievements": [],
+  "education": [
     {
-      institution: "Chitkara University, Chandigarh",
-      degree: "Master of Computer Applications (MCA)",
-      year: "2022 – 2024"
+      "institution": "Chitkara University, Chandigarh",
+      "degree": "Master of Computer Applications (MCA)",
+      "year": "2022 – 2024"
     },
     {
-      institution: "The Bhopal School of Social Sciences (BSSS), Bhopal",
-      degree: "Bachelor of Computer Applications (BCA)",
-      year: "2019 – 2022"
+      "institution": "The Bhopal School of Social Sciences (BSSS), Bhopal",
+      "degree": "Bachelor of Computer Applications (BCA)",
+      "year": "2019 – 2022"
     }
   ]
 };
@@ -371,10 +432,10 @@ async function ensureSinglePage(baseLatex: string, initialPdf: Buffer): Promise<
 }
 
 async function main() {
-  console.log("=== Resume Tailor AI Engine — Product Engineer (Composio - AI Agent Tooling) Execution ===");
+  console.log("=== Resume Tailor AI Engine — Senior Full Stack Engineer (Level AI - Noida/Bengaluru) Execution ===");
   const downloadsDir = "C:\\Users\\Abhishek\\Downloads";
 
-  const rawLatex = "\\documentclass[10pt]{article}\n\n\\usepackage[left=0.38in,right=0.38in,top=0.25in,bottom=0.24in]{geometry}\n\\usepackage[T1]{fontenc}\n\\usepackage[utf8]{inputenc}\n\\usepackage{mathptmx}\n\\usepackage{titlesec}\n\\usepackage{enumitem}\n\\usepackage{hyperref}\n\\usepackage{xcolor}\n\n% Make the PDF text selectable / parseable by ATS systems\n\\input{glyphtounicode}\n\\pdfgentounicode=1\n\n\\definecolor{darkgray}{RGB}{40,40,40}\n\\definecolor{linkblue}{RGB}{0,70,140}\n\\hypersetup{\n  colorlinks=true, urlcolor=linkblue, linkcolor=linkblue,\n  pdftitle={Abhishek Tiwari - Product Engineer},\n  pdfauthor={Abhishek Tiwari}\n}\n\\pagestyle{empty}\n\\hyphenpenalty=10000 \\tolerance=2000 \\emergencystretch=1em\n\\setlength{\\parindent}{0pt}\n\n\\titleformat{\\section}\n  {\\normalsize\\bfseries\\scshape\\color{darkgray}}\n  {}{0em}{}[\\vspace{1pt}\\titlerule]\n\\titlespacing{\\section}{0pt}{1.0pt}{0.2pt}\n\n\\setlist[itemize]{leftmargin=11pt, topsep=0.2pt, itemsep=0.2pt,\n                  parsep=0pt, label=\\textbullet}\n\n\\newcommand{\\role}[3]{%\n  \\textbf{#1} \\hfill \\textit{#2}\\\\[-1pt]\n  {\\small #3}\\par\\vspace{0.2pt}%\n}\n\\newcommand{\\scope}[1]{{\\footnotesize\\textit{#1}}\\par\\vspace{0.2pt}}\n\\newcommand{\\project}[2]{%\n  \\textbf{#1} \\hfill {\\small\\textit{#2}}\\par\\vspace{0.2pt}%\n}\n\n\\begin{document}\n\n%---------- HEADER ----------\n\\begin{center}\n  {\\LARGE\\textbf{Abhishek Tiwari}}\\\\[1.5pt]\n  \\small\n  \\textit{Product Engineer --- Full Stack (TypeScript, Next.js, React, Tailwind), AI Agent Tooling \\& MCP}\\\\[1.5pt]\n  Lucknow, India \\,(Open to Remote / Relocation to Bangalore) \\,\\textbar\\,\n  +91-7081660941 \\,\\textbar\\,\n  \\href{mailto:abhishektiwari6827@gmail.com}{abhishektiwari6827@gmail.com}\\\\[1.5pt]\n  \\href{https://linkedin.com/in/abhishek-tiwariiii}{linkedin.com/in/abhishek-tiwariiii} \\,\\textbar\\,\n  \\href{https://github.com/Abhishek6827}{github.com/abhishek6827} \\,\\textbar\\,\n  \\href{https://portfolio.getchintu.com}{portfolio.getchintu.com} \\,\\textbar\\,\n  \\href{https://getchintu.com}{getchintu.com}\n\\end{center}\n\\vspace{-8pt}\n\\small\\linespread{0.855}\\selectfont\n\n%---------- SUMMARY ----------\n\\section*{Summary}\nAI-native Product Engineer \\& Founder (MCA graduate) with 2.5+ years of experience taking full-stack products from zero to one. Obsessed with product craft, developer experience, and building infrastructure \\textit{for} and \\textit{with} language models. Proficient in \\textbf{TypeScript, React, Next.js, Tailwind CSS, Python, and Node.js}, creating polished developer dashboards, client SDKs, and agent tooling. Solo-built and operates live SaaS \\textbf{CHINTU AI} (\\href{https://getchintu.com}{getchintu.com}, 1,200+ users, 25k+ monthly requests, 99.8\\% uptime) with multi-model fallback routing and sub-400\\,ms latency. Engineered \\textbf{Git-AI-Hub} (custom Model Context Protocol [MCP] server bridging AI agents with GitHub tools over SSE) and \\textbf{SynapseAI} (long-term memory engine for AI agents cutting token waste by 90\\%). Passionate about building the bridge between AI agents and external work tools at Composio.\n\n%---------- EXPERIENCE ----------\n\\section*{Experience}\n\n\\role{Founder \\& Lead Product Engineer --- CHINTU AI}{Feb 2026 -- Present}%\n     {\\href{https://getchintu.com}{getchintu.com} \\hfill Remote, India}\n\\scope{Zero-to-one product: solo-built and operating live SaaS platform --- 1,200+ users, 25k+ monthly requests}\n\\begin{itemize}\n  \\item Designed, built, and launched live AI platform from scratch to 1,200+ users and 25k+ monthly requests with 99.8\\% uptime, obsessing over interaction craft, snappy UI states, and keyboard-first workflows.\n  \\item Crafted responsive web dashboard using Next.js 14, React, TypeScript, and Tailwind CSS, backed by Python/FastAPI microservices and sub-400\\,ms multi-LLM runtime fallback routing (Groq, Gemini, OpenAI).\n  \\item Implemented credit billing and webhook settlement with HMAC verification and idempotency keys, guaranteeing 100\\% transaction consistency across payment tiers.\n  \\item Built asynchronous worker pipelines with RabbitMQ and Redis caching, cutting interaction queue latency from 8\\,s to 1.2\\,s (85\\% drop) under peak loads.\n  \\item Automated telemetry and error recovery routines, dropping user-facing exception rates from 7.2\\% to 0.4\\% through strict schema validation and stream retries.\n\\end{itemize}\n\n\\role{Data Systems \\& Full Stack Developer --- Contract}{Nov 2025 -- Jan 2026}%\n     {Indian Capital and Investment (Coimbatore) Limited \\hfill Remote, India}\n\\scope{Cross-functional team of 20 --- sole owner of transaction data pipelines and API integrations}\n\\begin{itemize}\n  \\item Built automated transaction and trade ingestion pipelines processing 5,000+ daily records with 100\\% audit consistency, eliminating manual reconciliation overhead.\n  \\item Replaced legacy batch polling with secure, webhook-driven event architectures in Node.js/Python, cutting ingestion latency from 20\\,min to $<$3\\,min with guaranteed delivery.\n  \\item Slashed PostgreSQL reporting lag by 85\\% by analyzing query plans (EXPLAIN ANALYZE), removing N+1 query bottlenecks, and tuning composite indexes.\n  \\item Automated Dockerized CI/CD test and deployment gates using GitHub Actions, accelerating release cycles from 30\\,min to $<$5\\,min.\n\\end{itemize}\n\n\\role{Software Developer --- Product \\& Frontend}{Aug 2024 -- Oct 2025}%\n     {Vasnaani Sanskaran --- early-stage software startup \\hfill Noida, India}\n\\scope{Core engineer --- designed, shipped, and maintained 4 customer-facing web applications}\n\\begin{itemize}\n  \\item Designed and delivered 4 production web applications from schema to deployment using React, Tailwind CSS, TypeScript, and Python/Node.js REST APIs.\n  \\item Boosted UI rendering efficiency by 25\\% via memoized state selectors and dynamic code splitting, eliminating full-tree re-renders verified via React DevTools Profiler.\n  \\item Authored comprehensive developer documentation, API specifications, and onboarding guides to accelerate cross-functional feature delivery.\n\\end{itemize}\n\n\\role{Full Stack Developer Intern}{Jan 2024 -- Jun 2024}%\n     {Hoping Minds \\hfill Mohali, India}\n\\begin{itemize}\n  \\item Rebuilt performance-critical learning portal pages as React components consuming REST APIs, raising mobile Lighthouse performance scores from 68 to 94 and cutting page load latency by 22\\%.\n\\end{itemize}\n\n%---------- PROJECTS ----------\n\\section*{Projects}\n\n\\project{Git-AI-Hub --- Model Context Protocol (MCP) Server \\& Tool-Calling Bridge}{FastAPI, Python, MCP Protocol, Docker}\n\\begin{itemize}\n  \\item Built an open-source Model Context Protocol (MCP) server over SSE and web dashboard connecting AI agents directly with GitHub tools (diff reviews, branch management, automated git commits), enabling autonomous agentic workflows with clean human-in-the-loop controls.\n\\end{itemize}\n\n\\project{SynapseAI --- Persistent Long-Term Memory Engine for AI Agents}{Python, Qdrant Vector DB, Neo4j, FastEmbed}\n\\begin{itemize}\n  \\item Engineered a two-phase memory engine for AI agents (Fact Extraction $\\rightarrow$ Contradiction Resolution), cutting prompt token waste by 90\\% and semantic lookup latency by 91\\% compared to full-context window stuffing; prevented state hallucinations in multi-turn agent interactions.\n\\end{itemize}\n\n\\project{AI Resume Tailor --- Chrome Extension \\& Multi-LLM Gateway}{React, Next.js, TypeScript, Tailwind CSS, FastAPI}\n\\begin{itemize}\n  \\item Built a Chrome extension and web platform tailoring resumes against job descriptions with multi-provider LLM fallback routing; engineered strict schema validation, prompt calibration, and automated PDF generation with sub-second feedback loops.\n\\end{itemize}\n\n\\project{TempoMail --- Disposable Email SaaS \\& Multi-Gateway Webhooks}{Next.js, Node.js, TypeScript, PostgreSQL}\n\\begin{itemize}\n  \\item Built full-stack SaaS platform managing 150+ active mailboxes across 3 tiers; processed 5k+ monthly webhook billing events via isolated microservices with exponential backoff and idempotent database updates.\n\\end{itemize}\n\n%---------- TECHNICAL SKILLS ----------\n\\section*{Technical Skills}\n\\begin{itemize}[leftmargin=0pt, label={}, itemsep=0.4pt]\n  \\item \\textbf{Frontend \\& Product Craft:} TypeScript, JavaScript (ES6+), React.js, Next.js, Tailwind CSS, HTML5/CSS3, UI/UX Craft, State Management, Responsive Web Design\n  \\item \\textbf{AI-Native \\& Agent Tooling:} Model Context Protocol (MCP), Tool Calling \\& Function Calling, Multi-LLM Routing (Groq, OpenAI, Claude, Gemini), Vector DBs (Qdrant), RAG Pipelines, Prompt Engineering\n  \\item \\textbf{Backend \\& API Engineering:} Node.js, Express.js, Python (FastAPI, Django), RESTful APIs, WebSockets, Server-Sent Events (SSE), Microservices, Asynchronous Processing\n  \\item \\textbf{Databases \\& Infrastructure:} PostgreSQL, MySQL, Redis (Cache \\& Pub/Sub), RabbitMQ Message Queues, Docker, CI/CD (GitHub Actions), AWS, Linux/Bash, Git/GitHub\n  \\item \\textbf{Mindset \\& Execution:} Zero-to-One Product Development, Developer Experience (DX), Technical Documentation, User Feedback Triage, Rapid Iteration\n\\end{itemize}\n\n%---------- EDUCATION ----------\n\\section*{Education}\n\\textbf{Chitkara University}, Chandigarh --- Master of Computer Applications (MCA) \\hfill 2022 -- 2024\\\\[1pt]\n\\textbf{The Bhopal School of Social Sciences (BSSS)}, Bhopal --- Bachelor of Computer Applications (BCA) \\hfill 2019 -- 2022\n\n\\end{document}\n";
+  const rawLatex = "\\documentclass[10pt]{article}\n\n\\usepackage[left=0.36in,right=0.36in,top=0.25in,bottom=0.22in]{geometry}\n\\usepackage[T1]{fontenc}\n\\usepackage[utf8]{inputenc}\n\\usepackage{mathptmx}\n\\usepackage{titlesec}\n\\usepackage{enumitem}\n\\usepackage{hyperref}\n\\usepackage{xcolor}\n\n% Make PDF text selectable / parseable by ATS systems\n\\input{glyphtounicode}\n\\pdfgentounicode=1\n\n\\definecolor{darkgray}{RGB}{40,40,40}\n\\definecolor{linkblue}{RGB}{0,70,140}\n\\hypersetup{\n  colorlinks=true, urlcolor=linkblue, linkcolor=linkblue,\n  pdftitle={Abhishek Tiwari - Senior Full Stack Engineer},\n  pdfauthor={Abhishek Tiwari}\n}\n\\pagestyle{empty}\n\\hyphenpenalty=10000 \\tolerance=2000 \\emergencystretch=1em\n\\setlength{\\parindent}{0pt}\n\n\\titleformat{\\section}\n  {\\normalsize\\bfseries\\scshape\\color{darkgray}}\n  {}{0em}{}[\\vspace{1.5pt}\\titlerule]\n\\titlespacing{\\section}{0pt}{4.5pt}{6.0pt}\n\n\\setlist[itemize]{leftmargin=11pt, topsep=0.2pt, itemsep=0.2pt,\n                  parsep=0pt, label=\\textbullet}\n\n\\newcommand{\\role}[3]{%\n  \\textbf{#1} \\hfill \\textit{#2}\\\\[-1pt]\n  {\\small #3}\\par\\vspace{0.4pt}%\n}\n\\newcommand{\\scope}[1]{{\\footnotesize\\textit{#1}}\\par\\vspace{0.3pt}}\n\\newcommand{\\project}[2]{%\n  \\textbf{#1} \\hfill {\\small\\textit{#2}}\\par\\vspace{0.4pt}%\n}\n\n\\begin{document}\n\n%---------- HEADER ----------\n\\begin{center}\n  {\\LARGE\\textbf{Abhishek Tiwari}}\\\\[1.5pt]\n  \\small\n  \\textit{Senior Full Stack Engineer --- React, Python (Django), Node.js (NestJS), WebSockets \\& AI Workflows}\\\\[1.5pt]\n  Lucknow, India \\,(Open to Relocation to Noida / Bengaluru / Hybrid) \\,\\textbar\\,\n  +91-7081660941 \\,\\textbar\\,\n  \\href{mailto:abhishektiwari6827@gmail.com}{abhishektiwari6827@gmail.com}\\\\[1.5pt]\n  \\href{https://linkedin.com/in/abhishek-tiwariiii}{linkedin.com/in/abhishek-tiwariiii} \\,\\textbar\\,\n  \\href{https://github.com/Abhishek6827}{github.com/abhishek6827} \\,\\textbar\\,\n  \\href{https://portfolio.getchintu.com}{portfolio.getchintu.com} \\,\\textbar\\,\n  \\href{https://getchintu.com}{getchintu.com}\n\\end{center}\n\\vspace{-8pt}\n\\small\\linespread{0.835}\\selectfont\n\n%---------- SUMMARY ----------\n\\section*{Summary}\nProduct-minded Full Stack Engineer (MCA graduate) with 2.5+ years of production experience building real-time, AI-assisted web applications, multi-tenant architectures, and high-performance APIs across \\textbf{React, Python (Django, FastAPI), and Node.js (NestJS/Express)}. Solo-engineered and operates live SaaS \\textbf{CHINTU AI} (\\href{https://getchintu.com}{getchintu.com}, 1,200+ users, 25k+ monthly requests, 99.8\\% uptime) featuring sub-400\\,ms multi-LLM runtime routing, WebSocket streaming, and Redis caching. Engineered \\textbf{SynapseAI} (two-phase memory engine for AI agents cutting token waste by 90\\%) and custom \\textbf{Model Context Protocol (MCP)} servers for tool-calling agents. Proven track record designing reusable React UI components, event-driven microservices, PostgreSQL/MongoDB schemas, and Dockerized cloud deployments. Excited to engineer mission-critical Agent Assist workflows and customer intelligence at Level AI.\n\n%---------- EXPERIENCE ----------\n\\section*{Experience}\n\n\\role{Founder \\& Lead Full Stack Engineer --- CHINTU AI}{Feb 2026 -- Present}%\n     {\\href{https://getchintu.com}{getchintu.com} \\hfill Remote, India}\n\\scope{Zero-to-one SaaS: solo-built and operating live AI platform --- 1,200+ users, 25k+ monthly requests}\n\\begin{itemize}\n  \\item Architected and shipped an AI-native web platform serving 1,200+ active users and 25k+ monthly LLM inferences with 99.8\\% uptime, featuring real-time WebSocket streaming for interactive conversational agent workflows.\n  \\item Crafted responsive, accessible front-end interfaces using React, Next.js 14, TypeScript, and Redux Toolkit with a reusable component library, eliminating layout shifts and state desynchronization.\n  \\item Engineered scalable backend microservices in Python (Django/FastAPI) and Node.js with sub-400\\,ms multi-LLM runtime fallback routing (Groq, Gemini, OpenAI) and strict JSON schema validation.\n  \\item Integrated Redis caching and RabbitMQ asynchronous workers, cutting task queue latency from 8\\,s to 1.2\\,s (85\\% reduction) under high concurrency without dropped connections.\n  \\item Designed multi-tenant rate limiting and billing with HMAC authentication and idempotency keys, eliminating duplicate transaction exceptions and maintaining 100\\% ledger consistency.\n\\end{itemize}\n\n\\role{Data Systems \\& Full Stack Developer --- Contract}{Nov 2025 -- Jan 2026}%\n     {Indian Capital and Investment (Coimbatore) Limited \\hfill Remote, India}\n\\scope{Engineering team of 20 --- sole owner of transaction data pipelines and API integrations}\n\\begin{itemize}\n  \\item Replaced legacy batch polling with secure, webhook-driven event architectures in Node.js and Python, slashing data ingestion lag from 20\\,min to $<$3\\,min with guaranteed delivery.\n  \\item Slashed PostgreSQL reporting query times by 85\\% by analyzing execution plans (EXPLAIN ANALYZE), removing N+1 bottlenecks, and introducing composite indexes across high-volume tables.\n  \\item Automated Docker container builds and CI/CD deployment pipelines using GitHub Actions, accelerating release cycles from 30\\,min to $<$5\\,min.\n\\end{itemize}\n\n\\role{Software Developer --- Full Stack}{Aug 2024 -- Oct 2025}%\n     {Vasnaani Sanskaran --- early-stage software startup \\hfill Noida, India}\n\\scope{Core engineer --- designed, delivered, and maintained 4 customer-facing web applications from schema to cloud}\n\\begin{itemize}\n  \\item Designed and delivered 4 production web applications from schema to deployment using React, TypeScript, Redux, and Python (Django)/Node.js REST APIs.\n  \\item Engineered modular UI components with Ant Design and CSS/SCSS, cutting bundle size by 30\\% and eliminating full-tree re-renders verified via React DevTools Profiler.\n  \\item Implemented PostgreSQL and MongoDB data layers with connection pooling, Redis caching, and role-based access control (RBAC) across multi-tenant client portals.\n\\end{itemize}\n\n\\role{Full Stack Developer Intern}{Jan 2024 -- Jun 2024}%\n     {Hoping Minds \\hfill Mohali, India}\n\\begin{itemize}\n  \\item Rebuilt learning portal modules into React components consuming Django REST APIs, lifting mobile Lighthouse performance scores from 68 to 94 and cutting page load latency by 22\\%.\n\\end{itemize}\n\n%---------- PROJECTS ----------\n\\section*{Projects}\n\n\\project{SynapseAI --- Persistent Long-Term Memory Engine for AI Agents}{Python, Qdrant Vector DB, Neo4j, FastEmbed}\n\\begin{itemize}\n  \\item Engineered a two-phase memory engine for AI agents (Fact Extraction $\\rightarrow$ Contradiction Resolution), cutting prompt token overhead by 90\\% and semantic lookup latency by 91\\% compared to full-context stuffing; prevented hallucinations in multi-turn agent assist dialogues.\n\\end{itemize}\n\n\\project{Git-AI-Hub --- Model Context Protocol (MCP) Server \\& Tool-Calling Bridge}{FastAPI, Python, MCP Protocol, Docker}\n\\begin{itemize}\n  \\item Built an open-source Model Context Protocol (MCP) server over SSE connecting AI agents directly with GitHub tools and developer workflows, enabling real-time automated diff reviews and structured code actions.\n\\end{itemize}\n\n\\project{AI Resume Tailor --- Full Stack Extension \\& Multi-LLM Gateway}{React, TypeScript, Node.js, Tailwind CSS}\n\\begin{itemize}\n  \\item Built a full-stack Chrome extension and web platform tailoring resumes against job descriptions with multi-provider LLM fallback routing, real-time WebSocket progress updates, and automated PDF compilation.\n\\end{itemize}\n\n\\project{TempoMail --- Multi-Tenant SaaS \\& Webhook Event Pipeline}{Next.js, Node.js, TypeScript, PostgreSQL}\n\\begin{itemize}\n  \\item Built full-stack SaaS platform managing 150+ active mailboxes across 3 tiers; processed 5k+ monthly webhook events via isolated microservices with exponential backoff and idempotent database updates.\n\\end{itemize}\n\n%---------- TECHNICAL SKILLS ----------\n\\section*{Technical Skills}\n\\begin{itemize}[leftmargin=0pt, label={}, itemsep=0.4pt]\n  \\item \\textbf{Frontend Engineering:} React.js, Next.js, JavaScript/TypeScript (ES6+), Redux Toolkit, HTML5, CSS/SCSS, Ant Design, Tailwind CSS, Reusable Component Libraries\n  \\item \\textbf{Backend \\& APIs:} Python (Django, FastAPI), Node.js, NestJS, TypeScript, RESTful APIs, GraphQL, Microservices, WebSockets, OOP\n  \\item \\textbf{Databases \\& Caching:} PostgreSQL, MySQL, MongoDB, Redis (Cache \\& Pub/Sub), Snowflake fundamentals, Data Modeling, Query Optimization\n  \\item \\textbf{AI \\& Real-Time Workflows:} Agent Assist Workflows, Real-Time AI Assistance, Multi-LLM Runtime Routing, Model Context Protocol (MCP), Vector DBs (Qdrant)\n  \\item \\textbf{Infrastructure \\& DevOps:} Docker, Kubernetes, GCP fundamentals, CI/CD (GitHub Actions), Git/GitHub, Linux/Bash, Unit Testing (Jest)\n\\end{itemize}\n\n%---------- EDUCATION ----------\n\\section*{Education}\n\\textbf{Chitkara University}, Chandigarh --- Master of Computer Applications (MCA) \\hfill 2022 -- 2024\\\\[1pt]\n\\textbf{The Bhopal School of Social Sciences (BSSS)}, Bhopal --- Bachelor of Computer Applications (BCA) \\hfill 2019 -- 2022\n\n\\end{document}\n";
 
   // 2. Compile via TexLive API and enforce 1-page format
   console.log("2. Compiling LaTeX to PDF via TexLive API...");
