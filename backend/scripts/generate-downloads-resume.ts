@@ -126,7 +126,7 @@ const originalResume: ResumeData = {
 // Precisely Tailored Resume targeting Full Stack Developer
 const tailoredResume: ResumeData = {
   name: "Abhishek Tiwari",
-  title: "Python Developer — Django, Django REST Framework (DRF), FastAPI, PostgreSQL & Docker",
+  title: "Product Engineer — Full Stack (TypeScript, Next.js, React, Tailwind), AI Agent Tooling & MCP",
   contact: {
     email: "abhishektiwari6827@gmail.com",
     phone: "+91-7081660941",
@@ -134,100 +134,100 @@ const tailoredResume: ResumeData = {
     github: "github.com/abhishek6827",
     portfolio: "portfolio.getchintu.com",
     website: "getchintu.com",
-    location: "Lucknow, India (Open to Relocation to Bangalore / Hybrid)"
+    location: "Lucknow, India (Open to Remote / Relocation to Bangalore)"
   },
-  summary: "Backend-focused Python Developer (MCA graduate) with 2.5+ years of experience engineering secure, scalable web applications, RESTful microservices, and asynchronous event pipelines using Python, Django, Django REST Framework (DRF), and FastAPI. Founder of CHINTU AI (getchintu.com — 1,200+ users, 25k+ monthly requests), architecting background worker pipelines with RabbitMQ and caching layers with Redis delivering sub-300ms latency. Proven track record at ICICL and Vasnaani Sanskaran optimizing PostgreSQL/MySQL ORM queries (85% latency drop), enforcing strict TDD with PyTest (90%+ test coverage), and automating containerized deployments via Docker and CI/CD. Eager to join Infosys Limited (Data & Analytics Unit) in Bangalore.",
+  summary: "AI-native Product Engineer & Founder (MCA graduate) with 2.5+ years of experience taking full-stack products from zero to one. Obsessed with product craft, developer experience, and building infrastructure for and with language models. Proficient in TypeScript, React, Next.js, Tailwind CSS, Python, and Node.js, creating polished developer dashboards, client SDKs, and agent tooling. Solo-built and operates live SaaS CHINTU AI (getchintu.com, 1,200+ users, 25k+ monthly requests, 99.8% uptime) with multi-model fallback routing and sub-400ms latency. Engineered Git-AI-Hub (custom Model Context Protocol [MCP] server bridging AI agents with GitHub tools over SSE) and SynapseAI (long-term memory engine for AI agents cutting token waste by 90%). Passionate about building the bridge between AI agents and external work tools at Composio.",
   experience: [
     {
-      role: "Founder & Lead Backend Python Developer — CHINTU AI",
+      role: "Founder & Lead Product Engineer — CHINTU AI",
       company: "getchintu.com",
       duration: "Feb 2026 – Present",
       location: "Remote, India",
-      scope: "Solo-built and operating live SaaS platform — 1,200+ registered users, 25k+ monthly requests",
+      scope: "Zero-to-one product: solo-built and operating live SaaS platform — 1,200+ users, 25k+ monthly requests",
       highlights: [
-        "Architected and operates a production distributed platform serving 1,200+ users and 25k+ monthly requests with 99.8% uptime, implementing asynchronous worker threads and failover mechanisms.",
-        "Developed high-performance RESTful APIs and background task workers in Python/FastAPI with RabbitMQ, maintaining sub-300ms average response latency and sub-2s queue processing under peak loads.",
-        "Implemented credit-based transaction reconciliation pipelines with HMAC signature verification and idempotent processing, eliminating revenue leakage.",
-        "Established automated CI/CD deployment pipelines on Docker and cloud infrastructure, monitoring APM health and resolving production edge cases."
+        "Designed, built, and launched live AI platform from scratch to 1,200+ users and 25k+ monthly requests with 99.8% uptime, obsessing over interaction craft, snappy UI states, and keyboard-first workflows.",
+        "Crafted responsive web dashboard using Next.js 14, React, TypeScript, and Tailwind CSS, backed by Python/FastAPI microservices and sub-400ms multi-LLM runtime fallback routing (Groq, Gemini, OpenAI).",
+        "Implemented credit billing and webhook settlement with HMAC verification and idempotency keys, guaranteeing 100% transaction consistency across payment tiers.",
+        "Built asynchronous worker pipelines with RabbitMQ and Redis caching, cutting interaction queue latency from 8s to 1.2s (85% drop) under peak loads.",
+        "Automated telemetry and error recovery routines, dropping user-facing exception rates from 7.2% to 0.4% through strict schema validation and stream retries."
       ]
     },
     {
-      role: "Python / Backend Systems Developer — Contract",
+      role: "Data Systems & Full Stack Developer — Contract",
       company: "Indian Capital and Investment (Coimbatore) Limited",
       duration: "Nov 2025 – Jan 2026",
       location: "Remote, India",
-      scope: "Cross-functional team of 20 — built automated data reconciliation, REST APIs, and backend pipelines",
+      scope: "Cross-functional team of 20 — sole owner of transaction data pipelines and API integrations",
       highlights: [
-        "Engineered high-throughput asynchronous event processing services in Python and Node.js, processing 5,000+ daily financial transaction records with 100% consistency.",
-        "Slashed relational database query execution and table rendering lag by 85% in PostgreSQL by analyzing execution plans, eliminating N+1 queries, and designing composite indexes.",
-        "Replaced scheduled polling with webhook-driven event architectures, reducing data processing latency from 20min to <3min.",
-        "Automated CI/CD build and testing stages using Git, Docker, and shell scripting, reducing deployment cycles from 30min to <5min."
+        "Built automated transaction and trade ingestion pipelines processing 5,000+ daily records with 100% audit consistency, eliminating manual reconciliation overhead.",
+        "Replaced legacy batch polling with secure, webhook-driven event architectures in Node.js/Python, cutting ingestion latency from 20min to <3min with guaranteed delivery.",
+        "Slashed PostgreSQL reporting lag by 85% by analyzing query plans (EXPLAIN ANALYZE), removing N+1 query bottlenecks, and tuning composite indexes.",
+        "Automated Dockerized CI/CD test and deployment gates using GitHub Actions, accelerating release cycles from 30min to <5min."
       ]
     },
     {
-      role: "Software Developer",
+      role: "Software Developer — Product & Frontend",
       company: "Vasnaani Sanskaran — early-stage software startup",
       duration: "Aug 2024 – Oct 2025",
       location: "Noida, India",
-      scope: "Core software engineer — designed, developed, and deployed 4 production web services",
+      scope: "Core engineer — designed, shipped, and maintained 4 customer-facing web applications",
       highlights: [
-        "Shipped 4 production web applications from schema to cloud deployment using Python, Django REST APIs, and relational databases.",
-        "Designed relational schemas in PostgreSQL/MySQL, optimizing SQL queries and connection pools to reduce p95 endpoint response time from 850ms to 550ms (35% drop).",
-        "Enforced test-driven development (TDD with PyTest), achieving 90%+ unit and integration test coverage across mission-critical services.",
-        "Handled production debugging, log analysis, and bug remediation, collaborating with frontend developers and QA to ensure stable releases."
+        "Designed and delivered 4 production web applications from schema to deployment using React, Tailwind CSS, TypeScript, and Python/Node.js REST APIs.",
+        "Boosted UI rendering efficiency by 25% via memoized state selectors and dynamic code splitting, eliminating full-tree re-renders verified via React DevTools Profiler.",
+        "Authored comprehensive developer documentation, API specifications, and onboarding guides to accelerate cross-functional feature delivery."
       ]
     },
     {
-      role: "Software Developer Intern",
+      role: "Full Stack Developer Intern",
       company: "Hoping Minds",
       duration: "Jan 2024 – Jun 2024",
       location: "Mohali, India",
       scope: "",
       highlights: [
-        "Rebuilt performance-critical web modules as React components consuming Django REST APIs, raising Lighthouse mobile scores from 68 to 94."
+        "Rebuilt performance-critical learning portal pages as React components consuming REST APIs, raising mobile Lighthouse performance scores from 68 to 94 and cutting page load latency by 22%."
       ]
     }
   ],
   projects: [
     {
-      name: "Kanban_WorkBoard — Enterprise Workflow & Task Management Engine",
-      description: "Enterprise task management backend with Django ORM, custom authentication, and ACID-compliant state transitions",
-      tech: ["Python", "Django", "Django REST Framework (DRF)", "PostgreSQL", "Docker"],
+      name: "Git-AI-Hub — Model Context Protocol (MCP) Server & Tool-Calling Bridge",
+      description: "Open-source MCP server over SSE and web dashboard connecting AI agents directly with GitHub tools",
+      tech: ["FastAPI", "Python", "MCP Protocol", "Docker"],
       highlights: [
-        "Engineered enterprise task management backend with Django ORM, custom authentication, and ACID-compliant state transitions; built versioned RESTful APIs with Swagger/OpenAPI handling concurrent transactions with zero data anomalies."
+        "Built an open-source Model Context Protocol (MCP) server over SSE and web dashboard connecting AI agents directly with GitHub tools (diff reviews, branch management, automated git commits), enabling autonomous agentic workflows with clean human-in-the-loop controls."
       ]
     },
     {
       name: "SynapseAI — Persistent Long-Term Memory Engine for AI Agents",
-      description: "Asynchronous Python service implementing a two-phase data pipeline",
-      tech: ["Python", "Qdrant Vector DB", "FastAPI", "Docker"],
+      description: "Two-phase memory engine for AI agents cutting token waste and lookup latency",
+      tech: ["Python", "Qdrant Vector DB", "Neo4j", "FastEmbed"],
       highlights: [
-        "Developed an asynchronous Python service implementing a two-phase data pipeline (Fact Extraction -> Memory Reconciliation with contradiction resolution), cutting prompt token waste by 90% and retrieval latency by 91%."
+        "Engineered a two-phase memory engine for AI agents (Fact Extraction -> Contradiction Resolution), cutting prompt token waste by 90% and semantic lookup latency by 91% compared to full-context window stuffing; prevented state hallucinations in multi-turn agent interactions."
       ]
     },
     {
-      name: "RAG Indirect Prompt Injection & Three-Tier Defense Audit",
-      description: "Defense-in-depth security framework with automated PyTest test suites",
-      tech: ["Python", "PyTest", "XML Spotlighting", "Security Heuristics"],
+      name: "AI Resume Tailor — Chrome Extension & Multi-LLM Gateway",
+      description: "Chrome extension and web platform tailoring resumes against job descriptions with multi-provider fallback",
+      tech: ["React", "Next.js", "TypeScript", "Tailwind CSS"],
       highlights: [
-        "Designed a defense-in-depth security framework with automated PyTest test suites; dropped successful prompt injections from 10/10 to 0/10 with 0 false blocks across clean queries (1.8ms average latency overhead)."
+        "Built a Chrome extension and web platform tailoring resumes against job descriptions with multi-provider LLM fallback routing; engineered strict schema validation, prompt calibration, and automated PDF generation with sub-second feedback loops."
       ]
     },
     {
-      name: "Semantic Cache for FAQ & Analytics Bots",
-      description: "High-speed caching middleware in Python reducing latency and external API calls",
-      tech: ["Python", "NumPy", "Multilingual Embeddings", "Redis"],
+      name: "TempoMail — Disposable Email SaaS & Multi-Gateway Webhooks",
+      description: "Full-stack SaaS platform managing active mailboxes and webhook billing events",
+      tech: ["Next.js", "Node.js", "TypeScript", "PostgreSQL"],
       highlights: [
-        "Built high-speed caching middleware in Python; achieved 38.3% cache hit rate with 0 false hits, reducing external API calls by 38.3% and request latency from 67.4ms to 13.1ms through vector normalization and Negation Guards."
+        "Built full-stack SaaS platform managing 150+ active mailboxes across 3 tiers; processed 5k+ monthly webhook billing events via isolated microservices with exponential backoff and idempotent database updates."
       ]
     }
   ],
   skills: {
-    coreLanguages: ["Python (OOP, Design Patterns, Data Structures, Multithreading, Concurrency, Asyncio)", "SQL", "Shell Scripting"],
-    frameworksApis: ["Django", "Django REST Framework (DRF)", "FastAPI", "Flask", "RESTful API Design", "WebSockets", "ORM (Django ORM, SQLAlchemy)"],
-    asyncCaching: ["RabbitMQ", "Celery", "Redis (Cache, Pub/Sub)", "Background Task Queues", "Latency Tuning", "Idempotent Processing"],
-    databasesOptimization: ["PostgreSQL", "MySQL", "MongoDB", "Database Indexing", "Query Plan Analysis (EXPLAIN ANALYZE)", "Connection Pooling"],
-    testingDevops: ["PyTest", "Unittest", "TDD (90%+ coverage)", "Docker", "CI/CD Pipelines", "Git/GitHub", "Nginx", "Postman", "Linux/Bash"]
+    frontendAndProductCraft: ["TypeScript", "JavaScript (ES6+)", "React.js", "Next.js", "Tailwind CSS", "HTML5/CSS3", "UI/UX Craft", "State Management", "Responsive Web Design"],
+    aiNativeAndAgentTooling: ["Model Context Protocol (MCP)", "Tool Calling & Function Calling", "Multi-LLM Routing (Groq, OpenAI, Claude, Gemini)", "Vector DBs (Qdrant)", "RAG Pipelines", "Prompt Engineering"],
+    backendAndApiEngineering: ["Node.js", "Express.js", "Python (FastAPI, Django)", "RESTful APIs", "WebSockets", "Server-Sent Events (SSE)", "Microservices", "Asynchronous Processing"],
+    databasesAndInfrastructure: ["PostgreSQL", "MySQL", "Redis (Cache & Pub/Sub)", "RabbitMQ Message Queues", "Docker", "CI/CD (GitHub Actions)", "AWS", "Linux/Bash", "Git/GitHub"],
+    mindsetAndExecution: ["Zero-to-One Product Development", "Developer Experience (DX)", "Technical Documentation", "User Feedback Triage", "Rapid Iteration"]
   },
   certifications: [],
   achievements: [],
@@ -371,153 +371,10 @@ async function ensureSinglePage(baseLatex: string, initialPdf: Buffer): Promise<
 }
 
 async function main() {
-  console.log("=== Resume Tailor AI Engine — Infosys (Python Developer - Bangalore) Execution ===");
+  console.log("=== Resume Tailor AI Engine — Product Engineer (Composio - AI Agent Tooling) Execution ===");
   const downloadsDir = "C:\\Users\\Abhishek\\Downloads";
 
-  const rawLatex = `\\documentclass[10pt]{article}
-
-\\usepackage[left=0.45in,right=0.45in,top=0.30in,bottom=0.28in]{geometry}
-\\usepackage[T1]{fontenc}
-\\usepackage[utf8]{inputenc}
-\\usepackage{mathptmx}
-\\usepackage{titlesec}
-\\usepackage{enumitem}
-\\usepackage{hyperref}
-\\usepackage{xcolor}
-
-% Make the PDF text selectable / parseable by ATS systems
-\\input{glyphtounicode}
-\\pdfgentounicode=1
-
-\\definecolor{darkgray}{RGB}{40,40,40}
-\\definecolor{linkblue}{RGB}{0,70,140}
-\\hypersetup{
-  colorlinks=true, urlcolor=linkblue, linkcolor=linkblue,
-  pdftitle={Abhishek Tiwari - Python Developer},
-  pdfauthor={Abhishek Tiwari}
-}
-\\pagestyle{empty}
-\\hyphenpenalty=10000 \\tolerance=2000 \\emergencystretch=1em
-\\setlength{\\parindent}{0pt}
-
-\\titleformat{\\section}
-  {\\normalsize\\bfseries\\scshape\\color{darkgray}}
-  {}{0em}{}[\\vspace{1pt}\\titlerule]
-\\titlespacing{\\section}{0pt}{2.4pt}{1.0pt}
-
-\\setlist[itemize]{leftmargin=12pt, topsep=0.4pt, itemsep=0.4pt,
-                  parsep=0pt, label=\\textbullet}
-
-\\newcommand{\\role}[3]{%
-  \\textbf{#1} \\hfill \\textit{#2}\\\\[-1pt]
-  {\\small #3}\\par\\vspace{0.4pt}%
-}
-\\newcommand{\\scope}[1]{{\\footnotesize\\textit{#1}}\\par\\vspace{0.4pt}}
-\\newcommand{\\project}[2]{%
-  \\textbf{#1} \\hfill {\\small\\textit{#2}}\\par\\vspace{0.4pt}%
-}
-
-\\begin{document}
-
-%---------- HEADER ----------
-\\begin{center}
-  {\\LARGE\\textbf{Abhishek Tiwari}}\\\\[2pt]
-  \\small
-  \\textit{Python Developer --- Django, Django REST Framework (DRF), FastAPI, PostgreSQL \\& Docker}\\\\[2pt]
-  Lucknow, India \\,(Open to Relocation to Bangalore / Hybrid) \\,\\textbar\\,
-  +91-7081660941 \\,\\textbar\\,
-  \\href{mailto:abhishektiwari6827@gmail.com}{abhishektiwari6827@gmail.com}\\\\[2pt]
-  \\href{https://linkedin.com/in/abhishek-tiwariiii}{linkedin.com/in/abhishek-tiwariiii} \\,\\textbar\\,
-  \\href{https://github.com/Abhishek6827}{github.com/abhishek6827} \\,\\textbar\\,
-  \\href{https://portfolio.getchintu.com}{portfolio.getchintu.com} \\,\\textbar\\,
-  \\href{https://getchintu.com}{getchintu.com}
-\\end{center}
-\\vspace{-6pt}
-\\small\\linespread{0.92}\\selectfont
-
-%---------- SUMMARY ----------
-\\section*{Summary}
-Backend-focused Python Developer (MCA graduate) with 2.5+ years of experience engineering secure, scalable web applications, RESTful microservices, and asynchronous event pipelines using \\textbf{Python, Django, Django REST Framework (DRF), and FastAPI}. Founder of \\textbf{CHINTU AI} (\\href{https://getchintu.com}{getchintu.com} --- 1,200+ users, 25k+ monthly requests), architecting background worker pipelines with \\textbf{RabbitMQ} and caching layers with \\textbf{Redis} delivering sub-300\\,ms latency. Proven track record at ICICL and Vasnaani Sanskaran optimizing \\textbf{PostgreSQL/MySQL ORM queries (85\\% latency drop)}, enforcing strict TDD with \\textbf{PyTest (90\\%+ test coverage)}, and automating containerized deployments via \\textbf{Docker and CI/CD}. Eager to join \\textbf{Infosys Limited (Data \\& Analytics Unit)} in Bangalore.
-
-%---------- EXPERIENCE ----------
-\\section*{Experience}
-
-\\role{Founder \\& Lead Backend Python Developer --- CHINTU AI}{Feb 2026 -- Present}%
-     {\\href{https://getchintu.com}{getchintu.com} \\hfill Remote, India}
-\\scope{Solo-built and operating live SaaS platform --- 1,200+ registered users, 25k+ monthly requests}
-\\begin{itemize}
-  \\item Architected and operates a production distributed platform serving 1,200+ users and 25k+ monthly requests with 99.8\\% uptime, implementing asynchronous worker threads and failover mechanisms.
-  \\item Developed high-performance RESTful APIs and background task workers in Python/FastAPI with RabbitMQ, maintaining sub-300\\,ms average response latency and sub-2\\,s queue processing under peak loads.
-  \\item Implemented credit-based transaction reconciliation pipelines with HMAC signature verification and idempotent processing, eliminating revenue leakage.
-  \\item Established automated CI/CD deployment pipelines on Docker and cloud infrastructure, monitoring APM health and resolving production edge cases.
-\\end{itemize}
-
-\\role{Python / Backend Systems Developer --- Contract}{Nov 2025 -- Jan 2026}%
-     {Indian Capital and Investment (Coimbatore) Limited \\hfill Remote, India}
-\\scope{Cross-functional team of 20 --- built automated data reconciliation, REST APIs, and backend pipelines}
-\\begin{itemize}
-  \\item Engineered high-throughput asynchronous event processing services in Python and Node.js, processing 5,000+ daily financial transaction records with 100\\% consistency.
-  \\item Slashed relational database query execution and table rendering lag by 85\\% in PostgreSQL by analyzing execution plans, eliminating N+1 queries, and designing composite indexes.
-  \\item Replaced scheduled polling with webhook-driven event architectures, reducing data processing latency from 20\\,min to $<$3\\,min.
-  \\item Automated CI/CD build and testing stages using Git, Docker, and shell scripting, reducing deployment cycles from 30\\,min to $<$5\\,min.
-\\end{itemize}
-
-\\role{Software Developer}{Aug 2024 -- Oct 2025}%
-     {Vasnaani Sanskaran --- early-stage software startup \\hfill Noida, India}
-\\scope{Core software engineer --- designed, developed, and deployed 4 production web services}
-\\begin{itemize}
-  \\item Shipped 4 production web applications from schema to cloud deployment using Python, Django REST APIs, and relational databases.
-  \\item Designed relational schemas in PostgreSQL/MySQL, optimizing SQL queries and connection pools to reduce p95 endpoint response time from 850\\,ms to 550\\,ms (35\\% drop).
-  \\item Enforced test-driven development (TDD with PyTest), achieving 90\\%+ unit and integration test coverage across mission-critical services.
-  \\item Handled production debugging, log analysis, and bug remediation, collaborating with frontend developers and QA to ensure stable releases.
-\\end{itemize}
-
-\\role{Software Developer Intern}{Jan 2024 -- Jun 2024}%
-     {Hoping Minds \\hfill Mohali, India}
-\\begin{itemize}
-  \\item Rebuilt performance-critical web modules as React components consuming Django REST APIs, raising Lighthouse mobile scores from 68 to 94.
-\\end{itemize}
-
-%---------- PROJECTS ----------
-\\section*{Projects}
-
-\\project{Kanban\\_WorkBoard --- Enterprise Workflow \\& Task Management Engine}{Python, Django, Django REST Framework (DRF), PostgreSQL, Docker}
-\\begin{itemize}
-  \\item Engineered enterprise task management backend with Django ORM, custom authentication, and ACID-compliant state transitions; built versioned RESTful APIs with Swagger/OpenAPI handling concurrent transactions with zero data anomalies.
-\\end{itemize}
-
-\\project{SynapseAI \\textnormal{--- Persistent Long-Term Memory Engine for AI Agents}}{Python, Qdrant Vector DB, FastAPI, Docker}
-\\begin{itemize}
-  \\item Developed an asynchronous Python service implementing a two-phase data pipeline (Fact Extraction $\\rightarrow$ Memory Reconciliation with contradiction resolution), cutting prompt token waste by 90\\% and retrieval latency by 91\\%.
-\\end{itemize}
-
-\\project{RAG Indirect Prompt Injection \\& Three-Tier Defense Audit}{Python, PyTest, XML Spotlighting, Security Heuristics}
-\\begin{itemize}
-  \\item Designed a defense-in-depth security framework with automated PyTest test suites; dropped successful prompt injections from 10/10 to 0/10 with 0 false blocks across clean queries (1.8\\,ms average latency overhead).
-\\end{itemize}
-
-\\project{Semantic Cache for FAQ \\& Analytics Bots}{Python, NumPy, Multilingual Embeddings, Redis}
-\\begin{itemize}
-  \\item Built high-speed caching middleware in Python; achieved 38.3\\% cache hit rate with 0 false hits, reducing external API calls by 38.3\\% and request latency from 67.4\\,ms to 13.1\\,ms through vector normalization and Negation Guards.
-\\end{itemize}
-
-%---------- TECHNICAL SKILLS ----------
-\\section*{Technical Skills}
-\\begin{itemize}[leftmargin=0pt, label={}, itemsep=0.8pt]
-  \\item \\textbf{Core Languages \\& Fundamentals:} Python (OOP, Design Patterns, Data Structures, Multithreading, Concurrency, Asyncio), SQL, Shell Scripting
-  \\item \\textbf{Frameworks \\& APIs:} Django, Django REST Framework (DRF), FastAPI, Flask, RESTful API Design, WebSockets, ORM (Django ORM, SQLAlchemy)
-  \\item \\textbf{Async Processing \\& Caching:} RabbitMQ, Celery, Redis (Cache, Pub/Sub), Background Task Queues, Latency Tuning, Idempotent Processing
-  \\item \\textbf{Databases \\& Optimization:} PostgreSQL, MySQL, MongoDB, Database Indexing, Query Plan Analysis (EXPLAIN ANALYZE), Connection Pooling
-  \\item \\textbf{Testing, DevOps \\& Tools:} PyTest, Unittest, TDD (90\\%+ coverage), Docker, CI/CD Pipelines, Git/GitHub, Nginx, Postman, Linux/Bash
-\\end{itemize}
-
-%---------- EDUCATION ----------
-\\section*{Education}
-\\textbf{Chitkara University}, Chandigarh --- Master of Computer Applications (MCA) \\hfill 2022 -- 2024\\\\[1pt]
-\\textbf{The Bhopal School of Social Sciences (BSSS)}, Bhopal --- Bachelor of Computer Applications (BCA) \\hfill 2019 -- 2022
-
-\\end{document}
-`;
+  const rawLatex = "\\documentclass[10pt]{article}\n\n\\usepackage[left=0.38in,right=0.38in,top=0.25in,bottom=0.24in]{geometry}\n\\usepackage[T1]{fontenc}\n\\usepackage[utf8]{inputenc}\n\\usepackage{mathptmx}\n\\usepackage{titlesec}\n\\usepackage{enumitem}\n\\usepackage{hyperref}\n\\usepackage{xcolor}\n\n% Make the PDF text selectable / parseable by ATS systems\n\\input{glyphtounicode}\n\\pdfgentounicode=1\n\n\\definecolor{darkgray}{RGB}{40,40,40}\n\\definecolor{linkblue}{RGB}{0,70,140}\n\\hypersetup{\n  colorlinks=true, urlcolor=linkblue, linkcolor=linkblue,\n  pdftitle={Abhishek Tiwari - Product Engineer},\n  pdfauthor={Abhishek Tiwari}\n}\n\\pagestyle{empty}\n\\hyphenpenalty=10000 \\tolerance=2000 \\emergencystretch=1em\n\\setlength{\\parindent}{0pt}\n\n\\titleformat{\\section}\n  {\\normalsize\\bfseries\\scshape\\color{darkgray}}\n  {}{0em}{}[\\vspace{1pt}\\titlerule]\n\\titlespacing{\\section}{0pt}{1.0pt}{0.2pt}\n\n\\setlist[itemize]{leftmargin=11pt, topsep=0.2pt, itemsep=0.2pt,\n                  parsep=0pt, label=\\textbullet}\n\n\\newcommand{\\role}[3]{%\n  \\textbf{#1} \\hfill \\textit{#2}\\\\[-1pt]\n  {\\small #3}\\par\\vspace{0.2pt}%\n}\n\\newcommand{\\scope}[1]{{\\footnotesize\\textit{#1}}\\par\\vspace{0.2pt}}\n\\newcommand{\\project}[2]{%\n  \\textbf{#1} \\hfill {\\small\\textit{#2}}\\par\\vspace{0.2pt}%\n}\n\n\\begin{document}\n\n%---------- HEADER ----------\n\\begin{center}\n  {\\LARGE\\textbf{Abhishek Tiwari}}\\\\[1.5pt]\n  \\small\n  \\textit{Product Engineer --- Full Stack (TypeScript, Next.js, React, Tailwind), AI Agent Tooling \\& MCP}\\\\[1.5pt]\n  Lucknow, India \\,(Open to Remote / Relocation to Bangalore) \\,\\textbar\\,\n  +91-7081660941 \\,\\textbar\\,\n  \\href{mailto:abhishektiwari6827@gmail.com}{abhishektiwari6827@gmail.com}\\\\[1.5pt]\n  \\href{https://linkedin.com/in/abhishek-tiwariiii}{linkedin.com/in/abhishek-tiwariiii} \\,\\textbar\\,\n  \\href{https://github.com/Abhishek6827}{github.com/abhishek6827} \\,\\textbar\\,\n  \\href{https://portfolio.getchintu.com}{portfolio.getchintu.com} \\,\\textbar\\,\n  \\href{https://getchintu.com}{getchintu.com}\n\\end{center}\n\\vspace{-8pt}\n\\small\\linespread{0.855}\\selectfont\n\n%---------- SUMMARY ----------\n\\section*{Summary}\nAI-native Product Engineer \\& Founder (MCA graduate) with 2.5+ years of experience taking full-stack products from zero to one. Obsessed with product craft, developer experience, and building infrastructure \\textit{for} and \\textit{with} language models. Proficient in \\textbf{TypeScript, React, Next.js, Tailwind CSS, Python, and Node.js}, creating polished developer dashboards, client SDKs, and agent tooling. Solo-built and operates live SaaS \\textbf{CHINTU AI} (\\href{https://getchintu.com}{getchintu.com}, 1,200+ users, 25k+ monthly requests, 99.8\\% uptime) with multi-model fallback routing and sub-400\\,ms latency. Engineered \\textbf{Git-AI-Hub} (custom Model Context Protocol [MCP] server bridging AI agents with GitHub tools over SSE) and \\textbf{SynapseAI} (long-term memory engine for AI agents cutting token waste by 90\\%). Passionate about building the bridge between AI agents and external work tools at Composio.\n\n%---------- EXPERIENCE ----------\n\\section*{Experience}\n\n\\role{Founder \\& Lead Product Engineer --- CHINTU AI}{Feb 2026 -- Present}%\n     {\\href{https://getchintu.com}{getchintu.com} \\hfill Remote, India}\n\\scope{Zero-to-one product: solo-built and operating live SaaS platform --- 1,200+ users, 25k+ monthly requests}\n\\begin{itemize}\n  \\item Designed, built, and launched live AI platform from scratch to 1,200+ users and 25k+ monthly requests with 99.8\\% uptime, obsessing over interaction craft, snappy UI states, and keyboard-first workflows.\n  \\item Crafted responsive web dashboard using Next.js 14, React, TypeScript, and Tailwind CSS, backed by Python/FastAPI microservices and sub-400\\,ms multi-LLM runtime fallback routing (Groq, Gemini, OpenAI).\n  \\item Implemented credit billing and webhook settlement with HMAC verification and idempotency keys, guaranteeing 100\\% transaction consistency across payment tiers.\n  \\item Built asynchronous worker pipelines with RabbitMQ and Redis caching, cutting interaction queue latency from 8\\,s to 1.2\\,s (85\\% drop) under peak loads.\n  \\item Automated telemetry and error recovery routines, dropping user-facing exception rates from 7.2\\% to 0.4\\% through strict schema validation and stream retries.\n\\end{itemize}\n\n\\role{Data Systems \\& Full Stack Developer --- Contract}{Nov 2025 -- Jan 2026}%\n     {Indian Capital and Investment (Coimbatore) Limited \\hfill Remote, India}\n\\scope{Cross-functional team of 20 --- sole owner of transaction data pipelines and API integrations}\n\\begin{itemize}\n  \\item Built automated transaction and trade ingestion pipelines processing 5,000+ daily records with 100\\% audit consistency, eliminating manual reconciliation overhead.\n  \\item Replaced legacy batch polling with secure, webhook-driven event architectures in Node.js/Python, cutting ingestion latency from 20\\,min to $<$3\\,min with guaranteed delivery.\n  \\item Slashed PostgreSQL reporting lag by 85\\% by analyzing query plans (EXPLAIN ANALYZE), removing N+1 query bottlenecks, and tuning composite indexes.\n  \\item Automated Dockerized CI/CD test and deployment gates using GitHub Actions, accelerating release cycles from 30\\,min to $<$5\\,min.\n\\end{itemize}\n\n\\role{Software Developer --- Product \\& Frontend}{Aug 2024 -- Oct 2025}%\n     {Vasnaani Sanskaran --- early-stage software startup \\hfill Noida, India}\n\\scope{Core engineer --- designed, shipped, and maintained 4 customer-facing web applications}\n\\begin{itemize}\n  \\item Designed and delivered 4 production web applications from schema to deployment using React, Tailwind CSS, TypeScript, and Python/Node.js REST APIs.\n  \\item Boosted UI rendering efficiency by 25\\% via memoized state selectors and dynamic code splitting, eliminating full-tree re-renders verified via React DevTools Profiler.\n  \\item Authored comprehensive developer documentation, API specifications, and onboarding guides to accelerate cross-functional feature delivery.\n\\end{itemize}\n\n\\role{Full Stack Developer Intern}{Jan 2024 -- Jun 2024}%\n     {Hoping Minds \\hfill Mohali, India}\n\\begin{itemize}\n  \\item Rebuilt performance-critical learning portal pages as React components consuming REST APIs, raising mobile Lighthouse performance scores from 68 to 94 and cutting page load latency by 22\\%.\n\\end{itemize}\n\n%---------- PROJECTS ----------\n\\section*{Projects}\n\n\\project{Git-AI-Hub --- Model Context Protocol (MCP) Server \\& Tool-Calling Bridge}{FastAPI, Python, MCP Protocol, Docker}\n\\begin{itemize}\n  \\item Built an open-source Model Context Protocol (MCP) server over SSE and web dashboard connecting AI agents directly with GitHub tools (diff reviews, branch management, automated git commits), enabling autonomous agentic workflows with clean human-in-the-loop controls.\n\\end{itemize}\n\n\\project{SynapseAI --- Persistent Long-Term Memory Engine for AI Agents}{Python, Qdrant Vector DB, Neo4j, FastEmbed}\n\\begin{itemize}\n  \\item Engineered a two-phase memory engine for AI agents (Fact Extraction $\\rightarrow$ Contradiction Resolution), cutting prompt token waste by 90\\% and semantic lookup latency by 91\\% compared to full-context window stuffing; prevented state hallucinations in multi-turn agent interactions.\n\\end{itemize}\n\n\\project{AI Resume Tailor --- Chrome Extension \\& Multi-LLM Gateway}{React, Next.js, TypeScript, Tailwind CSS, FastAPI}\n\\begin{itemize}\n  \\item Built a Chrome extension and web platform tailoring resumes against job descriptions with multi-provider LLM fallback routing; engineered strict schema validation, prompt calibration, and automated PDF generation with sub-second feedback loops.\n\\end{itemize}\n\n\\project{TempoMail --- Disposable Email SaaS \\& Multi-Gateway Webhooks}{Next.js, Node.js, TypeScript, PostgreSQL}\n\\begin{itemize}\n  \\item Built full-stack SaaS platform managing 150+ active mailboxes across 3 tiers; processed 5k+ monthly webhook billing events via isolated microservices with exponential backoff and idempotent database updates.\n\\end{itemize}\n\n%---------- TECHNICAL SKILLS ----------\n\\section*{Technical Skills}\n\\begin{itemize}[leftmargin=0pt, label={}, itemsep=0.4pt]\n  \\item \\textbf{Frontend \\& Product Craft:} TypeScript, JavaScript (ES6+), React.js, Next.js, Tailwind CSS, HTML5/CSS3, UI/UX Craft, State Management, Responsive Web Design\n  \\item \\textbf{AI-Native \\& Agent Tooling:} Model Context Protocol (MCP), Tool Calling \\& Function Calling, Multi-LLM Routing (Groq, OpenAI, Claude, Gemini), Vector DBs (Qdrant), RAG Pipelines, Prompt Engineering\n  \\item \\textbf{Backend \\& API Engineering:} Node.js, Express.js, Python (FastAPI, Django), RESTful APIs, WebSockets, Server-Sent Events (SSE), Microservices, Asynchronous Processing\n  \\item \\textbf{Databases \\& Infrastructure:} PostgreSQL, MySQL, Redis (Cache \\& Pub/Sub), RabbitMQ Message Queues, Docker, CI/CD (GitHub Actions), AWS, Linux/Bash, Git/GitHub\n  \\item \\textbf{Mindset \\& Execution:} Zero-to-One Product Development, Developer Experience (DX), Technical Documentation, User Feedback Triage, Rapid Iteration\n\\end{itemize}\n\n%---------- EDUCATION ----------\n\\section*{Education}\n\\textbf{Chitkara University}, Chandigarh --- Master of Computer Applications (MCA) \\hfill 2022 -- 2024\\\\[1pt]\n\\textbf{The Bhopal School of Social Sciences (BSSS)}, Bhopal --- Bachelor of Computer Applications (BCA) \\hfill 2019 -- 2022\n\n\\end{document}\n";
 
   // 2. Compile via TexLive API and enforce 1-page format
   console.log("2. Compiling LaTeX to PDF via TexLive API...");
