@@ -62,8 +62,8 @@ function sanitizeLatex(raw: string): string {
   cleaned = cleaned
     .replace(/^\s*%.*$/gm, "")
     .replace(/(?<!\\)&/g, () => '\\&')
-    .replace(/(?<!\\)%/g, () => '\\%')
-    .replace(/(?<!\\)#/g, () => '\\#')
+    .replace(/(?<!\\)%(?!\s*$)/gm, () => '\\%')
+    .replace(/(?<!\\)#(?![1-9])/g, () => '\\#')
     .replace(/(?<!\\)_/g, () => '\\_')
     .replace(/\n\s*\n+(\\begin\{itemize\})/g, '\n$1')
     .replace(/(\\begin\{itemize\})\n\s*\n+/g, '$1\n')
