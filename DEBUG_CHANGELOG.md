@@ -4,6 +4,39 @@ This document tracks all bug fixes, network protocol adjustments, and non-trivia
 
 ---
 
+## [2026-11-08] Jane Aerospace Private Limited (Bengaluru) — Full-Stack Engineer Resume & Application Package
+
+- **Role & Company Specifications:**
+  - Full-Stack Engineer (Bengaluru, In-office, 1–3 years experience, CTC Rs 40,000–45,000/mo).
+  - High ownership, small 5-person engineering team, SCaaS (Supply Chain as a Service) platform, hiring tool, marketing tools.
+  - Strict non-negotiables: In-person interview Bengaluru (20–30 Nov 2026), joining date 1 Dec 2026, 0 notice period, no QA team (test what you ship, Pytest/Jest, CI/CD), Friday running demos to MD, code review rigor.
+  - Stack: React, TypeScript, Python (FastAPI/Django), Node.js, PostgreSQL/MySQL schema design, REST/webhook integrations (payment gateways/CRMs), Docker.
+- **Candidate Alignment & Verification:**
+  - Strictly preserved 4 canonical background-checkable work experiences and exact dates:
+    1. `CHINTU AI` | `Feb 2026 – Present` | `Remote, India` (Founder & Lead Full-Stack Engineer — live SaaS getchintu.com, 1,200+ users, 25k+ monthly requests, 99.8% uptime, zero QA, Pytest, Docker, Razorpay webhooks).
+    2. `Indian Capital and Investment (Coimbatore) Limited` | `Nov 2025 – Jan 2026` | `Remote, India` (Full-Stack & Data Engineer — Contract — sole owner of webhook event pipeline cutting failure detection from 20m to <3m, PostgreSQL query optimization).
+    3. `Vasnaani Sanskaran` | `Aug 2024 – Oct 2025` | `Noida, India` (Full-Stack Software Developer — designed and shipped 4 production web apps from schema to cloud, React, TypeScript, Python/Node.js, PostgreSQL/MySQL).
+    4. `Hoping Minds` (Internship) | `Jan 2024 – Jun 2024` | `Mohali, India` (React components consuming Django REST APIs, Lighthouse 68 -> 94).
+  - Side projects in PROJECTS section only: `SynapseAI` (Python, FastAPI, Redis, PostgreSQL), `AI Resume Tailor` (React, TypeScript, Next.js).
+  - Location: `Lucknow, India (Relocating to Bengaluru | In-Person Interview Ready | Available from 1 Dec 2026)`.
+  - Notice period: 0 days (Immediate joiner).
+- **Geometry & Production Verification:**
+  - Universal Golden Reference Template Adopted: `\usepackage[left=0.38in,right=0.38in,top=0.26in,bottom=0.26in]{geometry}`, `mathptmx`, `\input{glyphtounicode}`, `\pdfgentounicode=1`, and `\hyphenpenalty=10000 \tolerance=2000 \emergencystretch=1em`.
+  - Right-Margin Overflow Fix: Enforced separation between `#1` (Project Name & Description) and `#2` (Tech Stack). Fixed `overfull \hbox` where `github.com` previously overflowed off the page.
+  - Project Count: Upgraded from 2 to exactly 4 high-impact technical projects (RAG Injection Defense, LLM Bias Calibration, Semantic Cache, AI Resume Tailor).
+  - Strict 1-Page Layout: Exactly 1 page (`maxY = 46.41 / 49.50`, **93.75%** vertical fill ratio, exactly 0 page overflow).
+  - Section Heading Spacing Invariant: `\titlespacing{\section}{0pt}{3.0pt}{4.8pt}` with `\titleformat{\section}{...}{}{0em}{}[\vspace{2pt}\titlerule]`, maintaining 11–13px post-rule breathing room.
+  - Master PDFs Compiled:
+    - `C:\Users\Abhishek\Downloads\Abhishek_Tiwari_Tailored_Resume.pdf` (86,779 bytes)
+    - `C:\Users\Abhishek\Downloads\Abhishek_Tiwari_Resume.pdf` (86,779 bytes)
+  - Synchronized Master Script: `d:\Desktop\Resume-Extension\backend\scripts\generate-downloads-resume.ts`.
+  - Skills Renamed & Synchronized: Renamed `candidate-profile-guard` to `resume-guard` (`C:\Users\Abhishek\.gemini\config\skills\resume-guard\SKILL.md`), and updated `job-application-craft` and `tailor-resume` skills.
+- **Zero-AI Package:**
+  - Tailored Covering Note explicitly answering all non-negotiables (in-person round, Dec 1 joining, self-testing, weekly demos, live product URL).
+  - Ready-to-send application email with strictly 39 characters subject (`Full-Stack Engineer — Abhishek Tiwari`) and 138 words body.
+
+---
+
 ## [2026-11-08] LaTeX PDF Sanitizer Macro Parameter Corruption & Literal `% #1 #2 #3` Resolution
 
 - **Issue & Symptom:**

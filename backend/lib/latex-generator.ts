@@ -260,45 +260,52 @@ export function generateLatex(resume: ResumeData): string {
 
   return `\\documentclass[10pt]{article}
 
-\\usepackage[top=0.32in,bottom=0.30in,left=0.32in,right=0.32in]{geometry}
+\\usepackage[left=0.38in,right=0.38in,top=0.26in,bottom=0.26in]{geometry}
+\\usepackage[T1]{fontenc}
+\\usepackage[utf8]{inputenc}
+\\usepackage{mathptmx}
 \\usepackage{titlesec}
 \\usepackage{enumitem}
 \\usepackage{hyperref}
 \\usepackage{xcolor}
 
+% Make the PDF text selectable / parseable by ATS systems
+\\input{glyphtounicode}
+\\pdfgentounicode=1
+
 \\definecolor{darkgray}{RGB}{40,40,40}
 \\definecolor{linkblue}{RGB}{0,70,140}
 \\hypersetup{colorlinks=true, urlcolor=linkblue, linkcolor=linkblue}
 \\pagestyle{empty}
+\\hyphenpenalty=10000 \\tolerance=2000 \\emergencystretch=1em
 \\setlength{\\parindent}{0pt}
 
 \\titleformat{\\section}
   {\\normalsize\\bfseries\\scshape\\color{darkgray}}
-  {}{0em}{}[\\vspace{1pt}\\titlerule]
-\\titlespacing{\\section}{0pt}{5pt}{2pt}
+  {}{0em}{}[\\vspace{2pt}\\titlerule]
+\\titlespacing{\\section}{0pt}{3.0pt}{4.8pt}
 
-\\setlist[itemize]{leftmargin=12pt, topsep=0pt, itemsep=0.3pt,
+\\setlist[itemize]{leftmargin=11pt, topsep=0.5pt, itemsep=0.2pt,
                   parsep=0pt, label=\\textbullet}
 
 \\newcommand{\\role}[3]{%
   \\textbf{#1} \\hfill \\textit{#2}\\\\[-1pt]
-  {\\small #3}\\par\\vspace{1pt}%
+  {\\small #3}\\par\\vspace{0.5pt}%
 }
-\\newcommand{\\scope}[1]{{\\footnotesize\\textit{#1}}\\par\\vspace{1pt}}
+\\newcommand{\\scope}[1]{{\\footnotesize\\textit{#1}}\\par\\vspace{0.5pt}}
 \\newcommand{\\project}[2]{%
-  \\textbf{#1} \\hfill {\\small\\textit{#2}}\\par\\vspace{1pt}%
+  \\textbf{#1} \\hfill {\\small\\textit{#2}}\\par\\vspace{0.5pt}%
 }
 
 \\begin{document}
 
 %---------- HEADER ----------
-\\begin{center}
-  {\\LARGE\\textbf{${name}}}\\\\[1pt]
+{\\centering
+  {\\LARGE\\textbf{${name}}}\\\\[1.5pt]
   \\small
-  ${contactLine}
-\\end{center}
-\\vspace{-4pt}
-\\small\\linespread{0.89}\\selectfont
+  ${contactLine}\\par
+}\\vspace{1pt}
+\\small\\linespread{0.88}\\selectfont
 
 ${summaryLatex}
 ${experienceLatex}
@@ -316,7 +323,7 @@ export function ensureLatexSpacing(latex: string): string {
   // 1. Upgrade section spacing to consistent compact height
   result = result.replace(
     /\\titlespacing\*?\{\\section\}\{0pt\}\{[^}]+\}\{[^}]+\}/g,
-    "\\titlespacing{\\section}{0pt}{5pt}{2pt}"
+    "\\titlespacing{\\section}{0pt}{3.0pt}{4.8pt}"
   );
 
   // 2. Ensure gap after \end{itemize} before next \section*{...}
