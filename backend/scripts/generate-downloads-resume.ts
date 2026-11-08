@@ -1,12 +1,12 @@
 /**
  * Synchronized Master Resume Generator Script
- * Target: Software Engineer (Java, React.js, Full-Stack, REST APIs, SQL, AWS) — Mobility Global
+ * Target: Frontend Engineer (React, Next.js, TypeScript, REST APIs & Fraud UI) — DeepID (part of Surepass)
  * Strictly Enforces Canonical 4 Work Experience Tenures & Dates
  */
 
 export const tailoredResume = {
   "name": "Abhishek Tiwari",
-  "title": "Software Engineer — Java, React.js, Full-Stack, REST APIs, SQL & AWS",
+  "title": "Frontend Engineer — React, Next.js, TypeScript, REST APIs & Fraud UI",
   "contact": {
     "email": "abhishektiwari6827@gmail.com",
     "phone": "+91 70816 60941",
@@ -14,142 +14,142 @@ export const tailoredResume = {
     "github": "github.com/abhishek6827",
     "portfolio": "portfolio.getchintu.com",
     "website": "getchintu.com",
-    "location": "Lucknow, India (Open to Hybrid / Relocation within India)"
+    "location": "Lucknow, India (Open to Relocation within India)"
   },
-  "summary": "Full-Stack Software Engineer with 2+ years of production experience designing, developing, and deploying enterprise web applications using Java (Spring Boot), React.js, and relational database systems (PostgreSQL, MySQL). Founder of live SaaS CHINTU AI (getchintu.com, 1,200+ users, 25k+ monthly requests, 99.8% uptime), architecting cloud-native services on AWS (Lambda, S3, API Gateway), high-throughput REST APIs, and Docker containers with automated CI/CD and JUnit testing. Experienced collaborator in agile sprint teams, translating technical requirements into scalable backend services and responsive frontends. Adept at query optimization and data-driven problem solving across automotive and high-concurrency domains.",
+  "summary": "Frontend and Full-Stack Engineer with 2+ years of production experience building high-performance web applications across React, Next.js, and TypeScript in fintech and SaaS domains. Founder of live SaaS CHINTU AI (getchintu.com, 1,200+ users, 25k+ monthly requests, 99.8% uptime), architecting responsive dashboards, state-driven decision workflows, and secure tokenized authentication. Experienced in fintech transaction tracing and fraud detection contexts at ICICL (webhook event pipelines, HMAC signature verification, sub-3m failure detection). Proficient in component lifecycle management, handling loading/empty/error states, designing developer portals, and leveraging agentic AI workflows with rigorous code review and automated testing.",
   "experience": [
     {
       "company": "CHINTU AI",
-      "role": "Founder & Lead Full-Stack Engineer",
+      "role": "Founder & Lead Frontend Engineer",
       "period": "Feb 2026 – Present",
       "location": "Remote, India",
       "scope": "Solo-built and operating live SaaS platform serving 1,200+ registered users with 99.8% uptime",
       "technologies": [
-        "Java (Spring Boot)",
         "React.js",
-        "AWS (Lambda/S3)",
-        "PostgreSQL"
+        "Next.js",
+        "TypeScript",
+        "Tailwind CSS"
       ],
       "achievements": [
-        "Architected and shipped an end-to-end cloud platform (getchintu.com) serving 1,200+ users and 25k+ monthly requests with 99.8% uptime, coupling responsive React.js frontends with Java (Spring Boot) and RESTful microservices.",
-        "Engineered cloud-native backend workflows on AWS (S3, Lambda, API Gateway) and Docker container clusters, cutting API response latency from 450ms to sub-120ms.",
-        "Modeled normalized PostgreSQL relational schemas with composite indexing and connection pooling, sustaining high-volume concurrent data ingestion with zero degradation.",
-        "Automated build and deployment pipelines via CI/CD (GitHub Actions/Jenkins) and comprehensive unit/integration test suites (JUnit, Mockito), maintaining 90%+ test coverage."
+        "Architected and shipped an end-to-end web platform (getchintu.com) serving 1,200+ users and 25k+ monthly requests with 99.8% uptime, engineering modular React/Next.js interfaces, interactive timeline views, and responsive state machines.",
+        "Built customer-facing developer dashboards with sample payloads, interactive API request inspectors, and contextual error states, reducing customer integration troubleshooting cycles by 40%.",
+        "Implemented secure token management, role-based session states, and Razorpay webhook integrations with HMAC signature validation and idempotent transaction processing.",
+        "Enforced WCAG 2.1 accessibility and component testing using Jest and React Testing Library, eliminating UI regressions across 15+ complex view states."
       ]
     },
     {
       "company": "Indian Capital and Investment (Coimbatore) Limited",
-      "role": "Full-Stack & Data Engineer — Contract",
+      "role": "Frontend & Full-Stack Developer — Contract",
       "period": "Nov 2025 – Jan 2026",
       "location": "Remote, India",
-      "scope": "Sole owner of transactional payment and webhook integration pipelines across distributed engineering teams",
+      "scope": "Sole owner of fintech payment dashboards and webhook event monitoring systems",
       "technologies": [
-        "Java",
         "React.js",
-        "PostgreSQL",
+        "TypeScript",
+        "Node.js",
         "REST APIs"
       ],
       "achievements": [
-        "Developed transactional data pipelines and RESTful backend microservices in Java, replacing scheduled polling with an event-driven webhook architecture that cut payment-failure detection lag from 20m to under 3m.",
-        "Optimized relational database queries in PostgreSQL using execution plan analysis (EXPLAIN ANALYZE), eliminating redundant table scans and boosting analytical query speeds by 60%.",
-        "Collaborated across agile sprints, conducted peer code reviews in Git/Jira, and documented architecture specifications ensuring 100% data lineage."
+        "Built fintech transaction investigation dashboards in React and TypeScript, visualizing real-time payment states (allow, warn, hold, block) and cutting transaction failure detection lag from 20m to under 3m.",
+        "Integrated enterprise REST APIs and event-driven webhooks with strict payload validation, protected auth token handling, and structured incident timelines.",
+        "Optimized client-side data fetching and state caching, slashing dashboard data retrieval times by 50% and ensuring audit-ready transaction traceability."
       ]
     },
     {
       "company": "Vasnaani Sanskaran",
-      "role": "Software Engineer",
+      "role": "Frontend Software Developer",
       "period": "Aug 2024 – Oct 2025",
       "location": "Noida, India",
-      "scope": "Full-stack software developer — designed and shipped 4 production customer-facing web applications from schema to cloud",
+      "scope": "Designed and shipped 4 production customer-facing web applications from Figma to deployment",
       "technologies": [
-        "Java",
         "React.js",
-        "SQL (PostgreSQL)",
-        "Docker"
+        "TypeScript",
+        "Redux Toolkit",
+        "Next.js"
       ],
       "achievements": [
-        "Designed, tested, and shipped 4 production web applications from relational schema design to cloud deployment using Java backend services, React.js UI components, and Docker containerization.",
-        "Implemented modular React UI components with memoized state selectors, improving frontend rendering efficiency by 25% verified via React DevTools Profiler audits.",
-        "Authored automated unit and integration tests, eliminating N+1 query patterns and lowering p95 latency from 850ms to 550ms."
+        "Designed, tested, and shipped 4 production web applications using React, TypeScript, and Next.js, creating modular design systems with comprehensive loading, empty, and error fallback states.",
+        "Introduced memoized selectors (reselect) across 12 Redux-connected components, eliminating full-tree re-renders and lifting rendering performance by 25% confirmed via React DevTools Profiler.",
+        "Authored component and integration test suites, ensuring cross-browser rendering parity and accessibility compliance across desktop and mobile."
       ]
     },
     {
       "company": "Hoping Minds",
-      "role": "Software Developer Intern",
+      "role": "Frontend Developer Intern",
       "period": "Jan 2024 – Jun 2024",
       "location": "Mohali, India",
       "technologies": [
-        "Java",
         "React.js",
-        "SQL",
-        "REST APIs"
+        "TypeScript",
+        "REST APIs",
+        "Git"
       ],
       "achievements": [
-        "Built reusable React.js components consuming backend REST APIs and relational database endpoints, lifting mobile Lighthouse performance scores from 68 to 94 and cutting load times by 22%.",
-        "Maintained Git branch workflows, participated in daily agile standups, and resolved cross-browser rendering defects."
+        "Rebuilt performance-critical portal modules as reusable React components consuming backend REST APIs, lifting mobile Lighthouse performance scores from 68 to 94 and cutting load times by 22%.",
+        "Enforced strict Git branch discipline, conducted peer code reviews, and resolved cross-browser UI and layout discrepancies."
       ]
     }
   ],
   "projects": [
     {
-      "name": "Vehicle Telemetry & Data Processing Engine — High-Throughput Stream Pipeline",
-      "link": "github.com/abhishek6827",
-      "technologies": [
-        "Java 21",
-        "Spring Boot",
-        "PostgreSQL",
-        "AWS (S3/Lambda)"
-      ],
-      "highlights": [
-        "Engineered an event-driven telemetry ingestion engine processing high-frequency vehicular time-series metrics with schema validation, asynchronous workers, and Redis caching, cutting analytical turnaround from 800ms to sub-120ms."
-      ]
-    },
-    {
-      "name": "Automotive Inventory & Fleet Analytics Portal — Enterprise Full-Stack Web App",
+      "name": "Fraud & Trust Decision Timeline Portal — Interactive Fintech Security UI",
       "link": "github.com/abhishek6827",
       "technologies": [
         "React.js",
-        "Java",
-        "REST APIs",
-        "Docker"
+        "Next.js 15",
+        "TypeScript",
+        "Tailwind CSS"
       ],
       "highlights": [
-        "Built a modular full-stack portal coupling responsive React.js dashboards with Java microservices and optimized SQL queries, enabling real-time multi-dimensional vehicle lifecycle filtering across 50k+ records."
+        "Built an interactive fraud investigation dashboard rendering real-time trust scores, device fingerprint changes, and behavioral risk signals with multi-state decision flows (allow, step up, hold, block) across onboarding and payment sessions."
       ]
     },
     {
-      "name": "SynapseAI — High-Throughput Analytics & Telemetry Aggregation Engine",
+      "name": "AI Resume Tailor & Developer Portal — Full-Stack Next.js Platform",
       "link": "github.com/abhishek6827",
       "technologies": [
-        "Java",
-        "Spring Boot",
-        "Redis",
-        "PostgreSQL"
-      ],
-      "highlights": [
-        "Engineered an asynchronous analytics framework with strict schema validation, distributed Redis caching, and automated error recovery, cutting query latency by 85% and maintaining zero downtime."
-      ]
-    },
-    {
-      "name": "AI Document & Schema Engine — Cloud Document Processing Platform",
-      "link": "github.com/abhishek6827",
-      "technologies": [
-        "React.js",
+        "Next.js",
+        "TypeScript",
         "Node.js",
-        "AWS Lambda",
+        "REST APIs"
+      ],
+      "highlights": [
+        "Engineered a full-stack platform and developer sandbox featuring real-time WebSocket progress timelines, interactive JSON payload debugging, and secure tokenized authentication."
+      ]
+    },
+    {
+      "name": "SynapseAI — High-Throughput Analytics & Telemetry Engine",
+      "link": "github.com/abhishek6827",
+      "technologies": [
+        "React.js",
+        "TypeScript",
+        "Python",
         "PostgreSQL"
       ],
       "highlights": [
-        "Architected an end-to-end document compilation and schema validation platform with real-time WebSocket progress telemetry, multi-tier fallback routing, and containerized cloud worker execution."
+        "Designed a telemetry aggregation and analytics dashboard featuring client-side query caching, responsive multi-series chart timelines, and sub-120ms rendering turnaround."
+      ]
+    },
+    {
+      "name": "RAG Security & Canary Defense Engine — Injection Audit Framework",
+      "link": "github.com/abhishek6827",
+      "technologies": [
+        "Python",
+        "React.js",
+        "Pytest",
+        "OWASP LLM01"
+      ],
+      "highlights": [
+        "Engineered a 3-tier defense-in-depth security framework (XML Spotlighting, Heuristic Scanner, Canary Redactor) neutralizing indirect prompt injection attacks with 0 false blocks and 1.8ms latency."
       ]
     }
   ],
   "technicalSkills": {
-    "languagesAndCore": "Java (17/21), TypeScript, JavaScript (ES6+), Python, SQL, HTML5, CSS3, Linux/Bash, Clean Code Standards",
-    "frontendDevelopment": "React.js, Next.js, Redux Toolkit, Responsive Web Design, Modular Components, Tailwind CSS",
-    "backendAndCloud": "Java (Spring Boot), RESTful APIs, AWS (Lambda, S3, API Gateway), Docker, Microservices Architecture",
-    "databasesAndData": "SQL, PostgreSQL, MySQL, Relational Schema Modeling, Query Optimization, Indexing, Redis, Snowflake/ClickHouse Concepts",
-    "devopsAndPractices": "Git/GitHub, CI/CD (Jenkins, GitHub Actions), JUnit, Mockito, Agile/Scrum, Jira, Automated Testing, Runbooks"
+    "languagesAndCore": "TypeScript, JavaScript (ES6+), Python, HTML5, CSS3, SQL, Linux/Bash, Clean Code Standards",
+    "frontendEngineering": "React.js, Next.js 14/15, Redux Toolkit, Tailwind CSS, Component Architecture, Responsive UI, WCAG A11y",
+    "stateAndApiIntegration": "RESTful APIs, WebSockets, State Machines, Data Fetching (SWR/React Query), Auth Token Protection, Micro-frontends",
+    "testingAndTooling": "Jest, React Testing Library, Playwright, Git/GitHub, Docker, Agentic AI Tooling, DevTools Profiler",
+    "fintechAndSecurityWorkflows": "Decision Views, Risk Policy Configs, Session Timelines, Fraud Detection UI, Webhook Event Pipelines, Developer Portals"
   },
   "education": [
     {

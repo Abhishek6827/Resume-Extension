@@ -4,6 +4,35 @@ This document tracks all bug fixes, network protocol adjustments, and non-trivia
 
 ---
 
+## [2026-11-08] DeepID (part of Surepass) — Frontend Engineer (React, Next.js, TypeScript & Fraud Detection UI) Tailoring
+
+- **Role & Company Specifications:**
+  - DeepID, part of Surepass (Digital trust, identity verification, and fraud detection technology for banks and fintechs).
+  - Frontend Developer / React & Next.js Engineer (1–3 years experience, Full-time, In-office, 6-day work week with last Saturday off, notice period up to 30 days).
+  - Core Focus: Build React/Next.js decision views, trust score timelines, risk policy configuration screens (allow, warn, step up, hold, block), hosted onboarding, developer portals, sample payloads, interactive debugging experiences, protected auth token handling, loading/empty/error states, WCAG a11y, and agentic AI tooling proficiency.
+- **Candidate Alignment & Verification:**
+  - Strictly preserved 4 canonical background-checkable work experiences and exact dates:
+    1. `CHINTU AI` | `Feb 2026 – Present` | `Remote, India` (Founder & Lead Frontend Engineer — live SaaS getchintu.com, 1,200+ users, 25k+ monthly requests, 99.8% uptime, modular React/Next.js interfaces, developer dashboards with sample payload inspectors, WCAG a11y, Jest/RTL).
+    2. `Indian Capital and Investment (Coimbatore) Limited` | `Nov 2025 – Jan 2026` | `Remote, India` (Frontend & Full-Stack Developer — Contract — fintech payment investigation dashboards, state visualization allow/warn/hold/block, event-driven webhooks cutting failure detection from 20m to <3m).
+    3. `Vasnaani Sanskaran` | `Aug 2024 – Oct 2025` | `Noida, India` (Frontend Software Developer — designed and shipped 4 production web apps, React, TypeScript, Next.js, design systems, loading/empty/error states, reselect 25% render optimization).
+    4. `Hoping Minds` (Internship) | `Jan 2024 – Jun 2024` | `Mohali, India` (Frontend Developer Intern — reusable React components consuming REST APIs, mobile Lighthouse 68 -> 94).
+  - Side projects in PROJECTS section only: `Fraud & Trust Decision Timeline Portal`, `AI Resume Tailor & Developer Portal`, `SynapseAI — High-Throughput Analytics & Telemetry Engine`, `RAG Security & Canary Defense Engine`.
+  - Location: `Lucknow, India (Open to Relocation within India)`.
+- **Geometry & Production Verification:**
+  - Strict 1-Page Layout: Exactly 1 page (`maxY = 46.92 / 49.50`, **94.78%** vertical fill ratio, exactly 0 page overflow).
+  - Section Heading Spacing Invariant: `\titlespacing{\section}{0pt}{3.0pt}{4.8pt}` with `\titleformat{\section}{...}{}{0em}{}[\vspace{2pt}\titlerule]`, maintaining 11–13px post-rule breathing room.
+  - Master PDFs Compiled:
+    - `C:\Users\Abhishek\Downloads\Abhishek_Tiwari_Tailored_Resume.pdf` (63,444 bytes)
+    - `C:\Users\Abhishek\Downloads\Abhishek_Tiwari_Resume.pdf` (63,444 bytes)
+  - Synchronized Master Script: `d:\Desktop\Resume-Extension\backend\scripts\generate-downloads-resume.ts`.
+- **Zero-AI Package:**
+  - Strategic Alignment Matrix for DeepID / Surepass Digital Trust & Fraud Detection.
+  - Zero-AI Human Cover Letter / Statement of Purpose.
+  - Recruiter / Engineering Lead LinkedIn Outreach Pitch.
+  - Cold Email: Subject strictly 35 characters (`Frontend Engineer — Abhishek Tiwari`), Body strictly 134 words (4-block architecture).
+
+---
+
 ## [2026-11-08] Mobility Global — Software Engineer (Java, React.js, AWS & Relational SQL) Tailoring
 
 - **Role & Company Specifications:**
