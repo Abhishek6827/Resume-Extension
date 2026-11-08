@@ -128,6 +128,10 @@ export function generateLatex(resume: ResumeData): string {
   // Build the contact string dynamically to avoid dangling separators
   const contactParts: string[] = [];
 
+  if (resume.contact?.location) {
+    contactParts.push(escapeLatex(resume.contact.location));
+  }
+
   if (resume.contact?.phone) {
     contactParts.push(escapeLatex(resume.contact.phone));
   }

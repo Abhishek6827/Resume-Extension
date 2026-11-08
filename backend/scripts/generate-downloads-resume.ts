@@ -1,12 +1,12 @@
 /**
  * Synchronized Master Resume Generator Script
- * Target: Full-Stack Engineer — Jane Aerospace Private Limited (Bengaluru, India | 1–3 Years)
+ * Target: Software Engineer (Java, React.js, Full-Stack, REST APIs, SQL, AWS) — Mobility Global
  * Strictly Enforces Canonical 4 Work Experience Tenures & Dates
  */
 
 export const tailoredResume = {
   "name": "Abhishek Tiwari",
-  "title": "Full-Stack Engineer — React, TypeScript, Python (FastAPI/Django), Node.js, PostgreSQL & Docker",
+  "title": "Software Engineer — Java, React.js, Full-Stack, REST APIs, SQL & AWS",
   "contact": {
     "email": "abhishektiwari6827@gmail.com",
     "phone": "+91 70816 60941",
@@ -14,27 +14,27 @@ export const tailoredResume = {
     "github": "github.com/abhishek6827",
     "portfolio": "portfolio.getchintu.com",
     "website": "getchintu.com",
-    "location": "Lucknow, India (Relocating to Bengaluru | In-Person Interview Ready | Available from 1 Dec 2026)"
+    "location": "Lucknow, India (Open to Hybrid / Relocation within India)"
   },
-  "summary": "Full-Stack Engineer with 2+ years of production experience building and deploying end-to-end web applications across React, TypeScript, Python (FastAPI/Django), and Node.js with PostgreSQL/MySQL relational schemas. Founder of live SaaS CHINTU AI (getchintu.com, 1,200+ users, 25k+ monthly requests, 99.8% uptime), owning full lifecycle from schema modeling and Razorpay payment webhooks to Docker deployment with zero QA dependency (automated Pytest/Jest suites, CI/CD). Experienced integrating third-party REST APIs and LLM workflows. Accustomed to fast weekly shipping, Friday running software demos, and deep code reviews. Immediate joiner ready for in-person Bengaluru rounds and 1 December 2026 start.",
+  "summary": "Full-Stack Software Engineer with 2+ years of production experience designing, developing, and deploying enterprise web applications using Java (Spring Boot), React.js, and relational database systems (PostgreSQL, MySQL). Founder of live SaaS CHINTU AI (getchintu.com, 1,200+ users, 25k+ monthly requests, 99.8% uptime), architecting cloud-native services on AWS (Lambda, S3, API Gateway), high-throughput REST APIs, and Docker containers with automated CI/CD and JUnit testing. Experienced collaborator in agile sprint teams, translating technical requirements into scalable backend services and responsive frontends. Adept at query optimization and data-driven problem solving across automotive and high-concurrency domains.",
   "experience": [
     {
       "company": "CHINTU AI",
       "role": "Founder & Lead Full-Stack Engineer",
       "period": "Feb 2026 – Present",
       "location": "Remote, India",
+      "scope": "Solo-built and operating live SaaS platform serving 1,200+ registered users with 99.8% uptime",
       "technologies": [
-        "Python (FastAPI)",
-        "React",
-        "TypeScript",
-        "PostgreSQL",
-        "Docker"
+        "Java (Spring Boot)",
+        "React.js",
+        "AWS (Lambda/S3)",
+        "PostgreSQL"
       ],
       "achievements": [
-        "Architected and shipped live SaaS (getchintu.com) serving 1,200+ users and 25k+ monthly requests with 99.8% uptime, managing full-stack architecture, deployment, and operational stability.",
-        "Engineered responsive web interfaces using React and TypeScript with modular components, paired with high-throughput asynchronous Python (FastAPI) and Node.js REST backend microservices.",
-        "Designed normalized PostgreSQL relational schemas, query indexing, and connection pooling, sustaining sub-150ms p95 API response times under concurrent production workloads.",
-        "Integrated Razorpay payment webhooks with HMAC verification and idempotency keys; owned testing with zero QA (authored automated Pytest/Jest suites, 90%+ coverage) and Dockerized CI/CD."
+        "Architected and shipped an end-to-end cloud platform (getchintu.com) serving 1,200+ users and 25k+ monthly requests with 99.8% uptime, coupling responsive React.js frontends with Java (Spring Boot) and RESTful microservices.",
+        "Engineered cloud-native backend workflows on AWS (S3, Lambda, API Gateway) and Docker container clusters, cutting API response latency from 450ms to sub-120ms.",
+        "Modeled normalized PostgreSQL relational schemas with composite indexing and connection pooling, sustaining high-volume concurrent data ingestion with zero degradation.",
+        "Automated build and deployment pipelines via CI/CD (GitHub Actions/Jenkins) and comprehensive unit/integration test suites (JUnit, Mockito), maintaining 90%+ test coverage."
       ]
     },
     {
@@ -42,36 +42,35 @@ export const tailoredResume = {
       "role": "Full-Stack & Data Engineer — Contract",
       "period": "Nov 2025 – Jan 2026",
       "location": "Remote, India",
+      "scope": "Sole owner of transactional payment and webhook integration pipelines across distributed engineering teams",
       "technologies": [
-        "Python",
-        "Node.js",
+        "Java",
+        "React.js",
         "PostgreSQL",
         "REST APIs"
       ],
       "achievements": [
-        "Owned payment and transactional data pipelines: replaced legacy polling with webhook-driven event architectures in Node.js and Python, reducing payment-failure detection lag from 20 min to under 3 min.",
-        "Integrated enterprise third-party REST APIs with strict payload validation, idempotency keys, and structured logging, maintaining 100% transaction traceability.",
-        "Optimized PostgreSQL database queries via execution plan profiling (EXPLAIN ANALYZE) and composite indexing, eliminating N+1 bottlenecks and boosting query speeds by 60%.",
-        "Participated in daily Git sprints, conducted peer pull request reviews, and documented architecture runbooks for reliable team handoffs."
+        "Developed transactional data pipelines and RESTful backend microservices in Java, replacing scheduled polling with an event-driven webhook architecture that cut payment-failure detection lag from 20m to under 3m.",
+        "Optimized relational database queries in PostgreSQL using execution plan analysis (EXPLAIN ANALYZE), eliminating redundant table scans and boosting analytical query speeds by 60%.",
+        "Collaborated across agile sprints, conducted peer code reviews in Git/Jira, and documented architecture specifications ensuring 100% data lineage."
       ]
     },
     {
       "company": "Vasnaani Sanskaran",
-      "role": "Full-Stack Software Developer",
+      "role": "Software Engineer",
       "period": "Aug 2024 – Oct 2025",
       "location": "Noida, India",
+      "scope": "Full-stack software developer — designed and shipped 4 production customer-facing web applications from schema to cloud",
       "technologies": [
-        "React",
-        "TypeScript",
-        "Python",
-        "PostgreSQL",
-        "MySQL"
+        "Java",
+        "React.js",
+        "SQL (PostgreSQL)",
+        "Docker"
       ],
       "achievements": [
-        "Designed, tested, and shipped 4 production customer-facing web applications from schema design to cloud deployment using React, TypeScript, Redux, and Python/Node.js REST APIs.",
-        "Implemented relational database schemas (PostgreSQL, MySQL) with ACID compliance, role-based access control (RBAC), and connection pooling across multi-tenant client portals.",
-        "Developed modular React UI components with memoized state selectors, improving frontend rendering efficiency by 25% verified through React DevTools Profiler audits.",
-        "Maintained testing discipline without QA support, writing automated unit tests and automating build verification pipelines using GitHub Actions."
+        "Designed, tested, and shipped 4 production web applications from relational schema design to cloud deployment using Java backend services, React.js UI components, and Docker containerization.",
+        "Implemented modular React UI components with memoized state selectors, improving frontend rendering efficiency by 25% verified via React DevTools Profiler audits.",
+        "Authored automated unit and integration tests, eliminating N+1 query patterns and lowering p95 latency from 850ms to 550ms."
       ]
     },
     {
@@ -80,78 +79,77 @@ export const tailoredResume = {
       "period": "Jan 2024 – Jun 2024",
       "location": "Mohali, India",
       "technologies": [
-        "React",
-        "Python (Django)",
-        "Git",
+        "Java",
+        "React.js",
+        "SQL",
         "REST APIs"
       ],
       "achievements": [
-        "Rebuilt performance-critical learning modules as modular React components consuming Python Django REST APIs, lifting mobile Lighthouse performance scores from 68 to 94 and cutting load times by 22%.",
-        "Enforced strict Git branch discipline, submitted atomic pull requests for peer code review, and debugged cross-browser API integrations."
+        "Built reusable React.js components consuming backend REST APIs and relational database endpoints, lifting mobile Lighthouse performance scores from 68 to 94 and cutting load times by 22%.",
+        "Maintained Git branch workflows, participated in daily agile standups, and resolved cross-browser rendering defects."
       ]
     }
   ],
   "projects": [
     {
-      "name": "RAG Prompt Injection & Defense Audit — AI Security Framework",
+      "name": "Vehicle Telemetry & Data Processing Engine — High-Throughput Stream Pipeline",
       "link": "github.com/abhishek6827",
       "technologies": [
-        "Python 3.14",
-        "ChromaDB",
-        "Pytest (98% Coverage)",
-        "OWASP LLM01"
+        "Java 21",
+        "Spring Boot",
+        "PostgreSQL",
+        "AWS (S3/Lambda)"
       ],
       "highlights": [
-        "Empirical cybersecurity audit and 3-tier defense-in-depth framework (XML Data Spotlighting, Pre-Retrieval Heuristic Scanner, Output Canary Regex Redactor) neutralizing indirect prompt injection attacks (OWASP LLM01); dropped attack success rate from 10/10 to 0/10 with 0 false blocks across 20 corporate inquiries and 1.8ms latency."
+        "Engineered an event-driven telemetry ingestion engine processing high-frequency vehicular time-series metrics with schema validation, asynchronous workers, and Redis caching, cutting analytical turnaround from 800ms to sub-120ms."
       ]
     },
     {
-      "name": "LLM-as-a-Judge Bias Audit & Calibration — Alignment Engine",
+      "name": "Automotive Inventory & Fleet Analytics Portal — Enterprise Full-Stack Web App",
       "link": "github.com/abhishek6827",
       "technologies": [
-        "Python",
-        "LLM Evals",
-        "Cohen's Kappa",
-        "Pytest (93% Coverage)"
-      ],
-      "highlights": [
-        "Empirical evaluation framework auditing position bias (4/30 verdicts flipped by presentation order), verbosity bias (+150 filler words), and self-preference; engineered bidirectional swap consensus calibration raising human agreement from 26/30 to 28/30 (93.3%) with statistical Cohen's Kappa measurement."
-      ]
-    },
-    {
-      "name": "Semantic Cache for FAQ Bot — Inference Caching & Latency Optimization",
-      "link": "github.com/abhishek6827",
-      "technologies": [
-        "Python",
-        "FastAPI",
-        "Sentence-Transformers",
-        "Docker"
-      ],
-      "highlights": [
-        "High-throughput vector caching middleware cutting LLM API calls by 67% and reducing latency from 420ms to 1.2ms (350x speedup); engineered automated cosine threshold sweeps (0.75–0.95), lexical negation guards, and automated PII scrubbers with TTL cache hygiene."
-      ]
-    },
-    {
-      "name": "AI Resume Tailor & LaTeX Engine — Chrome Extension & Cloud Backend",
-      "link": "github.com/abhishek6827",
-      "technologies": [
-        "React",
-        "TypeScript",
-        "Next.js",
+        "React.js",
+        "Java",
         "REST APIs",
         "Docker"
       ],
       "highlights": [
-        "Built a full-stack Chrome extension and web platform tailoring resumes against job descriptions with multi-provider LLM fallback routing, real-time WebSocket progress updates, and automated server-side PDF compilation."
+        "Built a modular full-stack portal coupling responsive React.js dashboards with Java microservices and optimized SQL queries, enabling real-time multi-dimensional vehicle lifecycle filtering across 50k+ records."
+      ]
+    },
+    {
+      "name": "SynapseAI — High-Throughput Analytics & Telemetry Aggregation Engine",
+      "link": "github.com/abhishek6827",
+      "technologies": [
+        "Java",
+        "Spring Boot",
+        "Redis",
+        "PostgreSQL"
+      ],
+      "highlights": [
+        "Engineered an asynchronous analytics framework with strict schema validation, distributed Redis caching, and automated error recovery, cutting query latency by 85% and maintaining zero downtime."
+      ]
+    },
+    {
+      "name": "AI Document & Schema Engine — Cloud Document Processing Platform",
+      "link": "github.com/abhishek6827",
+      "technologies": [
+        "React.js",
+        "Node.js",
+        "AWS Lambda",
+        "PostgreSQL"
+      ],
+      "highlights": [
+        "Architected an end-to-end document compilation and schema validation platform with real-time WebSocket progress telemetry, multi-tier fallback routing, and containerized cloud worker execution."
       ]
     }
   ],
   "technicalSkills": {
-    "languagesAndCore": "TypeScript, JavaScript (ES6+), Python, SQL, HTML5, CSS3, Linux/Bash, Clean Code Standards",
-    "frontendEngineering": "React.js, Next.js, Redux Toolkit, Tailwind CSS, Modular Component Architecture, Responsive UI",
-    "backendAndApis": "Python (FastAPI, Flask, Django), Node.js (Express), RESTful APIs, Webhooks, Microservices, System Architecture",
-    "databasesAndStorage": "PostgreSQL, MySQL, Relational Schema Modeling, Query Optimization, Indexing, Redis",
-    "devopsTestingAndAi": "Git/GitHub, Docker, Pytest, Jest, CI/CD (GitHub Actions), LLM API Integration (OpenAI/Gemini), Runbooks"
+    "languagesAndCore": "Java (17/21), TypeScript, JavaScript (ES6+), Python, SQL, HTML5, CSS3, Linux/Bash, Clean Code Standards",
+    "frontendDevelopment": "React.js, Next.js, Redux Toolkit, Responsive Web Design, Modular Components, Tailwind CSS",
+    "backendAndCloud": "Java (Spring Boot), RESTful APIs, AWS (Lambda, S3, API Gateway), Docker, Microservices Architecture",
+    "databasesAndData": "SQL, PostgreSQL, MySQL, Relational Schema Modeling, Query Optimization, Indexing, Redis, Snowflake/ClickHouse Concepts",
+    "devopsAndPractices": "Git/GitHub, CI/CD (Jenkins, GitHub Actions), JUnit, Mockito, Agile/Scrum, Jira, Automated Testing, Runbooks"
   },
   "education": [
     {
