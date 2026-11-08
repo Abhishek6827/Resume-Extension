@@ -572,3 +572,56 @@ export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse>
     throw err;
   }
 }
+
+/**
+ * Call LLM with dedicated Cover Letter & Outreach fallback sequence:
+ * 1. Try selected primary model
+ * 2. On token limit / rate limit / transient error, fallback to Groq Qwen 3.8 (groq:qwen/qwen3.8-27b)
+ * 3. Fallback to Groq GPT-OSS 120B (groq:openai/gpt-oss-120b)
+ * 4. If both hit limits, retry with exponential backoff (up to 3 retries)
+ */
+export async function callOutreachLLMWithFallback(options: LLMCallOptions): Promise<LLMResponse> {
+  const primaryModel = options.modelSelection?.primaryModel || "groq:openai/gpt-oss-120b";
+  const fallbackCandidates = ["groq:qwen/qwen3.8-27b", "groq:openai/gpt-oss-120b"];
+
+  // 1. Try primary model first
+  try {
+    console.log(`[Outreach LLM] Attempting primary model: ${primaryModel}...`);
+    return await tryProvider(options, primaryModel);
+  } catch (err: any) {
+    const errMsg = err?.message || String(err);
+    console.warn(`[Outreach LLM] Primary model ${primaryModel} failed: ${errMsg.slice(0, 100)}. Entering fallback sequence...`);
+  }
+
+  // 2. Try fallbacks (excluding primary if already attempted)
+  const modelsToTry = fallbackCandidates.filter((m) => m !== primaryModel);
+  for (const model of modelsToTry) {
+    try {
+      console.log(`[Outreach LLM] Attempting fallback model: ${model}...`);
+      return await tryProvider(options, model);
+    } catch (err: any) {
+      const errMsg = err?.message || String(err);
+      console.warn(`[Outreach LLM] Fallback model ${model} failed: ${errMsg.slice(0, 100)}.`);
+    }
+  }
+
+  // 3. Both models hit limits / failed: Enter retry loop with exponential backoff
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const delay = attempt * 2500;
+    console.warn(`[Outreach LLM] All models exhausted. Retrying fallback models in ${delay}ms (Attempt ${attempt}/${maxRetries})...`);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+
+    for (const model of fallbackCandidates) {
+      try {
+        console.log(`[Outreach LLM Retry ${attempt}] Trying model: ${model}...`);
+        return await tryProvider(options, model);
+      } catch (retryErr: any) {
+        console.warn(`[Outreach LLM Retry ${attempt}] Model ${model} failed: ${retryErr?.message || retryErr}`);
+      }
+    }
+  }
+
+  throw new Error("Outreach LLM generation failed after all fallbacks and retries were exhausted.");
+}
+

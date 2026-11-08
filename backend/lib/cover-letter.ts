@@ -1,4 +1,4 @@
-import { callLLM } from "./llm-client";
+import { callOutreachLLMWithFallback } from "./llm-client";
 import type { ResumeData, JDData, ModelSelection } from "./types";
 
 function formatJdSection(jd: JDData | string): string {
@@ -80,7 +80,7 @@ ${resumeBlock}
 Please write the cover letter now. Only output the cover letter text, no other conversation.
 `;
 
-  const response = await callLLM({
+  const response = await callOutreachLLMWithFallback({
     systemPrompt,
     userMessage,
     modelSelection,

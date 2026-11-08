@@ -4,6 +4,66 @@ This document tracks all bug fixes, network protocol adjustments, and non-trivia
 
 ---
 
+## [2026-11-08] Application Outreach & Career Portal Q&A Suite Integration
+
+- **Feature Description & Objectives:**
+  - Integrated complete job application outreach pipeline following Cover Letter generation:
+    1. **Cold Application Email:** Subject line strictly 35–50 characters; body strictly 100–160 words, 4-block format, single-screen mobile fit.
+    2. **LinkedIn Connection Request Note:** Exactly one message strictly $\le 300$ characters, peer-to-peer tone without generic corporate flattery.
+    3. **WhatsApp Recruiter/Founder Message:** 3–4 lines, direct proof of craft (`getchintu.com`), portfolio link (`portfolio.getchintu.com`), and open chat CTA.
+    4. **Contact Form Pitch / Short Bio:** High-density 50–80 words pitch for generic application textboxes.
+    5. **Career Portal Custom Q&A Assistant:** On-demand question answerer taking arbitrary application questions/prompts (e.g. "What products have you built? Give description and live links") and generating 100% human-crafted, verified answers.
+- **Sequential Auto-Chaining & Fallback Mechanism:**
+  - **Sequential Chaining:** When Cover Letter completes (via button or parallel resume tailoring), the Outreach Pack automatically kicks off sequentially.
+  - **Token Limit & Quota Fallback:** Added `callOutreachLLMWithFallback` in `backend/lib/llm-client.ts`:
+    - Primary Model $\rightarrow$ Fallback 1: `groq:qwen/qwen3.8-27b` $\rightarrow$ Fallback 2: `groq:openai/gpt-oss-120b`.
+    - If both hit token/rate limits: 3 automatic retries with exponential backoff (2.5s, 5s, 7.5s).
+- **Files Modified & Created:**
+  - `backend/lib/application-outreach.ts` (New): Core prompt logic, Zero-AI guard, canonical fact grounding, outreach pack generator, and portal question answerer.
+  - `backend/app/api/generate-outreach-pack/route.ts` (New): REST endpoint for outreach pack generation.
+  - `backend/app/api/answer-portal-question/route.ts` (New): REST endpoint for custom career portal questions.
+  - `backend/lib/llm-client.ts`: Added `callOutreachLLMWithFallback` with Qwen 3.8 / GPT-OSS 120B fallback and retry backoff loop.
+  - `backend/lib/cover-letter.ts`: Routed cover letter generation through `callOutreachLLMWithFallback`.
+  - `backend/app/page.tsx`: Extended UI with tabbed outreach suite, sequential step indicators, 1-click copy buttons, character/word counters, and interactive Portal Q&A Assistant.
+  - `backend/scripts/test-outreach.ts` (New): End-to-end integration test verifying pack generation and question answering against live models.
+- **Architectural Invariants Established:**
+  - Absolute ban on AI buzzwords (`delve`, `crucial`, `pivotal`, `testament`, `tapestry`, `multifaceted`, `landscape`, `furthermore`, `moreover`, `in conclusion`, `robust`, `nuanced`, `aligns with`, `synergy`).
+  - Strict grounding in Abhishek Tiwari's verified profile facts (`CHINTU AI`, `ICICL`, `Vasnaani Sanskaran`, `Hoping Minds`, `portfolio.getchintu.com`, `getchintu.com`).
+  - LinkedIn connection notes strictly $\le 300$ characters.
+  - LocalStorage persistence for all outreach and portal Q&A fields.
+
+---
+
+## [2026-11-08] Tata Communications — Full Stack Developer (React.js, Node.js, Java, Python, MySQL & Zabbix) Tailoring
+
+- **Role & Company Specifications:**
+  - Tata Communications (Enterprise digital communications, cloud, mobility, IoT, collaboration, security, network services).
+  - Full Stack Developer (1–4 Years Experience, Full Time).
+  - Culture / Values: DRIVE AHEAD (Accountability & Ownership, Collaboration, Agility, Can-Do Attitude, Innovation & Problem-Solving, Continuous Learning).
+  - Core Stack: React.js frontend, Node.js backend, Java (Maven) and Python RESTful APIs, MySQL & PostgreSQL database design, query optimization, security, and data integrity; Zabbix/telemetry monitoring; clean reusable code, version control (Git), automated testing.
+- **Candidate Alignment & Verification:**
+  - Strictly preserved 4 canonical background-checkable work experiences and exact dates:
+    1. `CHINTU AI` | `Feb 2026 – Present` | `Remote, India` (Founder & Lead Full Stack Engineer — live SaaS getchintu.com, 1,200+ users, 25k+ monthly requests, 99.8% uptime, React.js frontends, Node.js & Python REST microservices, normalized MySQL/PostgreSQL databases, Razorpay HMAC webhooks).
+    2. `Indian Capital and Investment (Coimbatore) Limited` | `Nov 2025 – Jan 2026` | `Remote, India` (Full Stack & Data Engineer — Contract — Java Maven & Node.js backend services, event-driven webhooks cutting failure detection from 20m to <3m, PostgreSQL query execution plan profiling).
+    3. `Vasnaani Sanskaran` | `Aug 2024 – Oct 2025` | `Noida, India` (Full Stack Software Developer — designed and shipped 4 production web apps, React.js, Node.js, Java, MySQL/PostgreSQL, 25% render optimization via memoized selectors).
+    4. `Hoping Minds` (Internship) | `Jan 2024 – Jun 2024` | `Mohali, India` (Software Developer Intern — reusable React.js components consuming Python REST APIs and MySQL backends, mobile Lighthouse 68 -> 94).
+  - Side projects in PROJECTS section only: `Network Telemetry & Infrastructure Monitoring Engine`, `AI Resume Tailor & LaTeX Cloud Platform`, `SynapseAI — High-Throughput Analytics & Telemetry Engine`, `RAG Security & Canary Defense Framework`.
+  - Location: `Lucknow, India (Open to Relocation within India)`.
+- **Geometry & Production Verification:**
+  - Strict 1-Page Layout: Exactly 1 page (`maxY = 46.92 / 49.50`, **94.78%** vertical fill ratio, exactly 0 page overflow).
+  - Section Heading Spacing Invariant: `\titlespacing{\section}{0pt}{3.0pt}{4.8pt}` with `\titleformat{\section}{...}{}{0em}{}[\vspace{2pt}\titlerule]`, maintaining 11–13px post-rule breathing room.
+  - Master PDFs Compiled:
+    - `C:\Users\Abhishek\Downloads\Abhishek_Tiwari_Tailored_Resume.pdf` (62,359 bytes)
+    - `C:\Users\Abhishek\Downloads\Abhishek_Tiwari_Resume.pdf` (62,359 bytes)
+  - Synchronized Master Script: `d:\Desktop\Resume-Extension\backend\scripts\generate-downloads-resume.ts`.
+- **Zero-AI Package:**
+  - Strategic Alignment Matrix for Tata Communications Enterprise Full Stack.
+  - Zero-AI Human Cover Letter / Statement of Purpose.
+  - Recruiter / Engineering Lead LinkedIn Outreach Pitch.
+  - Cold Email: Subject strictly 39 characters (`Full Stack Developer — Abhishek Tiwari`), Body strictly 134 words (4-block architecture).
+
+---
+
 ## [2026-11-08] DeepID (part of Surepass) — Frontend Engineer (React, Next.js, TypeScript & Fraud Detection UI) Tailoring
 
 - **Role & Company Specifications:**

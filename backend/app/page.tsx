@@ -1759,6 +1759,23 @@ export default function Home() {
   const [hasCopiedCL, setHasCopiedCL] = useState<boolean>(false);
   const coverLetterTextareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Outreach pack states
+  const [emailSubject, setEmailSubject] = useState<string>("");
+  const [emailBody, setEmailBody] = useState<string>("");
+  const [linkedinNote, setLinkedinNote] = useState<string>("");
+  const [whatsappMsg, setWhatsappMsg] = useState<string>("");
+  const [contactFormNote, setContactFormNote] = useState<string>("");
+  const [isGeneratingOutreach, setIsGeneratingOutreach] = useState<boolean>(false);
+  const [outreachError, setOutreachError] = useState<string>("");
+  const [activeOutreachTab, setActiveOutreachTab] = useState<"email" | "linkedin" | "whatsapp" | "contact_form" | "portal_qa">("email");
+  const [copiedOutreachField, setCopiedOutreachField] = useState<string>("");
+
+  // Career Portal Question Assistant states
+  const [portalQuestion, setPortalQuestion] = useState<string>("");
+  const [portalAnswer, setPortalAnswer] = useState<string>("");
+  const [isAnsweringQuestion, setIsAnsweringQuestion] = useState<boolean>(false);
+  const [portalQuestionError, setPortalQuestionError] = useState<string>("");
+
   // Voice notification on resume generation completion (works even when Chrome is minimized)
   // ponytail: keeps utterance ref alive to dodge Chrome GC bug; retries once if voices aren't loaded yet
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -1888,6 +1905,21 @@ export default function Home() {
 
     const savedCL = localStorage.getItem("savedCoverLetter");
     if (savedCL) setCoverLetter(stripMarkdownFormatting(savedCL));
+
+    const savedEmailSub = localStorage.getItem("savedEmailSubject");
+    if (savedEmailSub) setEmailSubject(savedEmailSub);
+    const savedEmailBdy = localStorage.getItem("savedEmailBody");
+    if (savedEmailBdy) setEmailBody(savedEmailBdy);
+    const savedLi = localStorage.getItem("savedLinkedinNote");
+    if (savedLi) setLinkedinNote(savedLi);
+    const savedWa = localStorage.getItem("savedWhatsappMsg");
+    if (savedWa) setWhatsappMsg(savedWa);
+    const savedCf = localStorage.getItem("savedContactFormNote");
+    if (savedCf) setContactFormNote(savedCf);
+    const savedPq = localStorage.getItem("savedPortalQuestion");
+    if (savedPq) setPortalQuestion(savedPq);
+    const savedPa = localStorage.getItem("savedPortalAnswer");
+    if (savedPa) setPortalAnswer(savedPa);
   }, []);
 
   // Save states to localStorage on changes
@@ -1961,6 +1993,41 @@ export default function Home() {
     }
   }, [coverLetter]);
 
+  useEffect(() => {
+    if (emailSubject) localStorage.setItem("savedEmailSubject", emailSubject);
+    else localStorage.removeItem("savedEmailSubject");
+  }, [emailSubject]);
+
+  useEffect(() => {
+    if (emailBody) localStorage.setItem("savedEmailBody", emailBody);
+    else localStorage.removeItem("savedEmailBody");
+  }, [emailBody]);
+
+  useEffect(() => {
+    if (linkedinNote) localStorage.setItem("savedLinkedinNote", linkedinNote);
+    else localStorage.removeItem("savedLinkedinNote");
+  }, [linkedinNote]);
+
+  useEffect(() => {
+    if (whatsappMsg) localStorage.setItem("savedWhatsappMsg", whatsappMsg);
+    else localStorage.removeItem("savedWhatsappMsg");
+  }, [whatsappMsg]);
+
+  useEffect(() => {
+    if (contactFormNote) localStorage.setItem("savedContactFormNote", contactFormNote);
+    else localStorage.removeItem("savedContactFormNote");
+  }, [contactFormNote]);
+
+  useEffect(() => {
+    if (portalQuestion) localStorage.setItem("savedPortalQuestion", portalQuestion);
+    else localStorage.removeItem("savedPortalQuestion");
+  }, [portalQuestion]);
+
+  useEffect(() => {
+    if (portalAnswer) localStorage.setItem("savedPortalAnswer", portalAnswer);
+    else localStorage.removeItem("savedPortalAnswer");
+  }, [portalAnswer]);
+
   const handleLatexChange = (val: string) => {
     setLatexText(val);
     if (val) {
@@ -1996,6 +2063,16 @@ export default function Home() {
     setCoverLetter("");
     setClError("");
 
+    setEmailSubject("");
+    setEmailBody("");
+    setLinkedinNote("");
+    setWhatsappMsg("");
+    setContactFormNote("");
+    setOutreachError("");
+    setPortalQuestion("");
+    setPortalAnswer("");
+    setPortalQuestionError("");
+
     if (clearInputs) {
       setJdText("");
       setClJdText("");
@@ -2015,6 +2092,13 @@ export default function Home() {
     localStorage.removeItem("jobTitle");
     localStorage.removeItem("generatedLatexLength");
     localStorage.removeItem("savedCoverLetter");
+    localStorage.removeItem("savedEmailSubject");
+    localStorage.removeItem("savedEmailBody");
+    localStorage.removeItem("savedLinkedinNote");
+    localStorage.removeItem("savedWhatsappMsg");
+    localStorage.removeItem("savedContactFormNote");
+    localStorage.removeItem("savedPortalQuestion");
+    localStorage.removeItem("savedPortalAnswer");
   };
 
   const handleJdChange = (val: string) => {
@@ -2061,12 +2145,119 @@ export default function Home() {
       }
 
       const { content } = await clRes.json();
-      setCoverLetter(stripMarkdownFormatting(content));
+      const cleanCl = stripMarkdownFormatting(content);
+      setCoverLetter(cleanCl);
+      handleGenerateOutreach(cleanCl);
     } catch (err: any) {
       console.error(err);
       setClError(err.message || "Failed to generate cover letter.");
     } finally {
       setIsGeneratingCL(false);
+    }
+  };
+
+  const copyOutreachText = async (text: string, fieldId: string) => {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedOutreachField(fieldId);
+      setTimeout(() => setCopiedOutreachField(""), 2000);
+    } catch (err) {
+      console.error("Copy failed", err);
+    }
+  };
+
+  const buildOutreachPayload = (overrideCL?: string) => {
+    const clSource = overrideCL || coverLetter;
+    const jdSource = clJdText.trim() || jdText.trim();
+    const selectedTailored = tailoredResumes[selectedResultIndex];
+    const tailoredLatex = selectedTailored?.latex?.trim();
+    const candidateName = selectedTailored?.candidateName || extractCandidateNameFromLatex(tailoredLatex || latexText) || "Abhishek Tiwari";
+
+    const payload: any = {
+      rawJdText: jdSource,
+      coverLetter: clSource,
+      modelSelection: { primaryModel: coverLetterModel },
+      candidateName,
+    };
+    if (tailoredLatex) payload.resumeText = tailoredLatex;
+    else if (latexText.trim()) payload.resumeText = latexText.trim();
+    return payload;
+  };
+
+  const handleGenerateOutreach = async (overrideCL?: string) => {
+    const clSource = overrideCL || coverLetter;
+    const jdSource = clJdText.trim() || jdText.trim();
+    if (!jdSource && !clSource) return;
+
+    setIsGeneratingOutreach(true);
+    setOutreachError("");
+    try {
+      const payload = buildOutreachPayload(overrideCL);
+      const res = await fetch(`${API_BASE_URL}/api/generate-outreach-pack`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to generate outreach package.");
+      }
+      const { outreach } = await res.json();
+      if (outreach) {
+        if (outreach.email?.subject) setEmailSubject(outreach.email.subject);
+        if (outreach.email?.body) setEmailBody(outreach.email.body);
+        if (outreach.linkedinConnectionNote) setLinkedinNote(outreach.linkedinConnectionNote);
+        if (outreach.whatsappMessage) setWhatsappMsg(outreach.whatsappMessage);
+        if (outreach.contactFormNote) setContactFormNote(outreach.contactFormNote);
+      }
+    } catch (err: any) {
+      console.error("[handleGenerateOutreach] Error:", err);
+      setOutreachError(err.message || "Failed to generate outreach pack.");
+    } finally {
+      setIsGeneratingOutreach(false);
+    }
+  };
+
+  const handleAnswerPortalQuestion = async () => {
+    if (!portalQuestion.trim()) {
+      setPortalQuestionError("Please enter an application question or prompt.");
+      return;
+    }
+    setIsAnsweringQuestion(true);
+    setPortalQuestionError("");
+    try {
+      const selectedTailored = tailoredResumes[selectedResultIndex];
+      const tailoredLatex = selectedTailored?.latex?.trim();
+      const candidateName = selectedTailored?.candidateName || extractCandidateNameFromLatex(tailoredLatex || latexText) || "Abhishek Tiwari";
+
+      const payload: any = {
+        question: portalQuestion.trim(),
+        rawJdText: clJdText.trim() || jdText.trim(),
+        coverLetter,
+        skillBank,
+        modelSelection: { primaryModel: coverLetterModel },
+        candidateName,
+      };
+      if (tailoredLatex) payload.resumeText = tailoredLatex;
+      else if (latexText.trim()) payload.resumeText = latexText.trim();
+
+      const res = await fetch(`${API_BASE_URL}/api/answer-portal-question`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to answer portal question.");
+      }
+      const { answer } = await res.json();
+      setPortalAnswer(answer || "");
+    } catch (err: any) {
+      console.error("[handleAnswerPortalQuestion] Error:", err);
+      setPortalQuestionError(err.message || "Failed to generate answer.");
+    } finally {
+      setIsAnsweringQuestion(false);
     }
   };
 
@@ -2432,7 +2623,9 @@ export default function Home() {
             throw new Error(errData.error || "Failed to generate cover letter.");
           }
           const { content } = await clRes.json();
-          setCoverLetter(stripMarkdownFormatting(content));
+          const cleanCl = stripMarkdownFormatting(content);
+          setCoverLetter(cleanCl);
+          handleGenerateOutreach(cleanCl);
         } catch (err: any) {
           console.error("[parallel-cover-letter] Error:", err);
           setClError(err.message || "Cover letter generation failed.");
@@ -3533,6 +3726,355 @@ export default function Home() {
                 <span>Download PDF</span>
               </button>
             </div>
+          </div>
+
+          {/* Application Outreach & Career Portal Q&A Suite Section */}
+          <div className="w-full mt-6 sm:mt-8 p-4 sm:p-6 bg-slate-50/90 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 rounded-2xl sm:rounded-3xl relative overflow-hidden flex flex-col gap-4 sm:gap-6 shadow-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex flex-col">
+                <h2 className="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                  <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                  <span>Application Outreach & Portal Q&A Suite</span>
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  100% human-written outreach pack (Email, LinkedIn, WhatsApp, Form pitch) + Custom Portal Question Assistant.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleGenerateOutreach()}
+                  disabled={isGeneratingOutreach || isGeneratingCL || (!clJdText && !jdText && !coverLetter)}
+                  className="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 border border-indigo-200 dark:border-indigo-500/20 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm active:scale-95"
+                >
+                  {isGeneratingOutreach ? (
+                    <>
+                      <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
+                      <span>Generating Outreach...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                      <span>Regenerate Outreach</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Sequential Progress Banner */}
+            {isGeneratingOutreach && (
+              <div className="p-3 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-xl flex items-center gap-3 text-indigo-700 dark:text-indigo-300 animate-pulse text-xs sm:text-sm font-semibold">
+                <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
+                <span>Sequential Step 2/2: Generating Cold Email, LinkedIn Note, WhatsApp & Contact Form pitch...</span>
+              </div>
+            )}
+
+            {outreachError && (
+              <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl flex items-start gap-2.5 text-red-600 dark:text-red-400 text-xs sm:text-sm">
+                <svg className="w-5 h-5 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                <div className="flex flex-col">
+                  <span className="font-semibold">Outreach Generation Error</span>
+                  <span className="text-[11px] opacity-80 mt-0.5">{outreachError}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Tab Navigation */}
+            <div className="flex flex-wrap gap-2 border-b border-slate-200 dark:border-white/10 pb-2">
+              <button
+                type="button"
+                onClick={() => setActiveOutreachTab("email")}
+                className={`px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeOutreachTab === "email"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
+                    : "bg-white dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-white/5"
+                }`}
+              >
+                <span>📧 Cold Email</span>
+                {emailBody && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveOutreachTab("linkedin")}
+                className={`px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeOutreachTab === "linkedin"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
+                    : "bg-white dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-white/5"
+                }`}
+              >
+                <span>💼 LinkedIn Note</span>
+                {linkedinNote && (
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-semibold ${linkedinNote.length <= 300 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300" : "bg-red-100 text-red-700"}`}>
+                    {linkedinNote.length}/300
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveOutreachTab("whatsapp")}
+                className={`px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeOutreachTab === "whatsapp"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
+                    : "bg-white dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-white/5"
+                }`}
+              >
+                <span>💬 WhatsApp Msg</span>
+                {whatsappMsg && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveOutreachTab("contact_form")}
+                className={`px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeOutreachTab === "contact_form"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
+                    : "bg-white dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-white/5"
+                }`}
+              >
+                <span>📝 Contact Form Pitch</span>
+                {contactFormNote && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveOutreachTab("portal_qa")}
+                className={`px-3.5 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeOutreachTab === "portal_qa"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20"
+                    : "bg-white dark:bg-slate-950/40 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-white/5"
+                }`}
+              >
+                <span>❓ Career Portal Q&A</span>
+                {portalAnswer && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>}
+              </button>
+            </div>
+
+            {/* Tab 1: Cold Email */}
+            {activeOutreachTab === "email" && (
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                      <span>Subject Line (Strictly 35–50 chars)</span>
+                      {emailSubject && (
+                        <span className={`text-[11px] font-mono ${emailSubject.length >= 35 && emailSubject.length <= 50 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-500"}`}>
+                          {emailSubject.length} chars
+                        </span>
+                      )}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => copyOutreachText(emailSubject, "emailSubject")}
+                      disabled={!emailSubject}
+                      className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-semibold flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                    >
+                      {copiedOutreachField === "emailSubject" ? "✓ Copied Subject" : "Copy Subject"}
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={emailSubject}
+                    onChange={(e) => setEmailSubject(e.target.value)}
+                    placeholder="e.g. Full Stack Developer — Abhishek Tiwari"
+                    className="w-full bg-white dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500/50 font-mono"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                      <span>Email Body (100–160 words, 4 blocks)</span>
+                      {emailBody && (
+                        <span className="text-[11px] font-mono font-normal text-slate-500">
+                          {emailBody.trim().split(/\s+/).filter(Boolean).length} words
+                        </span>
+                      )}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => copyOutreachText(emailBody, "emailBody")}
+                      disabled={!emailBody}
+                      className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-semibold flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                    >
+                      {copiedOutreachField === "emailBody" ? "✓ Copied Body" : "Copy Email Body"}
+                    </button>
+                  </div>
+                  <textarea
+                    value={emailBody}
+                    onChange={(e) => setEmailBody(e.target.value)}
+                    rows={8}
+                    placeholder="Your 4-block executive outreach email will appear here..."
+                    className="w-full bg-white dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 text-sm font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500/50 resize-y leading-relaxed"
+                  ></textarea>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 2: LinkedIn Connection Note */}
+            {activeOutreachTab === "linkedin" && (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                    <span>LinkedIn Connection Request Note</span>
+                    <span className={`text-[11px] font-mono font-bold ${linkedinNote.length <= 300 ? "text-emerald-600 dark:text-emerald-400" : "text-red-500"}`}>
+                      {linkedinNote.length} / 300 chars
+                    </span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => copyOutreachText(linkedinNote, "linkedinNote")}
+                    disabled={!linkedinNote}
+                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-semibold flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                  >
+                    {copiedOutreachField === "linkedinNote" ? "✓ Copied Note" : "Copy Connection Note"}
+                  </button>
+                </div>
+                <textarea
+                  value={linkedinNote}
+                  onChange={(e) => setLinkedinNote(e.target.value)}
+                  rows={4}
+                  placeholder="Connection request note tailored strictly under 300 chars for LinkedIn's 'Add a note' dialog..."
+                  className="w-full bg-white dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 text-sm font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500/50 resize-y leading-relaxed"
+                ></textarea>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                  Ready to paste directly into LinkedIn invitation without truncation.
+                </span>
+              </div>
+            )}
+
+            {/* Tab 3: WhatsApp Msg */}
+            {activeOutreachTab === "whatsapp" && (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-400 uppercase tracking-wider">
+                    WhatsApp Message (Direct Recruiter / Founder Chat)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => copyOutreachText(whatsappMsg, "whatsappMsg")}
+                    disabled={!whatsappMsg}
+                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-semibold flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                  >
+                    {copiedOutreachField === "whatsappMsg" ? "✓ Copied Msg" : "Copy WhatsApp Msg"}
+                  </button>
+                </div>
+                <textarea
+                  value={whatsappMsg}
+                  onChange={(e) => setWhatsappMsg(e.target.value)}
+                  rows={5}
+                  placeholder="Crisp 3-4 line chat message referencing role, live SaaS proof, and portfolio..."
+                  className="w-full bg-white dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 text-sm font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500/50 resize-y leading-relaxed"
+                ></textarea>
+              </div>
+            )}
+
+            {/* Tab 4: Contact Form Pitch */}
+            {activeOutreachTab === "contact_form" && (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                    <span>Contact Form / Short Bio Pitch (50–80 words)</span>
+                    {contactFormNote && (
+                      <span className="text-[11px] font-mono font-normal text-slate-500">
+                        {contactFormNote.trim().split(/\s+/).filter(Boolean).length} words
+                      </span>
+                    )}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => copyOutreachText(contactFormNote, "contactFormNote")}
+                    disabled={!contactFormNote}
+                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-semibold flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                  >
+                    {copiedOutreachField === "contactFormNote" ? "✓ Copied Pitch" : "Copy Form Pitch"}
+                  </button>
+                </div>
+                <textarea
+                  value={contactFormNote}
+                  onChange={(e) => setContactFormNote(e.target.value)}
+                  rows={5}
+                  placeholder="Dense value statement for application form fields like 'Why should we hire you?' or 'Short Bio'..."
+                  className="w-full bg-white dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 text-sm font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500/50 resize-y leading-relaxed"
+                ></textarea>
+              </div>
+            )}
+
+            {/* Tab 5: Career Portal Q&A Assistant */}
+            {activeOutreachTab === "portal_qa" && (
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-400 uppercase tracking-wider">
+                    Paste Job Portal Question & Custom Prompt
+                  </label>
+                  <textarea
+                    value={portalQuestion}
+                    onChange={(e) => setPortalQuestion(e.target.value)}
+                    placeholder="e.g. 'What products have you built? Give description and live links' or 'Explain a difficult bug you solved. Keep it under 100 words'..."
+                    rows={3}
+                    className="w-full bg-white dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 resize-y"
+                  ></textarea>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    Grounded in Resume, Skills, Projects (CHINTU AI, ICICL), and live links.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleAnswerPortalQuestion}
+                    disabled={isAnsweringQuestion || !portalQuestion.trim()}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-md shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer active:scale-95"
+                  >
+                    {isAnsweringQuestion ? (
+                      <>
+                        <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
+                        <span>Generating Answer...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Get Human Answer</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {portalQuestionError && (
+                  <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl text-xs text-red-600 dark:text-red-400">
+                    {portalQuestionError}
+                  </div>
+                )}
+
+                {portalAnswer && (
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-700 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                        <span>Generated Portal Answer</span>
+                        <span className="text-[11px] font-mono font-normal text-slate-500">
+                          {portalAnswer.trim().split(/\s+/).filter(Boolean).length} words
+                        </span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => copyOutreachText(portalAnswer, "portalAnswer")}
+                        className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-semibold flex items-center gap-1 cursor-pointer"
+                      >
+                        {copiedOutreachField === "portalAnswer" ? "✓ Copied Answer" : "Copy Answer"}
+                      </button>
+                    </div>
+                    <textarea
+                      value={portalAnswer}
+                      onChange={(e) => setPortalAnswer(e.target.value)}
+                      rows={6}
+                      className="w-full bg-white dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl p-3.5 text-sm font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500/50 resize-y leading-relaxed"
+                    ></textarea>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </main>
