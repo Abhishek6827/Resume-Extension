@@ -15,6 +15,9 @@ This document tracks all bug fixes, network protocol adjustments, and non-trivia
     5. **Career Portal Custom Q&A Assistant:** On-demand question answerer taking arbitrary application questions/prompts (e.g. "What products have you built? Give description and live links") and generating 100% human-crafted, verified answers.
 - **Sequential Auto-Chaining & Fallback Mechanism:**
   - **Sequential Chaining:** When Cover Letter completes (via button or parallel resume tailoring), the Outreach Pack automatically kicks off sequentially.
+  - **Verification & Security Model Batch (Two-Tier Pipeline):**
+    - **Stage 1 (Generator Batch):** Drafts outreach pack using strict anti-hallucination constraints forbidding synthetic domain claims (e.g. video uploads, camera streaming, fake logistics).
+    - **Stage 2 (Verifier / Fact-Checker Batch):** A dedicated model validation pass cross-checks every sentence against `CANONICAL_CANDIDATE_FACTS` and the generated resume. Any hallucinated domain claim is immediately detected and sanitized with real verified achievements (e.g. 1,200+ users SaaS, sub-120ms p95 latency, HMAC webhook reconciliation).
   - **Token Limit & Quota Fallback:** Added `callOutreachLLMWithFallback` in `backend/lib/llm-client.ts`:
     - Primary Model $\rightarrow$ Fallback 1: `groq:qwen/qwen3.8-27b` $\rightarrow$ Fallback 2: `groq:openai/gpt-oss-120b`.
     - If both hit token/rate limits: 3 automatic retries with exponential backoff (2.5s, 5s, 7.5s).

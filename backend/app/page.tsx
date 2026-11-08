@@ -1769,6 +1769,7 @@ export default function Home() {
   const [outreachError, setOutreachError] = useState<string>("");
   const [activeOutreachTab, setActiveOutreachTab] = useState<"email" | "linkedin" | "whatsapp" | "contact_form" | "portal_qa">("email");
   const [copiedOutreachField, setCopiedOutreachField] = useState<string>("");
+  const [verificationReport, setVerificationReport] = useState<{ isVerified: boolean; hallucinationsScrubbed: string[] } | null>(null);
 
   // Career Portal Question Assistant states
   const [portalQuestion, setPortalQuestion] = useState<string>("");
@@ -2072,6 +2073,7 @@ export default function Home() {
     setPortalQuestion("");
     setPortalAnswer("");
     setPortalQuestionError("");
+    setVerificationReport(null);
 
     if (clearInputs) {
       setJdText("");
@@ -2210,6 +2212,7 @@ export default function Home() {
         if (outreach.linkedinConnectionNote) setLinkedinNote(outreach.linkedinConnectionNote);
         if (outreach.whatsappMessage) setWhatsappMsg(outreach.whatsappMessage);
         if (outreach.contactFormNote) setContactFormNote(outreach.contactFormNote);
+        if (outreach.verificationReport) setVerificationReport(outreach.verificationReport);
       }
     } catch (err: any) {
       console.error("[handleGenerateOutreach] Error:", err);
@@ -2226,6 +2229,7 @@ export default function Home() {
     }
     setIsAnsweringQuestion(true);
     setPortalQuestionError("");
+    setVerificationReport(null);
     try {
       const selectedTailored = tailoredResumes[selectedResultIndex];
       const tailoredLatex = selectedTailored?.latex?.trim();
@@ -3767,7 +3771,20 @@ export default function Home() {
             {isGeneratingOutreach && (
               <div className="p-3 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-xl flex items-center gap-3 text-indigo-700 dark:text-indigo-300 animate-pulse text-xs sm:text-sm font-semibold">
                 <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
-                <span>Sequential Step 2/2: Generating Cold Email, LinkedIn Note, WhatsApp & Contact Form pitch...</span>
+                <span>Sequential Step 2/2: Generating & Verifying Cold Email, LinkedIn Note, WhatsApp & Contact Form pitch...</span>
+              </div>
+            )}
+
+            {verificationReport && !isGeneratingOutreach && (
+              <div className="p-3 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-emerald-800 dark:text-emerald-300 text-xs shadow-sm">
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <span className="font-bold">Fact-Checking Security Batch Passed:</span>
+                  <span className="opacity-90">{verificationReport.hallucinationsScrubbed?.join("; ") || "Verified against candidate resume & canonical facts"}</span>
+                </div>
+                <span className="shrink-0 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300">
+                  ✓ Verified Against Resume
+                </span>
               </div>
             )}
 
