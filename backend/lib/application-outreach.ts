@@ -116,6 +116,22 @@ function formatResume(resume: ResumeData | string, defaultName: string): string 
   return JSON.stringify(resume, null, 2);
 }
 
+/**
+ * Hardcode Canonical Contact Signature after security/verification check:
+ * Ensures the email always ends with verified portfolio and 10-digit phone number.
+ */
+export function attachCanonicalEmailSignature(body: string): string {
+  if (!body) return "";
+  let cleanBody = body.trim();
+  cleanBody = cleanBody
+    .replace(/(?:(?:Best|Thanks|Sincerely|Regards|Warm regards|Cheers|Thank you)[,\s]*)*Abhishek\s*Tiwari[\s\S]*$/i, "")
+    .replace(/(?:(?:Best|Thanks|Sincerely|Regards|Warm regards|Cheers|Thank you)[,\s]*)*Abhishek[\s\S]*$/i, "")
+    .trim();
+
+  const signature = `\n\nBest,\nAbhishek Tiwari\nportfolio.getchintu.com | +91 70816 60941`;
+  return cleanBody + signature;
+}
+
 function parseJsonDraft(content: string): OutreachPack {
   const rawCleaned = content.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
   try {
@@ -123,7 +139,7 @@ function parseJsonDraft(content: string): OutreachPack {
     return {
       email: {
         subject: stripMarkdownFormatting(parsed?.email?.subject || "Full Stack Developer Application — Abhishek Tiwari"),
-        body: stripMarkdownFormatting(parsed?.email?.body || ""),
+        body: attachCanonicalEmailSignature(stripMarkdownFormatting(parsed?.email?.body || "")),
       },
       linkedinConnectionNote: stripMarkdownFormatting(parsed?.linkedinConnectionNote || "").slice(0, 298),
       whatsappMessage: stripMarkdownFormatting(parsed?.whatsappMessage || ""),
@@ -138,7 +154,7 @@ function parseJsonDraft(content: string): OutreachPack {
       return {
         email: {
           subject: stripMarkdownFormatting(parsed?.email?.subject || "Full Stack Developer Application — Abhishek Tiwari"),
-          body: stripMarkdownFormatting(parsed?.email?.body || ""),
+          body: attachCanonicalEmailSignature(stripMarkdownFormatting(parsed?.email?.body || "")),
         },
         linkedinConnectionNote: stripMarkdownFormatting(parsed?.linkedinConnectionNote || "").slice(0, 298),
         whatsappMessage: stripMarkdownFormatting(parsed?.whatsappMessage || ""),
@@ -236,7 +252,7 @@ Audit every claim now. If any hallucination or discrepancy is found, sanitize it
       return {
         email: {
           subject: stripMarkdownFormatting(parsed?.email?.subject || draft.email.subject),
-          body: stripMarkdownFormatting(parsed?.email?.body || draft.email.body),
+          body: attachCanonicalEmailSignature(stripMarkdownFormatting(parsed?.email?.body || draft.email.body)),
         },
         linkedinConnectionNote: stripMarkdownFormatting(parsed?.linkedinConnectionNote || draft.linkedinConnectionNote).slice(0, 298),
         whatsappMessage: stripMarkdownFormatting(parsed?.whatsappMessage || draft.whatsappMessage),
@@ -256,6 +272,10 @@ Audit every claim now. If any hallucination or discrepancy is found, sanitize it
 
   return {
     ...draft,
+    email: {
+      ...draft.email,
+      body: attachCanonicalEmailSignature(draft.email.body),
+    },
     verificationReport: {
       isVerified: true,
       hallucinationsScrubbed: ["Automated baseline verification passed"],
