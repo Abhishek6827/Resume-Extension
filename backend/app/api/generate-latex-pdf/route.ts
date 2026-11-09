@@ -50,7 +50,10 @@ function sanitizeLatex(raw: string): string {
     .replace(/[\u2018\u2019]/g, "'")
     .replace(/[\u201C\u201D]/g, '"')
     .replace(/[\u2022\u25CF\u25CB\u25E6]/g, '')
-    .replace(/(?<!\\)\\\[(-?\d+(?:\.\d+)?(?:pt|em|ex|in|cm|mm))\]/g, (_, space) => `\\\\[${space}]`);
+    .replace(/\\{3,}\[(-?\d+(?:\.\d+)?(?:pt|em|ex|in|cm|mm))\]/g, (_, space) => `\\\\[${space}]`)
+    .replace(/(?<!\\)\\\[(-?\d+(?:\.\d+)?(?:pt|em|ex|in|cm|mm))\]/g, (_, space) => `\\\\[${space}]`)
+    .replace(/\\\\&/g, ' \\& ')
+    .replace(/\\{4,}/g, '\\\\');
 
   if (!cleaned.includes("microtype") && cleaned.includes("\\documentclass")) {
     cleaned = cleaned.replace(

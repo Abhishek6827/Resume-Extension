@@ -69,11 +69,14 @@ function cleanLatexResponse(rawText: string): string {
 
   // 6. Escape unescaped special LaTeX characters outside macros
   cleaned = cleaned
+    .replace(/\\{3,}\[(-?\d+(?:\.\d+)?(?:pt|em|ex|in|cm|mm))\]/g, (_, space) => `\\\\[${space}]`)
+    .replace(/(?<!\\)\\\[(-?\d+(?:\.\d+)?(?:pt|em|ex|in|cm|mm))\]/g, (_, space) => `\\\\[${space}]`)
+    .replace(/\\\\&/g, ' \\& ')
     .replace(/(?<!\\)&/g, () => '\\&')
     .replace(/(?<!\\)%(?!\s*$)/gm, () => '\\%')
     .replace(/(?<!\\)#(?![1-9])/g, () => '\\#')
     .replace(/(?<!\\)_/g, () => '\\_')
-    .replace(/(?<!\\)\\\[(-?\d+(?:\.\d+)?(?:pt|em|ex|in|cm|mm))\]/g, (_, space) => `\\\\[${space}]`)
+    .replace(/\\{4,}/g, '\\\\')
     .replace(/[\u2022\u25CF\u25CB\u25E6]/g, '')
     .replace(/\u00A0/g, ' ');
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
