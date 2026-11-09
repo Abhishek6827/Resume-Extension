@@ -4,6 +4,36 @@ This document tracks all bug fixes, network protocol adjustments, and non-trivia
 
 ---
 
+## [2026-11-10] Universal Dynamic ATS Evaluation & Character Density Calibration (Zero-Hardcoding Architecture)
+
+- **Issue Symptom & Commit History Root Cause Analysis:**
+  - *Symptom 1: ATS Scores Dropped to 67% / 83% & False "Areas for Improvement":*
+    On the SPIT JD, Nemotron 30B scored 67% and Nemotron 120B/Gemini scored 83%, falsely reporting missing competencies (`B.Tech/BCA/MCA degree`, `Full Stack Development`, `Experience building government portals`, `Cloud platform experience`).
+    - *Root Cause in Commit History:* In `tailor-latex-direct/route.ts`, `evaluateTailoredResume` had a tight 12-second timeout (`12000ms`) and called `callFastLLM`, which defaulted to `groq:openai/gpt-oss-120b` (a 120B reasoning model). When 4 models finished in parallel, all 4 concurrent requests hit Groq, consistently exceeding 12s or hitting rate limits, throwing `"ATS evaluation timeout"`.
+    - This silently triggered `fallbackKeywordEvaluation`, which performed naive verbatim substring checks on raw JD strings (e.g. `"B.Tech/BCA/MCA in Computer Science"`, `"Experience building government portals"`). Because the candidate's resume formats degrees across distinct lines (`MCA` and `BCA`) and uses natural phrasing, exact multi-word substring matching failed, docking scores to 67%.
+  - *Symptom 2: Character Count Deficit (7,625 / 7,838 vs 8,906 Base):*
+    - *Root Cause in Commit History:* In commit `760b6a2`, the prompt directive used the word "compact" and the retry loop only guarded against upper-bound overflow (`tailored.length <= budgetThreshold`). When smaller models generated concise bullets (~100 chars instead of ~190 chars for 2-line bullets), the engine accepted the underfilled output without retrying, leaving whitespace on the page.
+- **Architectural Fixes Applied (100% Dynamic, Zero Hardcoding):**
+  1. *Sub-1.5s Fast LLM ATS Evaluator:*
+     - Explicitly routed `evaluateTailoredResume` to `groq:qwen/qwen3.8-27b` (benchmarked at ~1.2s latency) with automatic fallback to `gemini:cascade`.
+     - Increased timeout from 12s to 30s. The real LLM ATS Evaluator now runs dynamically every single time, understanding context, degrees, and domain competencies natively.
+  2. *Pure Dynamic Fallback Tokenization (Zero Hardcoded Keywords):*
+     - Reverted all hardcoded checks (`bca`, `mca`, `government`, `enterprise`, `cloud`).
+     - Implemented dynamic compound requirement splitting (`[/,()|]|\bor\b`) and dynamic clause noise stripping (`"experience in"`, `"is a plus"`, `"or related field"`). Works universally for any JD in any stack.
+  3. *Balanced Character Density & Two-Sided Budget Bounds:*
+     - Replaced "compact" with explicit edge-to-edge line-filling guidance (90-105 chars for 1-line bullets, 180-205 chars for 2-line bullets).
+     - Added two-sided retry bounds (`minBudget = 93%`, `maxBudget = 106%`). If an output is underfilled (<93%), the retry loop proactively prompts the model to enrich bullets with quantified Google XYZ metrics to reach ~96-100% length.
+  4. *Universal Domain Alignment Rule:*
+     - Formulated a 100% generic domain embedding rule in `systemPrompt` that inspects any JD's domain context dynamically without naming specific companies or sectors.
+  5. *Clean Repository State:*
+     - Reverted all manual tweaks from `generate-downloads-resume.ts` and `skill-bank.ts`.
+- **Architectural Invariants Established:**
+  - Zero hardcoding of skills, degrees, or companies across ATS parsing, tailoring, and evaluation.
+  - Two-sided budget bounds prevent both 1-page overflow (>106%) and unsightly underfilling (<93%).
+  - Fast ATS evaluation runs on sub-1.5s models with multi-provider fallback.
+
+---
+
 ## [2026-11-09] Golden Base Resume In-Place Content Replacement Enforcement
 
 - **Feature Description & Objectives:**

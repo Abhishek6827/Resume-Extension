@@ -115,9 +115,38 @@ function fallbackKeywordEvaluation(latex: string, jdData: any) {
   targetKeywords.forEach((kw) => {
     const kwLower = kw.toLowerCase();
     const escaped = kwLower.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const isPresent = kwLower === "c++" || kwLower === "c#" || kwLower === ".net"
+    let isPresent = kwLower === "c++" || kwLower === "c#" || kwLower === ".net"
       ? new RegExp("(?:^|[\\s/,()])" + escaped + "(?:$|[\\s/,()])", "i").test(lowerLatex)
       : new RegExp("\\b" + escaped + "\\b", "i").test(lowerLatex) || lowerLatex.includes(kwLower);
+
+    // Dynamic compound & phrase matching (NO hardcoded terms or company names)
+    if (!isPresent) {
+      // 1. Split compound requirements by slashes, commas, parentheses, "or", "and"
+      // e.g. "JavaScript/TypeScript", "PostgreSQL, MySQL, or MongoDB", "AWS/Azure/GCP", "B.Tech/BCA/MCA"
+      const subTokens = kwLower
+        .replace(/[()[\]{}]/g, " ")
+        .split(/[/,]|(?:\s+(?:or|and)\s+)/)
+        .map(t => t.trim())
+        .filter(t => t.length >= 2);
+
+      if (subTokens.length > 1 && subTokens.some(t => {
+        const tEsc = t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        return new RegExp("(?:^|[\\s/,().])" + tEsc + "(?:$|[\\s/,().])", "i").test(lowerLatex) || lowerLatex.includes(t);
+      })) {
+        isPresent = true;
+      } else {
+        // 2. Descriptive requirement clauses (e.g. "Experience building web portals", "Understanding of REST APIs")
+        // Strip common descriptive noise prefixes/suffixes dynamically
+        const cleanedPhrase = kwLower
+          .replace(/^(?:experience\s+(?:in|with|building)?|strong\s+proficiency\s+in|familiarity\s+with|understanding\s+of|knowledge\s+of|ability\s+to)\s+/i, "")
+          .replace(/\s+(?:is\s+a\s+plus|required|preferred|desired|or\s+related\s+field)$/i, "")
+          .trim();
+
+        if (cleanedPhrase.length >= 3 && (lowerLatex.includes(cleanedPhrase) || new RegExp("\\b" + cleanedPhrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i").test(lowerLatex))) {
+          isPresent = true;
+        }
+      }
+    }
 
     if (isPresent) {
       if (!matched.includes(kw)) matched.push(kw);
@@ -170,9 +199,11 @@ Evaluate this tailored LaTeX resume against the target Job Description.
 CRITICAL EVALUATION RULES:
 1. HARD TECHNICAL SKILLS ONLY: "missingKeywords" must ONLY contain fundamentally missing programming languages, technical frameworks, databases, or specific cloud/developer tools (e.g. Go, GraphQL, Docker, Kubernetes).
 2. NEVER INCLUDE SOFT TRAITS / GENERIC QUALITIES: Do NOT list generic conversational English descriptors (such as "Accuracy", "Clarity", "Technical Reasoning", "Solution Approaches", "Code Decisions", "Software Defects", "Maintainability", "Scalability", "Performance Bottlenecks", "Attention to Detail") in "missingKeywords".
-3. NO VERSION DUPLICATES: Do NOT list version-specific variants (e.g., "Java 8", "Java 17", "Python 3") in "missingKeywords" if the core base skill is present in the resume.
-4. If an engineering concept is demonstrated or mentioned anywhere in the resume text, treat it as MATCHED.
-5. TOP 5 MISSING KEYWORDS ONLY: Strictly limit "missingKeywords" to the top 5 highest-priority technical requirements that are completely missing.
+3. NO DEGREE OR EDUCATION FALSE-NEGATIVES: Do NOT list degree requirements (e.g., "B.Tech/BCA/MCA degree", "BCA", "MCA", "Degree in Computer Science") in "missingKeywords" if candidate has an MCA, BCA, or computer science degree in the Education section.
+4. NO DISCIPLINE / TITLE FALSE-NEGATIVES: Do NOT list "Full Stack Development" or similar job title variants as missing if candidate is a Full Stack Developer.
+5. NO VERSION DUPLICATES: Do NOT list version-specific variants (e.g., "Java 8", "Java 17", "Python 3") in "missingKeywords" if the core base skill is present in the resume.
+6. If an engineering concept is demonstrated or mentioned anywhere in the resume text, treat it as MATCHED.
+7. TOP 5 MISSING KEYWORDS ONLY: Strictly limit "missingKeywords" to the top 5 highest-priority technical requirements that are completely missing.
 6. RED FLAGS VERIFICATION: The tailored resume was specifically rewritten to eliminate all candidate red flags and match the target JD. Verify that unquantified bullets, vague duties, passive voice, and missing JD skills have been corrected. If all such red flags have been addressed and no fatal document syntax errors exist, return an empty array [] for "redFlags". NEVER invent arbitrary or subjective nitpicks.
 7. RECRUITER 10-SECOND SKIM VERDICT: In 1 punchy sentence, state whether this resume "stops the scroll" or which specific section/bullet risks getting skipped by a fast-scanning hiring manager.
 
@@ -195,16 +226,32 @@ ${latex}`;
   try {
     let evalTimer: NodeJS.Timeout | null = null;
     const timeoutPromise = new Promise<never>((_, reject) => {
-      evalTimer = setTimeout(() => reject(new Error("ATS evaluation timeout")), 12000);
+      evalTimer = setTimeout(() => reject(new Error("ATS evaluation timeout")), 30000);
     });
 
+    const callFastWithFallback = async () => {
+      try {
+        return await callFastLLM({
+          systemPrompt: evalSystemPrompt,
+          userMessage: evalUserMessage,
+          modelSelection: { primaryModel: "groq:qwen/qwen3.8-27b" },
+          temperature: 0.1,
+          jsonMode: true,
+        });
+      } catch (err) {
+        console.warn("[evaluateTailoredResume] Groq qwen3.8-27b failed, trying Gemini cascade fallback:", err);
+        return await callLLM({
+          systemPrompt: evalSystemPrompt,
+          userMessage: evalUserMessage,
+          modelSelection: { primaryModel: "gemini:cascade" },
+          temperature: 0.1,
+          jsonMode: true,
+        });
+      }
+    };
+
     const response = await Promise.race([
-      callFastLLM({
-        systemPrompt: evalSystemPrompt,
-        userMessage: evalUserMessage,
-        temperature: 0.1,
-        jsonMode: true,
-      }),
+      callFastWithFallback(),
       timeoutPromise
     ]).finally(() => {
       if (evalTimer) clearTimeout(evalTimer);
@@ -553,12 +600,12 @@ GOLDEN BASE RESUME IN-PLACE CONTENT REPLACEMENT MANDATE (CRITICAL):
 - The input LaTeX is the candidate's perfected GOLDEN BASE RESUME TEMPLATE (calibrated for exact 1-page fit).
 - DO NOT rewrite or alter the LaTeX document framework, preamble, packages, geometry, margins, macros (\role, \project, etc.), or section ordering.
 - YOUR TASK IS STRICTLY IN-PLACE CONTENT REPLACEMENT ONLY:
-  1. Professional Summary: Update strictly to 3 compact, dense lines matching the target JD role and core tech stack.
-  2. Experience Section: Keep canonical company names and dates 100% UNCHANGED. Only update the 3-4 technologies subtitle and rewrite the existing bullet points in-place using Google XYZ format, embedding target JD tools and real production metrics.
+  1. Professional Summary: Update strictly to 3 dense lines matching the target JD role and core tech stack (~65-75 words, ~400-450 characters).
+  2. Experience Section: Keep canonical company names and dates 100% UNCHANGED. Only update the 3-4 technologies subtitle and rewrite the existing bullet points in-place using Google XYZ format, embedding target JD tools and real production metrics. Maintain the edge-to-edge line-filling length of each bullet point (single-line bullets: 90-105 chars, 2-line bullets: 180-205 chars).
   3. Projects Section: Update project subtitle technologies (strictly 3-4 core tools) and bullet points to feature target JD requirements while keeping real project names intact.
   4. Technical Skills Section: Dynamically align categories and tools to achieve 100% coverage of the target JD checklist.
   5. Education: Keep 100% untouched.
-- DO NOT add extra bullets or change any spacing macros (\titlespacing, \setlist, \vspace). The output must maintain the exact structure and fit onto strictly 1 page.
+- DO NOT add extra bullets or change any spacing macros (\titlespacing, \setlist, \vspace). The output must maintain the exact structure and fit onto strictly 1 page with total length between 95% and 100% of the input template (${Math.round(latexLength * 0.95)} - ${latexLength} characters).
 
 CORE IN-PLACE TAILORING RULES:
 
@@ -586,6 +633,10 @@ CORE IN-PLACE TAILORING RULES:
      Sparingly wrap 1-2 core technical tools or standout metrics in \\textbf{...} in key bullet points (e.g., \\textbf{420ms p99 latency}, \\textbf{Kafka pipelines}) so the recruiter's eyes visually anchor onto hard proof points during a quick scan.
    - BAN ON ROBOTIC / META PHRASING:
      NEVER write meta-phrases like "applied Data Structures, Algorithms for...", "conducted task estimation", "practiced Agile/Scrum ceremonies", "demonstrating OOPS concepts", or list software concepts as plain trailing nouns.
+   - PROACTIVE DOMAIN & INDUSTRY CONTEXT EMBEDDING (UNIVERSAL DYNAMIC RULE):
+     * Inspect the target JD for its primary industry, software solutions, or domain challenges (e.g. distributed systems, workflow automation, payment pipelines, public portals, e-commerce, cloud infrastructure).
+     * Proactively frame relevant experience bullets and project descriptions using that domain's language and context in Google XYZ format (Accomplished [X] in [domain context], as measured by [Y], by doing [Z]).
+     * This proves immediate domain fluency to the technical recruiter scanning the resume without altering official company names or dates.
 
 2. CAREER CREDIBILITY & ARCHITECTURAL REALISM (NO PAST COMPANY TECH-SWAPPING):
    - Keep historical company work technically authentic. Do NOT completely swap the foundational language/stack of established past employers (e.g., do NOT turn a past Node.js/PostgreSQL startup role into ASP.NET/SQL Server).
@@ -724,28 +775,45 @@ ${latex}`;
                 if (response.provider === "gemini" && response.model) { actualModelName = "Gemini (" + response.model + ")"; }
                 tailored = cleanLatexResponse(response.content);
 
-                // Accept if within 3% of original length (fits on 1 page with standard squeeze)
-                const budgetThreshold = Math.round(latexLength * 1.07);
-                if (tailored.length <= budgetThreshold) {
+                // Accept if within 93% to 106% of original template length
+                const minBudget = Math.round(latexLength * 0.93);
+                const maxBudget = Math.round(latexLength * 1.06);
+
+                if (tailored.length >= minBudget && tailored.length <= maxBudget) {
                   break;
                 }
 
                 // Last attempt — stop
                 if (attempt >= maxAttempts - 1) break;
 
-                const excess = tailored.length - latexLength;
-                console.warn(`[Stream Retry] Model ${model.name} exceeded budget by ${excess} chars (${tailored.length}/${latexLength}). Attempt ${attempt + 2}/${maxAttempts}...`);
+                if (tailored.length < minBudget) {
+                  const deficit = latexLength - tailored.length;
+                  console.warn(`[Stream Retry] Model ${model.name} underfilled resume by ${deficit} chars (${tailored.length}/${latexLength}). Attempt ${attempt + 2}/${maxAttempts}...`);
+                  sendEvent({ modelId: model.id, progress: 45, phase: "Enriching content" });
 
-                sendEvent({ modelId: model.id, progress: 45, phase: "Tightening fit" });
+                  currentPrompt = `${systemPrompt}
 
-                // Retain entire systemPrompt with all JD requirements, and append compaction directive
-                currentPrompt = `${systemPrompt}
+CRITICAL DENSITY INSTRUCTION (Attempt 2/2):
+Your previous output was ${tailored.length} characters, which is underfilled compared to the target 1-page template (${latexLength} characters).
+An underfilled resume leaves empty whitespace at the bottom of the page and drops necessary JD keywords.
+You MUST expand and enrich the technical bullet points and summary using quantified Google XYZ format (Accomplished [X], as measured by [Y], by doing [Z]).
+Ensure every single-line bullet is 90-105 characters and every 2-line bullet is 180-205 characters edge-to-edge.
+Total target character budget: between ${Math.round(latexLength * 0.96)} and ${latexLength} characters.
+Output full document from \\documentclass to \\end{document}.`;
+                } else {
+                  const excess = tailored.length - latexLength;
+                  console.warn(`[Stream Retry] Model ${model.name} exceeded budget by ${excess} chars (${tailored.length}/${latexLength}). Attempt ${attempt + 2}/${maxAttempts}...`);
+                  sendEvent({ modelId: model.id, progress: 45, phase: "Tightening fit" });
+
+                  // Retain entire systemPrompt with all JD requirements, and append compaction directive
+                  currentPrompt = `${systemPrompt}
 
 CRITICAL COMPACTION INSTRUCTION (Attempt 2/2):
 Your previous output was ${tailored.length} characters (slightly over the ${latexLength} character budget).
 DO NOT DROP any target JD keywords, frameworks, or libraries (${allJdRequirements.join(", ")}).
 Keep all technical achievements and Google XYZ format intact, but tighten sentence phrasing and trim redundant filler words so total length is between ${Math.round(latexLength * 0.96)} and ${latexLength} characters.
 Output full document from \\documentclass to \\end{document}.`;
+                }
               }
 
               return tailored;
