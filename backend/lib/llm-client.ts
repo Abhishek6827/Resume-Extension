@@ -1,7 +1,7 @@
 // ─── Multi-Provider LLM Client ─────────────────────────────
 // Supported providers:
 // NVIDIA NIM:
-//   - nvidia/nemotron-3-super-120b-a12b (Balanced / 120B)
+//   - nvidia/nemotron-3.5-super-vl-120b-a12b (Balanced / 120B)
 //   - mistralai/mistral-large-4-1t-a52b (Quality / Mistral Large 4)
 // Groq:
 //   - qwen/qwen3.8-27b (Fast / Cover Letter)
@@ -193,7 +193,7 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
   const keys = getNvidiaApiKeys();
   if (keys.length === 0) throw new Error("No NVIDIA_API_KEY set");
 
-  const modelToUse = forceModel || "stepfun-ai/step-5-preview";
+  const modelToUse = forceModel || "nvidia/nemotron-3.5-super-vl-120b-a12b";
 
   const cleanedUserMessage = options.userMessage
     .replace(/\r\n/g, "\n")
@@ -228,11 +228,7 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
         };
 
         // Specific model configurations as specified in NVIDIA specs
-        if (modelToUse === "stepfun-ai/step-5-preview" || modelToUse.includes("step")) {
-          requestOptions.temperature = 0.6;
-          requestOptions.max_tokens = options.maxTokens ?? 16384;
-          requestOptions.stream = true;
-        } else if (modelToUse === "google/gemma-4-31b-it" || modelToUse.includes("gemma")) {
+        if (modelToUse === "google/gemma-4-31b-it" || modelToUse.includes("gemma")) {
           requestOptions.temperature = 0.5;
           requestOptions.top_p = 1.0;
           requestOptions.max_tokens = options.maxTokens ?? 16384;
@@ -271,7 +267,7 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
           }
         } else {
           const response = await nvidia.chat.completions.create(requestOptions) as any;
-          content = response.choices?.[0]?.message?.content || "";
+          content = response.choices?.[0]?.message?.content || response.choices?.[0]?.message?.reasoning_content || "";
         }
 
         content = stripThinkTags(content);

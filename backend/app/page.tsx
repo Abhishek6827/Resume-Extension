@@ -7,7 +7,7 @@ import type { SkillBank } from "../lib/skill-bank";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 const RESUME_MODELS = [
-  { id: "nvidia/nemotron-3.5-super-vl-120b-a12b", name: "StepFun Step-5 (Preview)", shortName: "StepFun Step-5", icon: "https://www.google.com/s2/favicons?domain=stepfun.com&sz=128" },
+  { id: "nvidia/nemotron-3.5-super-vl-120b-a12b", name: "Nemotron 120B (Preview)", shortName: "Nemotron 120B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },
   { id: "gemini:cascade", name: "Gemini Cascade (Google)", shortName: "Google Gemini", icon: "https://www.google.com/s2/favicons?domain=google.com&sz=128" },
   { id: "mistralai/mistral-large-4-1t-a52b", name: "Mistral Large 4 (Quality)", shortName: "Mistral Large 4", icon: "https://www.google.com/s2/favicons?domain=mistral.ai&sz=128" },
   { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron 30B (Speed)", shortName: "Nemotron 30B", icon: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=128" },

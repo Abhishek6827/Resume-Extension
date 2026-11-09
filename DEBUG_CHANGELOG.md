@@ -4,6 +4,22 @@ This document tracks all bug fixes, network protocol adjustments, and non-trivia
 
 ---
 
+## [2026-11-09] Complete Replacement of StepFun with NVIDIA Nemotron 120B (nvidia/nemotron-3.5-super-vl-120b-a12b)
+
+- **Feature Description & Objectives:**
+  - Completely replaced StepFun (`stepfun-ai/step-5-preview` and all StepFun references/icons) across the entire application with `nvidia/nemotron-3.5-super-vl-120b-a12b` ("Nemotron 120B (Preview)").
+  - Updated API route endpoints, warmup streaming route, LLM client provider routing, and UI model selector.
+- **Files Modified:**
+  - `backend/app/api/tailor-latex-direct/route.ts`: Updated `AI_MODELS` entry label from "StepFun Step-5 (Preview)" to "Nemotron 120B (Preview)".
+  - `backend/app/api/warmup/route.ts`: Replaced `stepfun-ai/step-5-preview` in `WARMUP_MODELS` with `{ id: "nvidia/nemotron-3.5-super-vl-120b-a12b", name: "Nemotron 120B" }`.
+  - `backend/app/page.tsx`: Updated `RESUME_MODELS` entry name to "Nemotron 120B (Preview)", shortName to "Nemotron 120B", and icon domain to `nvidia.com`.
+  - `backend/lib/llm-client.ts`: Removed StepFun default and configuration branch; set fallback model to `nvidia/nemotron-3.5-super-vl-120b-a12b`, added reasoning fallback handling for `reasoning_content`, and verified non-thinking mode on NVIDIA NIM.
+- **Architectural Invariants Established:**
+  - StepFun model references are completely eradicated from runtime configurations.
+  - Primary balanced resume model is standardized to NVIDIA Nemotron 120B (`nvidia/nemotron-3.5-super-vl-120b-a12b`) with verified 200 OK responses on NVIDIA NIM.
+
+---
+
 ## [2026-11-08] Master Security & Cross-Artifact Consistency Gate + Hardcoded Signature
 
 - **Feature Description & Objectives:**
