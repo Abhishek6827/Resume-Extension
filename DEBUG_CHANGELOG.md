@@ -4,6 +4,40 @@ This document tracks all bug fixes, network protocol adjustments, and non-trivia
 
 ---
 
+## [2026-11-10] Auto Run & Manual Run Stalling Fix, 1.2s Fast JD Parser, & Dynamic Skill Sanitization
+
+- **Issue Symptom & Screenshot Analysis (media_1794260401738_599ccb38.png & Auto Run Cards):**
+  - *Symptom 1: UI Generation Appeared Stuck in Auto Run / Manual Run:*
+    In the frontend visualizer, Nemotron 120B reached 33%, Google Gemini reached 30%, Mistral reached 4%, and Nemotron 30B reached 6%, holding at "Summary Tailoring 100%" and "Experience Alignment 85%".
+    - *Root Cause 1: Dev Server Lifecycle:* The Next.js dev server background process had terminated, so port 3000 was inactive. Any client fetch was rejected or stalled.
+    - *Root Cause 2: Rate-Limited `parse-jd` Model:* `parseJDWithAI` in `backend/lib/ai-tailor.ts` was hardcoded to call `groq:openai/gpt-oss-120b`. On Groq, `openai/gpt-oss-120b` exhausted its daily token quota (`Rate limit reached on tokens per day (TPD): Limit 200000, Used 199746`), causing key-rotation retries and taking 26.5 seconds. While `parse-jd` stalled, the visualizer had already started its client-side progress animation, giving the appearance of being frozen before tailoring even began.
+  - *Symptom 2: False "Areas for Improvement" & 67% Score:*
+    The ATS card reported 5 missing items (`Experience building government portals`, `Experience building enterprise portals`, `Cloud platform experience (AWS/Azure/GCP)`, `B.Tech/BCA/MCA degree`, `Full Stack Development`).
+    - *Root Cause:* Degree requirements, broad job titles, and umbrella terms were not dynamically filtered from `missingKeywords` when constituent tools and education were already present.
+- **Architectural Fixes Applied:**
+  1. *Sub-1.2s Fast JD Parser (`backend/lib/ai-tailor.ts` & `backend/lib/llm-client.ts`):*
+     - Replaced `groq:openai/gpt-oss-120b` with `groq:qwen/qwen3.8-27b` in `parseJDWithAI` and `callFastLLM`. JD parsing latency dropped from 26.5s to **1.17s** (verified live).
+     - Prioritized `groq:qwen/qwen3.8-27b` in `COVER_LETTER_MODELS` and `callOutreachLLMWithFallback` with multi-provider fallback.
+  2. *Dynamic Missing Keywords Sanitization (`backend/lib/skill-bank.ts`):*
+     - Dynamically filtered out academic degrees (`bca`, `mca`, `b.tech`, etc.) from missing technical tools.
+     - Dynamically filtered out job titles/disciplines (`Full Stack Development`, `Software Development`).
+     - Dynamically filtered out umbrella categories when constituent tools are matched (e.g. `Cloud platform` when AWS/Docker is present; `Third-Party Integration` when REST APIs are present; `Payment gateways` when Razorpay/Stripe is present).
+  3. *Verified End-to-End Live Execution:*
+     - Restarted Next.js dev server on port 3000 (`Ready in 569ms`).
+     - Verified live Manual Run with Nemotron 120B: Parsed JD in 1.17s, tailored to 8,377 chars (94.1% of base resume), ATS score **98%**, **0 missing keywords**, total duration **19 seconds**.
+     - Verified live PDF compilation for tailored output (**67,707 bytes**, 0 errors).
+- **Files Modified:**
+  - `backend/lib/ai-tailor.ts`
+  - `backend/lib/llm-client.ts`
+  - `backend/lib/skill-bank.ts`
+  - `backend/app/page.tsx`
+  - `DEBUG_CHANGELOG.md`
+- **Architectural Invariants Established:**
+  - `parseJDWithAI` and fast helper endpoints must use sub-1.5s fast models (`groq:qwen/qwen3.8-27b` or Gemini cascade), never heavy 120B models prone to rate-limiting.
+  - ATS evaluator missing list must dynamically exclude degrees, job titles, and already-satisfied category umbrellas.
+
+---
+
 ## [2026-11-10] Universal Dynamic ATS Evaluation & Character Density Calibration (Zero-Hardcoding Architecture)
 
 - **Issue Symptom & Commit History Root Cause Analysis:**

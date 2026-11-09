@@ -353,12 +353,11 @@ Return ONLY a valid JSON object matching this exact structure (no markdown wrapp
 `;
 
   try {
-    // Always use fast Groq model for JD parsing — this is a lightweight task
-    // that should never be routed through the heavy NVIDIA resume models
+    // Always use fast Groq Qwen model for JD parsing (1-2s latency)
     const response = await callFastLLM({
       systemPrompt,
       userMessage: `Job Description:\n${rawText}`,
-      modelSelection: { primaryModel: "groq:openai/gpt-oss-120b" },
+      modelSelection: { primaryModel: "groq:qwen/qwen3.8-27b" },
       maxTokens: 4096,
       jsonMode: true,
     });

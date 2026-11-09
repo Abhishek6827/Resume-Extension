@@ -14,9 +14,8 @@ const RESUME_MODELS = [
 ];
 
 const COVER_LETTER_MODELS = [
-  { id: "groq:openai/gpt-oss-120b", name: "GPT-OSS 120B (Groq)", shortName: "Groq GPT-OSS", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" },
   { id: "groq:qwen/qwen3.8-27b", name: "Qwen 3.8 27B (Groq)", shortName: "Groq Qwen 3.8", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" },
-
+  { id: "groq:openai/gpt-oss-120b", name: "GPT-OSS 120B (Groq)", shortName: "Groq GPT-OSS", icon: "https://www.google.com/s2/favicons?domain=groq.com&sz=128" },
 ];
 
 export const GEMINI_CODING_CASCADE = [

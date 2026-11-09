@@ -106,13 +106,24 @@ const GENERIC_SOFT_QUALITIES = new Set([
   "leadership",
   "attention to detail",
   "agile methodology",
-  "team player"
+  "team player",
+  "clean code writing",
+  "code documentation",
+  "clean code",
+  "best practices",
+  "code reviews",
+  "sprint planning",
+  "agile ceremonies",
+  "task estimation",
 ]);
 
 /**
  * Filters out missing keywords that are:
  * 1. Version variants (e.g. "Java 8", "Java 17", "Java 21", "Python 3") of an already matched skill.
  * 2. Generic non-technical descriptors or soft qualities that are inherent to standard engineering work.
+ * 3. Degree & Education requirements (e.g. B.Tech/BCA/MCA, Computer Science degree) which belong in education, not missing technical skills.
+ * 4. Job titles or broad disciplines (e.g. "Full Stack Development", "Software Development", "Web Development").
+ * 5. Broad category umbrellas when concrete constituent tools are already matched (e.g. "Cloud platform" when AWS/Docker is matched).
  */
 export function sanitizeMissingKeywords(
   missing: string[],
@@ -125,6 +136,10 @@ export function sanitizeMissingKeywords(
   (matched || []).forEach((m) => matchedSet.add(String(m).toLowerCase().trim()));
   (candidateSkills || []).forEach((s) => matchedSet.add(String(s).toLowerCase().trim()));
 
+  const hasCloudMatched = Array.from(matchedSet).some(m => /aws|gcp|azure|docker|kubernetes|k8s|cloud/i.test(m));
+  const hasApiMatched = Array.from(matchedSet).some(m => /rest|api|microservices|graphql/i.test(m));
+  const hasPaymentMatched = Array.from(matchedSet).some(m => /payment|razorpay|stripe|zoho|billing|checkout/i.test(m));
+
   return missing.filter((kw) => {
     if (!kw || typeof kw !== "string") return false;
     const kwLower = kw.toLowerCase().trim();
@@ -135,7 +150,28 @@ export function sanitizeMissingKeywords(
     // 2. Filter out generic soft traits
     if (GENERIC_SOFT_QUALITIES.has(kwLower)) return false;
 
-    // 3. Extract base technology name by removing version numbers/suffixes
+    // 3. Filter out academic degrees & education requirements (belong in Education section)
+    if (/\b(?:b\.?tech|bca|mca|b\.?e|b\.?s|bachelor|master|degree|related field)\b/i.test(kwLower)) {
+      return false;
+    }
+
+    // 4. Filter out job titles / broad engineering disciplines
+    if (/^(?:full[- ]?stack(?: development| developer)?|software (?:development|developer|engineering)|web development)$/i.test(kwLower)) {
+      return false;
+    }
+
+    // 5. Filter out broad category umbrellas when concrete constituent tools are matched
+    if (hasCloudMatched && /\bcloud (?:platform|platforms|infrastructure|deployment)\b/i.test(kwLower)) {
+      return false;
+    }
+    if (hasApiMatched && /\bthird[- ]party (?:api )?integration\b/i.test(kwLower)) {
+      return false;
+    }
+    if (hasPaymentMatched && /\bpayment (?:gateways?|gateway integration)\b/i.test(kwLower)) {
+      return false;
+    }
+
+    // 6. Extract base technology name by removing version numbers/suffixes
     const baseTech = kwLower
       .replace(/(\s*v?\d+(\.\d+)*(\/\d+)*\+?)+/g, "")
       .replace(/\s*(8|11|17|21|3|4|5|16|17|18|19|20|21)\b/g, "")

@@ -555,7 +555,7 @@ export async function callLLM(options: LLMCallOptions): Promise<LLMResponse> {
  * Call fast LLM directly with NO fallback. Throws exact error immediately on failure.
  */
 export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse> {
-  const modelToUse = options.modelSelection?.primaryModel || "groq:openai/gpt-oss-120b";
+  const modelToUse = options.modelSelection?.primaryModel || "groq:qwen/qwen3.8-27b";
 
   console.log(`[LLM Fast] Calling Model (${modelToUse})...`);
   try {
@@ -573,12 +573,12 @@ export async function callFastLLM(options: LLMCallOptions): Promise<LLMResponse>
  * Call LLM with dedicated Cover Letter & Outreach fallback sequence:
  * 1. Try selected primary model
  * 2. On token limit / rate limit / transient error, fallback to Groq Qwen 3.8 (groq:qwen/qwen3.8-27b)
- * 3. Fallback to Groq GPT-OSS 120B (groq:openai/gpt-oss-120b)
+ * 3. Fallback to Gemini Cascade or Groq GPT-OSS 120B
  * 4. If both hit limits, retry with exponential backoff (up to 3 retries)
  */
 export async function callOutreachLLMWithFallback(options: LLMCallOptions): Promise<LLMResponse> {
-  const primaryModel = options.modelSelection?.primaryModel || "groq:openai/gpt-oss-120b";
-  const fallbackCandidates = ["groq:qwen/qwen3.8-27b", "groq:openai/gpt-oss-120b"];
+  const primaryModel = options.modelSelection?.primaryModel || "groq:qwen/qwen3.8-27b";
+  const fallbackCandidates = ["groq:qwen/qwen3.8-27b", "gemini:cascade", "groq:openai/gpt-oss-120b"];
 
   // 1. Try primary model first
   try {
