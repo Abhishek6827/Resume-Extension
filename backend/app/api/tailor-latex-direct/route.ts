@@ -549,6 +549,17 @@ Your mission is to tailor this raw LaTeX resume to achieve 95-100% ATS match ali
 TARGET JD REQUIREMENTS CHECKLIST:
 ${jdChecklistText}
 
+GOLDEN BASE RESUME IN-PLACE CONTENT REPLACEMENT MANDATE (CRITICAL):
+- The input LaTeX is the candidate's perfected GOLDEN BASE RESUME TEMPLATE (calibrated for exact 1-page fit).
+- DO NOT rewrite or alter the LaTeX document framework, preamble, packages, geometry, margins, macros (\role, \project, etc.), or section ordering.
+- YOUR TASK IS STRICTLY IN-PLACE CONTENT REPLACEMENT ONLY:
+  1. Professional Summary: Update strictly to 3 compact, dense lines matching the target JD role and core tech stack.
+  2. Experience Section: Keep canonical company names and dates 100% UNCHANGED. Only update the 3-4 technologies subtitle and rewrite the existing bullet points in-place using Google XYZ format, embedding target JD tools and real production metrics.
+  3. Projects Section: Update project subtitle technologies (strictly 3-4 core tools) and bullet points to feature target JD requirements while keeping real project names intact.
+  4. Technical Skills Section: Dynamically align categories and tools to achieve 100% coverage of the target JD checklist.
+  5. Education: Keep 100% untouched.
+- DO NOT add extra bullets or change any spacing macros (\titlespacing, \setlist, \vspace). The output must maintain the exact structure and fit onto strictly 1 page.
+
 CORE IN-PLACE TAILORING RULES:
 
 0. MANDATORY PROACTIVE ERADICATION OF ALL JD RED FLAGS:

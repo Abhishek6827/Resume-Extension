@@ -4,6 +4,19 @@ This document tracks all bug fixes, network protocol adjustments, and non-trivia
 
 ---
 
+## [2026-11-09] Golden Base Resume In-Place Content Replacement Enforcement
+
+- **Feature Description & Objectives:**
+  - Enforced the **Golden Base Resume In-Place Content Replacement Mandate** in `backend/app/api/tailor-latex-direct/route.ts`.
+  - The engine locks the user's provided LaTeX (preamble, geometry `0.38in/0.26in`, margins, macros, section ordering, bullet count) as the immutable structural foundation.
+  - LLMs are strictly constrained to in-place content updates matching target JD requirements (Summary, Experience bullets with XYZ format, Project subtitles with 3-4 technologies, Technical Skills) with zero layout or preamble alteration, guaranteeing strict 1-page geometry.
+- **Files Modified:**
+  - `backend/app/api/tailor-latex-direct/route.ts`: Added Golden Base Resume In-Place Mandate to the main system prompt.
+- **Architectural Invariants Established:**
+  - Golden base resume LaTeX layout is treated as immutable skeleton; only inner content is updated per JD.
+
+---
+
 ## [2026-11-09] Complete Replacement of StepFun with NVIDIA Nemotron 120B (nvidia/nemotron-3.5-super-vl-120b-a12b)
 
 - **Feature Description & Objectives:**
