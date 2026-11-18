@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { SkillBank, JDMatchResult, matchSkillBankWithJD } from "../../lib/skill-bank";
 
 interface SkillBankCardProps {

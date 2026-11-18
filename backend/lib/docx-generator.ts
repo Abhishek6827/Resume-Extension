@@ -16,11 +16,6 @@ import type { ResumeData } from "./types";
 export async function generateDOCX(resume: ResumeData): Promise<Buffer> {
   const children: Paragraph[] = [];
 
-  // Helper to add spacing/padding
-  const addSpacing = () => {
-    children.push(new Paragraph({ text: "" }));
-  };
-
   // ─── Header: Name ──────────────────────────────────────
   children.push(
     new Paragraph({

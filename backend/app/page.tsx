@@ -1050,13 +1050,8 @@ const ParallelPipelineVisualizer = ({
   tailoredResumes = [],
   selectedResultIndex = 0,
   onSelectModel,
-  isCompilingSelected = false,
-  pdfUrl = null,
-  downloadName = "Resume.pdf",
-  compilePdfForIndex,
   targetModels,
   candidateName = "",
-  retryingModels,
 }: {
   status: string;
   progress: { [key: string]: number };
@@ -1064,13 +1059,8 @@ const ParallelPipelineVisualizer = ({
   tailoredResumes?: any[];
   selectedResultIndex?: number;
   onSelectModel?: (idx: number) => void;
-  isCompilingSelected?: boolean;
-  pdfUrl?: string | null;
-  downloadName?: string;
-  compilePdfForIndex?: (idx: number, list: any[]) => void;
   targetModels: any[];
   candidateName?: string;
-  retryingModels?: Set<string>;
 }) => {
   const [selectedTab, setSelectedTab] = useState<string>(targetModels.length > 0 ? targetModels[0].id : "moonshotai/kimi-k3.1-pro");
 
@@ -1271,8 +1261,6 @@ const ParallelPipelineVisualizer = ({
   const isCompiling = status === "compiling";
   const activeResult = tailoredResumes.find(r => r.modelId === selectedTab);
   const isModelError = visualPhases[selectedTab] === "Error" || visualPhases[selectedTab] === "Failed" || !!activeResult?.error;
-
-  const isNodeSuccess = (visualPhases[selectedTab] === "Ready" || pVal === 100 || status === "success") && activeResult && !activeResult.error;
 
   const getBranchState = (branch: "summary" | "experience" | "projects" | "skills" | "matchScore") => {
     if (isModelError) {
@@ -2672,6 +2660,7 @@ export default function Home() {
             const parseRes = await fetch(`${API_BASE_URL}/api/parse-resume`, {
               method: "POST",
               body: formData,
+              signal,
             });
             if (!parseRes.ok) throw new Error("Failed to parse resume for cover letter.");
             bodyPayload.resumeData = await parseRes.json();
@@ -2681,6 +2670,7 @@ export default function Home() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(bodyPayload),
+            signal,
           });
           if (!clRes.ok) {
             const errData = await clRes.json();
@@ -2704,6 +2694,7 @@ export default function Home() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text: jdText, modelSelection: { primaryModel } }),
+          signal,
         });
         if (!jdRes.ok) throw new Error("Failed to parse job description");
         const jdData = await jdRes.json();
@@ -2726,6 +2717,7 @@ export default function Home() {
             skillBank: useSkillBankInTailoring ? skillBank : null,
             modelsToRun: isAutoRun ? undefined : [primaryModel]
           }),
+          signal,
         });
         if (!tailorRes.ok) {
           throw new Error("Failed to tailor LaTeX directly");
@@ -2831,6 +2823,7 @@ export default function Home() {
       const parseRes = await fetch(`${API_BASE_URL}/api/parse-resume`, {
         method: "POST",
         body: formData,
+        signal,
       });
       if (!parseRes.ok) throw new Error("Failed to parse resume file");
       const resumeData = await parseRes.json();
@@ -2839,6 +2832,7 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: jdText, modelSelection: { primaryModel } }),
+        signal,
       });
       if (!jdRes.ok) throw new Error("Failed to parse job description");
       const jdData = await jdRes.json();
@@ -2849,6 +2843,7 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ resumeData, jdData, modelSelection: { primaryModel } }),
+        signal,
       });
       if (!tailorRes.ok) throw new Error("Failed to tailor resume");
       const tailoredResult = await tailorRes.json();
@@ -3223,12 +3218,7 @@ export default function Home() {
                   activePhases={parallelPhases}
                   tailoredResumes={tailoredResumes}
                   selectedResultIndex={selectedResultIndex}
-                  isCompilingSelected={isCompilingSelected}
-                  pdfUrl={pdfUrl}
-                  downloadName={downloadName}
-                  retryingModels={retryingModels}
                   onSelectModel={handleSelectModel}
-                  compilePdfForIndex={compilePdfForIndex}
                   candidateName={extractCandidateNameFromLatex(latexText) || (tailoredResumes.length > 0 ? (tailoredResumes[selectedResultIndex]?.candidateName || tailoredResumes[0]?.candidateName) : "")}
                   targetModels={
                     retryingModels.size > 0

@@ -1,5 +1,4 @@
 import PDFDocument from "pdfkit";
-import path from "path";
 import type { ResumeData } from "./types";
 
 /**
@@ -153,7 +152,6 @@ export function generatePDF(resume: ResumeData): Promise<Buffer> {
       if (resume.projects && resume.projects.length > 0) {
         addSectionHeader("Projects");
         resume.projects.forEach((proj) => {
-          const startY = doc.y;
           const techStr = proj.tech && proj.tech.length > 0 ? ` [${proj.tech.join(", ")}]` : "";
           doc
             .fillColor(textColor)

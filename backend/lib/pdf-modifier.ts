@@ -1,5 +1,4 @@
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
-import { inflateSync } from "zlib";
 
 /**
  * Represents a text change to apply to the original PDF.
@@ -164,7 +163,7 @@ function findMatchingItems(
     pageGroups.set(item.pageIndex, group);
   }
 
-  for (const [pageIdx, pageItems] of pageGroups) {
+  for (const pageItems of pageGroups.values()) {
     const sorted = pageItems.sort((a, b) => a.y - b.y || a.x - b.x);
 
     for (let i = 0; i < sorted.length; i++) {

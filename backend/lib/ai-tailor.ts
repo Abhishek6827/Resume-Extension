@@ -357,7 +357,7 @@ Return ONLY a valid JSON object matching this exact structure (no markdown wrapp
     const response = await callFastLLM({
       systemPrompt,
       userMessage: `Job Description:\n${rawText}`,
-      modelSelection: { primaryModel: "groq:qwen/qwen3.8-27b" },
+      modelSelection: modelSelection || { primaryModel: "groq:qwen/qwen3.8-27b" },
       maxTokens: 4096,
       jsonMode: true,
     });

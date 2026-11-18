@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCorsHeaders, handleOptions } from "../../../lib/cors";
 import { callLLM, callFastLLM, extractJSON } from "../../../lib/llm-client";
 import { sanitizeMissingKeywords } from "../../../lib/skill-bank";
-import { ensureLatexSpacing } from "../../../lib/latex-generator";
 import { extractNameFromLatex } from "../../../lib/ai-tailor";
 
 export const dynamic = "force-dynamic";
@@ -94,8 +93,6 @@ function cleanLatexResponse(rawText: string): string {
 }
 
 function fallbackKeywordEvaluation(latex: string, jdData: any) {
-  const jdText = typeof jdData === 'string' ? jdData : JSON.stringify(jdData);
-  const lowerJd = jdText.toLowerCase();
   const lowerLatex = latex.toLowerCase();
 
   // Dynamically extract requirements from the actual JD object
@@ -318,113 +315,6 @@ interface TailoredResult {
   error?: string;
 }
 
-async function tailorForModel(
-  modelId: string,
-  modelName: string,
-  latex: string,
-  latexLength: number,
-  jdData: any,
-  systemPrompt: string,
-  userMessage: string
-): Promise<TailoredResult> {
-  let tailoredLatex = "";
-  let attempt = 0;
-  const maxAttempts = 3;
-  let currentSystemPrompt = systemPrompt;
-  const maxAllowedBudget = Math.round(latexLength * 0.94);
-
-  while (attempt < maxAttempts) {
-    const response = await callLLM({
-      systemPrompt: currentSystemPrompt,
-      userMessage,
-      modelSelection: { primaryModel: modelId },
-      jsonMode: false,
-    });
-
-    tailoredLatex = cleanLatexResponse(response.content);
-
-    if (tailoredLatex.length <= maxAllowedBudget) {
-      break;
-    }
-
-    const excess = tailoredLatex.length - maxAllowedBudget;
-    currentSystemPrompt = `You are an expert ATS specialist and senior LaTeX editor.
-CRITICAL 1-PAGE CHARACTER & LINE OVERFLOW (ATTEMPT ${attempt + 1}/${maxAttempts}):
-Your generated LaTeX was ${tailoredLatex.length} characters long, which is ${excess} characters OVER the strict 1-page budget (${maxAllowedBudget} characters).
-
-TO GUARANTEE THE RESUME FITS ON EXACTLY 1 PAGE WHILE RETAINING HIGH CREDIBILITY:
-1. SWAP IN-PLACE & COMPACT: Keep single-line bullets strictly under 75-80 characters, and 2-line bullets under 140-145 characters so they never wrap an extra line. Retain Google XYZ formula (accomplished X, measured by Y, by doing Z). Remove filler words, but retain key technical achievements. NEVER write robotic meta-phrases like "applied Data Structures, Algorithms" or "conducted task estimation".
-2. PROJECT TECH HEADERS: Keep strictly to 4-5 core JD technologies per project subtitle.
-3. SKILL ROWS: Keep each skill category to 1 single line (max 5-6 core tools, max 55-60 chars). Lead with target JD skills.
-4. SUMMARY: Limit summary to strictly 3 compact, focused lines (~45 words).
-5. DO NOT add extra bullets or projects. Keep the exact count as the original template.
-6. DO NOT alter preamble, geometry, margins, packages, or vertical spacing.
-7. DO NOT add extra blank lines between sections or around itemize blocks.
-
-You MUST produce the full LaTeX document with total length <= ${maxAllowedBudget} characters.`;
-    attempt++;
-  }
-
-  const lengthExceeded = tailoredLatex.length > latexLength;
-  const evaluation = await evaluateTailoredResume(tailoredLatex, jdData);
-
-  return {
-    modelId,
-    modelName,
-    latex: tailoredLatex,
-    originalLength: latexLength,
-    generatedLength: tailoredLatex.length,
-    lengthExceeded,
-    lengthCheck: {
-      status: lengthExceeded ? "over" : "fit",
-      length: tailoredLatex.length,
-      maxLength: latexLength
-    },
-    score: evaluation.score,
-    reasoning: evaluation.reasoning,
-    skimVerdict: evaluation.skimVerdict,
-    matchedKeywords: evaluation.matchedKeywords,
-    missingKeywords: evaluation.missingKeywords,
-    redFlags: evaluation.redFlags,
-  };
-}
-
-async function tailorForModelSafe(
-  modelId: string,
-  modelName: string,
-  latex: string,
-  latexLength: number,
-  jdData: any,
-  systemPrompt: string,
-  userMessage: string
-): Promise<TailoredResult> {
-  try {
-    return await tailorForModel(modelId, modelName, latex, latexLength, jdData, systemPrompt, userMessage);
-  } catch (err: any) {
-    console.error(`[tailorForModelSafe] Error for model ${modelId}:`, err);
-    return {
-      modelId,
-      modelName,
-      latex: "",
-      originalLength: latexLength,
-      generatedLength: 0,
-      lengthExceeded: false,
-      lengthCheck: {
-        status: "fit",
-        length: 0,
-        maxLength: latexLength
-      },
-      score: 0,
-      reasoning: `Failed to generate: ${err.message || String(err)}`,
-      skimVerdict: "",
-      matchedKeywords: [],
-      missingKeywords: [],
-      redFlags: [],
-      error: err.message || String(err)
-    };
-  }
-}
-
 function formatApiError(err: any): string {
   let message = typeof err === "string" ? err : err?.message || String(err);
 
@@ -545,7 +435,7 @@ export async function POST(request: NextRequest) {
   const corsHeaders = getCorsHeaders(request);
 
   try {
-    const { latex, jdData, rawJdText, skillBank, modelsToRun } = await request.json();
+    const { latex, jdData, skillBank, modelsToRun } = await request.json();
 
     if (!latex || !latex.trim()) {
       return NextResponse.json({ error: "Missing LaTeX input" }, { status: 400, headers: corsHeaders });

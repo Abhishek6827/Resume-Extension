@@ -345,7 +345,7 @@ export function ensureLatexSpacing(latex: string): string {
   // 4. Ensure gap after Summary section text before next section
   result = result.replace(
     /(\\section\*?\{Summary\}[\s\S]*?)(?=\\section\*?\{)/g,
-    (match, summaryBlock) => {
+    (_match, summaryBlock) => {
       if (!summaryBlock.includes("\\vspace")) {
         return summaryBlock.trimEnd() + "\n\\vspace{2pt}\n\n";
       }

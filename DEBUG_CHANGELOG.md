@@ -2227,3 +2227,45 @@ ov18_fresh_jobs.json.
 ### 4. Architectural Invariants & Rules Established
 - **Kimi K3.1 Pro Model Contract:** NVIDIA NIM endpoint (`https://integrate.api.nvidia.com/v1/chat/completions`) uses `model: "moonshotai/kimi-k3.1-pro"`, `stream: true`, `seed: 0`, and `reasoning_effort: "low"` with `max_tokens: 16384`.
 - **Zero Breaking Changes:** Backward routing preserved for any legacy calls requesting `mistral` so no caller ever fails.
+
+## [2026-11-18] Full Project Audit & Resolution of Declared-But-Unused Items
+
+### 1. Issue Description & Symptom
+- Project-wide audit requested for all declared-but-unused variables, parameters, functions, and imports across the entire repository.
+- Identified 20 occurrences in TypeScript (`backend/`) flagged under strict `--noUnusedLocals` and `--noUnusedParameters` compiler checks.
+
+### 2. Root Cause Discovered & Solution
+Each item was classified into one of two root causes:
+1. **Forgotten to Use (Bug / Omission):**
+   - `signal` (`backend/app/page.tsx` line 2613): `AbortController` was instantiated and aborted on reset/cancel, but `signal` was never passed to `fetch()` calls. Now passed to all `fetch` requests (`parse-resume`, `generate-cover-letter`, `parse-jd`, `tailor-latex-direct`, `tailor`) so user resets immediately cancel in-flight network requests.
+   - `modelSelection` (`backend/lib/ai-tailor.ts` line 338): Function `parseJDWithAI` accepted `modelSelection?: ModelSelection`, but hardcoded Groq Qwen at line 360. Updated to `modelSelection || { primaryModel: "groq:qwen/qwen3.8-27b" }`.
+2. **Leftover / Dead Code (Unnecessary):**
+   - `tailorForModel` & `tailorForModelSafe` (`backend/app/api/tailor-latex-direct/route.ts`): Legacy non-streaming implementation replaced by parallel `ReadableStream`. Deleted both unused functions (along with unused `latex` parameter).
+   - `ensureLatexSpacing` (`backend/app/api/tailor-latex-direct/route.ts` line 5): Leftover import; removed.
+   - `lowerJd` & `jdText` (`backend/app/api/tailor-latex-direct/route.ts` line 97): Redundant; structured skills are extracted directly from `jdData`. Removed.
+   - `rawJdText` (`backend/app/api/tailor-latex-direct/route.ts` line 548): Destructured but never read; removed.
+   - `React` (`backend/app/components/SkillBankCard.tsx` line 3): Not needed under React 17+ JSX transform; removed.
+   - `isCompilingSelected`, `pdfUrl`, `downloadName`, `compilePdfForIndex`, `retryingModels` (`backend/app/page.tsx`): Leftover props from when visualizer rendered PDF buttons; removed from props, types, and caller.
+   - `isNodeSuccess` (`backend/app/page.tsx` line 1275): Redundant calculation; removed.
+   - `addSpacing` (`backend/lib/docx-generator.ts` line 20): Helper unused as paragraph spacing objects are used directly; removed.
+   - `match` (`backend/lib/latex-generator.ts` line 348): Positional regex replacer argument; renamed to `_match`.
+   - `path` (`backend/lib/pdf-generator.ts` line 2): Unused since fonts switched to built-in Helvetica; removed.
+   - `startY` (`backend/lib/pdf-generator.ts` line 156): Leftover coordinate capture from old multi-column layout; removed.
+   - `inflateSync` (`backend/lib/pdf-modifier.ts` line 2): Leftover decompression import; removed.
+   - `pageIdx` (`backend/lib/pdf-modifier.ts` line 167): Map key unused; updated to `for (const pageItems of pageGroups.values())`.
+
+### 3. Files Modified
+- `backend/app/api/tailor-latex-direct/route.ts`
+- `backend/app/components/SkillBankCard.tsx`
+- `backend/app/page.tsx`
+- `backend/lib/ai-tailor.ts`
+- `backend/lib/docx-generator.ts`
+- `backend/lib/latex-generator.ts`
+- `backend/lib/pdf-generator.ts`
+- `backend/lib/pdf-modifier.ts`
+- `DEBUG_CHANGELOG.md`
+
+### 4. Verification
+- Strict `tsc --noUnusedLocals --noUnusedParameters --noEmit` across `backend` and `extension`: **0 errors**.
+- Next.js production build (`npm --prefix backend run build`): **Completed successfully with 0 errors**.
+- Java backend Maven compilation: **100% clean, 0 warnings/errors**.
