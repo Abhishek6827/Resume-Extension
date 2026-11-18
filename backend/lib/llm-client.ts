@@ -2,7 +2,7 @@
 // Supported providers:
 // NVIDIA NIM:
 //   - nvidia/nemotron-3.5-super-vl-120b-a12b (Balanced / 120B)
-//   - mistralai/mistral-large-4-1t-a52b (Quality / Mistral Large 4)
+//   - moonshotai/kimi-k3.1-pro (Quality / Kimi K3.1 Pro)
 // Groq:
 //   - qwen/qwen3.8-27b (Fast / Cover Letter)
 //   - openai/gpt-oss-120b (Quality / Cover Letter)
@@ -234,18 +234,17 @@ async function tryNvidia(options: LLMCallOptions, forceModel?: string): Promise<
           requestOptions.max_tokens = options.maxTokens ?? 16384;
           requestOptions.stream = true;
         } else if (
+          modelToUse === "moonshotai/kimi-k3.1-pro" ||
+          modelToUse.includes("kimi") ||
           modelToUse === "mistralai/mistral-large-4-1t-a52b" ||
           modelToUse.includes("mistral") ||
           modelToUse === "nvidia/nemotron-3-ultra-550b-a55b" ||
           modelToUse.includes("550b")
         ) {
-          requestOptions.model = "mistralai/mistral-large-4-1t-a52b";
-          requestOptions.temperature = 0.5;
-          requestOptions.top_p = 1.0;
+          requestOptions.model = "moonshotai/kimi-k3.1-pro";
           requestOptions.max_tokens = options.maxTokens ?? 16384;
+          requestOptions.seed = 0;
           requestOptions.stream = true;
-          requestOptions.frequency_penalty = 0;
-          requestOptions.presence_penalty = 0;
           requestOptions.reasoning_effort = "low";
         } else if (modelToUse === "nvidia/nemotron-3.5-lightning-30b-a3b" || modelToUse.includes("nemotron-3.5")) {
           requestOptions.temperature = 1;

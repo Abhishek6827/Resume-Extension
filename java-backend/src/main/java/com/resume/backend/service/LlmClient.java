@@ -62,7 +62,7 @@ public class LlmClient {
         }
 
         try {
-            return tryNvidia(systemPrompt, userMessage, "mistralai/mistral-large-4-1t-a52b");
+            return tryNvidia(systemPrompt, userMessage, "moonshotai/kimi-k3.1-pro");
         } catch (Exception e) {
             System.err.println("[LLM] Global Nvidia fallback failed: " + e.getMessage());
             throw new RuntimeException("All LLM providers failed.");
@@ -137,12 +137,14 @@ public class LlmClient {
 
     private String tryNvidia(String systemPrompt, String userMessage, String modelName) {
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", modelName != null ? modelName : "mistralai/mistral-large-4-1t-a52b");
+        requestBody.put("model", modelName != null ? modelName : "moonshotai/kimi-k3.1-pro");
         requestBody.put("messages", List.of(
                 Map.of("role", "system", "content", systemPrompt),
                 Map.of("role", "user", "content", userMessage)
         ));
         requestBody.put("temperature", 0.7);
+        requestBody.put("reasoning_effort", "low");
+        requestBody.put("seed", 0);
 
         return executePost(nvidiaUrl, nvidiaApiKey, requestBody);
     }

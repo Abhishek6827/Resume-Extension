@@ -51,17 +51,14 @@ export const CANONICAL_BASE_LATEX_RESUME = `\\documentclass[10pt]{article}
 
 %---------- HEADER ----------
 {\\centering
-  {\\LARGE\\textbf{Abhishek Tiwari}}\\\\[1.5pt]
+  {\\LARGE\\textbf{Abhishek Tiwari}}\\\\[2pt]
   \\small
-  \\textit{Full Stack Developer --- AI Systems \\& Distributed Payments}\\\\[1.5pt]
-  Lucknow, India \\,\\textbar\\, Open to Remote \\& Relocation within India\\\\[1.5pt]
-  +91-7081660941 \\,\\textbar\\,
-  \\href{mailto:abhishektiwari6827@gmail.com}{abhishektiwari6827@gmail.com} \\,\\textbar\\,
-  \\href{https://linkedin.com/in/abhishek-tiwariiii}{linkedin.com/in/abhishek-tiwariiii} \\,\\textbar\\,
-  \\href{https://github.com/abhishek6827}{github.com/abhishek6827} \\,\\textbar\\,
-  \\href{https://getchintu.com}{getchintu.com} \\,\\textbar\\,
-  \\href{https://portfolio.getchintu.com}{portfolio.getchintu.com}\\par
-}\\vspace{1pt}
+  \\textit{Full Stack Software Engineer}\\\\[2pt]
+  Lucknow, India \\,$\\vert$\\, +91 70816 60941 \\,$\\vert$\\, \\href{mailto:abhishektiwari6827@gmail.com}{abhishektiwari6827@gmail.com}\\\\[2pt]
+  \\href{https://linkedin.com/in/abhishek-tiwariiii}{linkedin.com/in/abhishek-tiwariiii} \\,$\\vert$\\,
+  \\href{https://github.com/abhishek6827}{github.com/abhishek6827} \\,$\\vert$\\,
+  \\href{https://getchintu.com}{getchintu.com}\\par
+}\\vspace{2pt}
 \\small\\linespread{0.88}\\selectfont
 
 %---------- SUMMARY ----------

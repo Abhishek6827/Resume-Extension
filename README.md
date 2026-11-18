@@ -102,7 +102,7 @@ The frontend will be available at `http://localhost:3000`.
 This project is built to handle heavy traffic and LLM rate limits gracefully. The Java backend dynamically resolves the requested model:
 - `groq:llama-3.3-70b-versatile`
 - `cerebras:gpt-oss-120b`
-- `mistralai/mistral-large-4-1t-a52b`
+- `moonshotai/kimi-k3.1-pro`
 
 If a provider fails or rate-limits the request, the backend automatically fails over to a secondary provider to ensure the user always gets their tailored resume without interruption.
 

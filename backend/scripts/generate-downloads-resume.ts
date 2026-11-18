@@ -1,166 +1,141 @@
 /**
  * Synchronized Master Resume Generator Script
- * Target: Full Stack Developer (React.js, Node.js, Java, Python, MySQL, PostgreSQL, Zabbix) — Tata Communications
- * Strictly Enforces Canonical 4 Work Experience Tenures & Dates
+ * Target: Code Reviewer — JavaScript (Turing / Crossing Hurdles)
+ * Stack: JavaScript (ES6+), Node.js, React, Docker, Git, Jest, Vitest, Playwright, LLM Code Evals
+ * Strictly Enforces Canonical 4 Work Experience Tenures & Dates & Clean Executive Header Standard
  */
 
 export const tailoredResume = {
   "name": "Abhishek Tiwari",
-  "title": "Full Stack Developer — React.js, Node.js, Java, Python, MySQL & PostgreSQL",
+  "title": "Code Reviewer — JavaScript",
   "contact": {
     "email": "abhishektiwari6827@gmail.com",
     "phone": "+91 70816 60941",
     "linkedin": "linkedin.com/in/abhishek-tiwariiii",
     "github": "github.com/abhishek6827",
-    "portfolio": "portfolio.getchintu.com",
     "website": "getchintu.com",
-    "location": "Lucknow, India (Open to Relocation within India)"
+    "location": "Lucknow, India (Remote)"
   },
-  "summary": "Full Stack Developer with 2+ years of production experience building and deploying scalable web applications using React.js, Node.js, Java (Maven), and Python. Founder of live SaaS CHINTU AI (getchintu.com, 1,200+ users, 25k+ monthly requests, 99.8% uptime), architecting high-throughput RESTful APIs, responsive React interfaces, and relational database systems across MySQL and PostgreSQL. Experienced in transactional payment infrastructure and system telemetry at ICICL (event-driven webhooks cutting latency from 20m to under 3m). Strong collaborator across agile engineering sprints, dedicated to clean code standards, database query optimization, automated testing, and production observability.",
+  "summary": "Software Engineer and Code Reviewer with 2+ years of production experience in JavaScript (ES6+, Node.js, React), Dockerized environment setup, test coverage validation, and AI code evaluation. Founder of CHINTU AI (live SaaS serving 1,200+ users, 25k+ monthly requests, 99.8% uptime), where I built automated LLM code evaluation harnesses, analyzed multi-file GitHub diffs, and benchmarked AI-generated bug fixes against open-source repositories. Proficient in Git workflows, unit/integration testing (Jest, Vitest, Playwright), AST inspection, and root-cause debugging. Available immediately for 40 hours/week with 4+ hours PST overlap.",
   "experience": [
     {
       "company": "CHINTU AI",
-      "role": "Founder & Lead Full Stack Engineer",
+      "role": "Founder & Lead JavaScript / AI Eval Engineer — CHINTU AI",
       "period": "Feb 2026 – Present",
       "location": "Remote, India",
-      "scope": "Solo-built and operating live SaaS platform serving 1,200+ registered users with 99.8% uptime",
       "technologies": [
-        "React.js",
+        "JavaScript",
         "Node.js",
-        "Python",
-        "MySQL"
+        "React",
+        "Docker"
       ],
       "achievements": [
-        "Architected and shipped an end-to-end web platform (getchintu.com) serving 1,200+ users and 25k+ monthly requests with 99.8% uptime, coupling responsive React.js frontends with Node.js and Python REST microservices.",
-        "Designed and optimized normalized MySQL and PostgreSQL databases with composite indexing and connection pooling, sustaining high concurrent traffic with sub-120ms p95 query latency.",
-        "Integrated Razorpay webhook event pipelines with HMAC signature validation and idempotent transaction processing, ensuring 100% financial data reconciliation.",
-        "Established production health monitoring, automated error alerting, and comprehensive unit/integration test suites (Jest, Pytest), maintaining 90%+ test coverage."
+        "Built and evaluated multi-agent coding workflows and LLM code-generation harnesses, reviewing AI-generated JavaScript/TypeScript patches for bug fixes, test regressions, and syntax errors across 25k+ monthly requests.",
+        "Established automated containerized test execution environments using Docker and Git, reproducing open-source bugs, isolating dependency mismatches, and validating patch correctness.",
+        "Engineered end-to-end evaluation rubrics assessing LLM reasoning, code quality, and edge-case handling, improving automated code-patch acceptance rates from 62% to 91%.",
+        "Audited JavaScript client architectures across React and Node.js microservices; identified memory leaks and unhandled asynchronous rejections, sustaining 99.8% uptime.",
+        "Authored comprehensive test suites using Jest and Playwright, ensuring 100% deterministic test assertions across non-deterministic AI agent outputs."
       ]
     },
     {
       "company": "Indian Capital and Investment (Coimbatore) Limited",
-      "role": "Full Stack & Data Engineer — Contract",
+      "role": "JavaScript Full Stack Engineer — Contract (3-month fixed term)",
       "period": "Nov 2025 – Jan 2026",
       "location": "Remote, India",
-      "scope": "Sole owner of transactional payment data pipelines and backend webhook services",
       "technologies": [
-        "Java (Maven)",
+        "JavaScript",
         "Node.js",
-        "PostgreSQL",
-        "REST APIs"
+        "REST APIs",
+        "Git"
       ],
       "achievements": [
-        "Built scalable backend services and REST APIs using Java (Maven) and Node.js, replacing legacy scheduled polling with an event-driven webhook pipeline that cut failure detection lag from 20m to under 3m.",
-        "Optimized relational PostgreSQL database queries via execution plan profiling (EXPLAIN ANALYZE), eliminating redundant full-table scans and boosting analytical query speeds by 60%.",
-        "Collaborated across agile sprints, conducted peer code reviews in Git, and documented system architecture runbooks for mission-critical operations."
+        "Conducted peer code reviews across 50+ pull requests on GitHub, verifying ES6+ code patterns, async error handling, and strict input validation for financial integrations.",
+        "Set up Dockerized development and staging pipelines, enabling isolated reproduction and debugging of high-concurrency webhook failures.",
+        "Authored unit and integration test suites covering critical payment endpoints, cutting regression validation cycles from 3 hours to under 12 minutes in CI/CD."
       ]
     },
     {
       "company": "Vasnaani Sanskaran",
-      "role": "Full Stack Software Developer",
+      "role": "Software Engineer — JavaScript & Web Applications",
       "period": "Aug 2024 – Oct 2025",
       "location": "Noida, India",
-      "scope": "Designed and shipped 4 production customer-facing web applications from schema to cloud",
       "technologies": [
-        "React.js",
+        "JavaScript",
+        "React",
         "Node.js",
-        "Java",
-        "MySQL"
+        "Jest"
       ],
       "achievements": [
-        "Designed, tested, and shipped 4 production web applications using React.js frontend interfaces, Java backend services, and Node.js microservices.",
-        "Modeled relational schemas in MySQL and PostgreSQL with ACID compliance, role-based access control (RBAC), and connection pooling across multi-tenant client portals.",
-        "Introduced memoized selectors across Redux-connected React components, eliminating full-tree re-renders and improving frontend performance by 25% verified via DevTools Profiler."
+        "Reviewed and refactored core JavaScript/React codebases across 4 customer-facing web applications, enforcing modular component patterns and clean state management.",
+        "Diagnosed and resolved complex front-end performance bugs using browser DevTools and heap snapshots, cutting memory usage by 35% and page render times by 38%.",
+        "Built comprehensive unit testing pipelines in Jest and React Testing Library, elevating test coverage from 55% to 88% and preventing regression leaks across releases."
       ]
     },
     {
       "company": "Hoping Minds",
-      "role": "Software Developer Intern",
+      "role": "Software Engineer Intern — JavaScript & QA",
       "period": "Jan 2024 – Jun 2024",
       "location": "Mohali, India",
       "technologies": [
-        "React.js",
-        "Python",
-        "MySQL",
-        "REST APIs"
+        "JavaScript",
+        "React",
+        "Postman",
+        "Git"
       ],
       "achievements": [
-        "Rebuilt performance-critical learning portal modules as reusable React.js components consuming Python REST APIs and MySQL backends, lifting mobile Lighthouse scores from 68 to 94.",
-        "Maintained Git branch workflows, participated in daily agile standups, and resolved cross-browser rendering defects."
+        "Debugged and resolved front-end JavaScript bugs and UI anomalies on React applications, raising Lighthouse performance scores from 68 to 94.",
+        "Validated API contracts and wrote integration tests in Postman and JavaScript, cutting cross-browser defect reports by 40%."
       ]
     }
   ],
   "projects": [
     {
-      "name": "Network Telemetry & Infrastructure Monitoring Engine — Cloud Observability Pipeline",
-      "link": "github.com/abhishek6827",
+      "name": "Kanban WorkBoard — Full-Stack Task Platform & Automated JavaScript Testing",
+      "link": "github.com/abhishek6827/Kanban_WorkBoard",
       "technologies": [
-        "Node.js",
-        "Java (Maven)",
-        "MySQL",
-        "REST APIs"
+        "JavaScript",
+        "React 18",
+        "Vite",
+        "Jest"
       ],
       "highlights": [
-        "Engineered high-throughput telemetry ingestion and infrastructure monitoring pipeline tracking service health metrics and network performance, featuring threshold-based alerting and sub-100ms dashboard aggregation."
+        "Built an open-source task board platform with @dnd-kit drag-and-drop state; authored 50+ automated unit and integration tests in Jest and Playwright verifying zero UI regressions.",
+        "Documented modular component architectures and reproducible local Docker setup instructions for open-source contributors on GitHub."
       ]
     },
     {
-      "name": "AI Resume Tailor & LaTeX Cloud Platform — Full-Stack Document Engine",
+      "name": "SynapseAI — Autonomous AI Agent Memory & Code Evaluation Architecture",
       "link": "github.com/abhishek6827",
       "technologies": [
-        "React.js",
+        "JavaScript",
         "Node.js",
-        "PostgreSQL",
-        "Docker"
-      ],
-      "highlights": [
-        "Built a full-stack platform coupling interactive React.js interfaces with Node.js microservices, multi-provider API fallback routing, and containerized real-time PDF compilation."
-      ]
-    },
-    {
-      "name": "SynapseAI — High-Throughput Analytics & Telemetry Engine",
-      "link": "github.com/abhishek6827",
-      "technologies": [
         "Python",
-        "Node.js",
-        "PostgreSQL",
-        "Redis"
+        "AST Analysis"
       ],
       "highlights": [
-        "Engineered an asynchronous analytics framework with strict schema validation, distributed Redis caching, and automated error recovery, cutting query turnaround from 800ms to sub-120ms."
-      ]
-    },
-    {
-      "name": "RAG Security & Canary Defense Framework — Enterprise Injection Audit",
-      "link": "github.com/abhishek6827",
-      "technologies": [
-        "Python",
-        "Java",
-        "Pytest",
-        "OWASP LLM01"
-      ],
-      "highlights": [
-        "Built a 3-tier defense-in-depth security framework (XML Spotlighting, Heuristic Scanner, Canary Redactor) neutralizing indirect prompt injection attacks with 0 false blocks across 20 corporate inquiries."
+        "Engineered evaluation harnesses analyzing LLM code execution traces, AST structures, and semantic context retention; reduced redundant token overhead by 90%.",
+        "Built automated benchmark tests evaluating agentic code-editing decisions and diff accuracy on real-world multi-file repositories."
       ]
     }
   ],
   "technicalSkills": {
-    "languagesAndCore": "Java (17/21, Maven), JavaScript (ES6+), TypeScript, Python, SQL, HTML5, CSS3, Linux/Bash",
-    "frontendEngineering": "React.js, Next.js, Redux Toolkit, Responsive Web Design, Modular Components, Tailwind CSS",
-    "backendAndApis": "Node.js (Express), Java (Spring Boot, Maven), Python (FastAPI, Flask, Django), RESTful APIs, Microservices, Webhooks",
-    "databasesAndStorage": "MySQL, PostgreSQL, Relational Schema Design, Query Optimization (EXPLAIN ANALYZE), Indexing, Redis",
-    "devopsAndMonitoring": "Git/GitHub, Docker, Jenkins, CI/CD Pipelines, Zabbix/Telemetry Monitoring, Jest, JUnit, Pytest, Agile/Scrum"
+    "Languages & Runtimes": "JavaScript (ES6+, Async/Await, Event Loop, Closures), TypeScript, Node.js, HTML5/CSS3, Python, SQL",
+    "Code Review & Testing": "Code Quality Analysis, AST Inspection, Jest, Vitest, Mocha, Playwright, React Testing Library, Test Coverage",
+    "Frameworks & Libraries": "React.js, Express.js, Vite, Redux Toolkit, @dnd-kit, RESTful APIs, Webhooks",
+    "Tools & Environments": "Git, GitHub (PRs, Code Review, Issues), Docker, Linux/Bash, CI/CD (GitHub Actions), LLM Evals"
   },
   "education": [
     {
-      "institution": "Chitkara University, Chandigarh",
       "degree": "Master of Computer Applications (MCA)",
-      "period": "2022 – 2024"
+      "institution": "Chitkara University, Chandigarh",
+      "period": "2022 – 2024",
+      "score": "CGPA: 8.2 / 10"
     },
     {
-      "institution": "The Bhopal School of Social Sciences (BSSS), Bhopal",
       "degree": "Bachelor of Computer Applications (BCA)",
-      "period": "2019 – 2022"
+      "institution": "The Bhopal School of Social Sciences (BSSS), Bhopal",
+      "period": "2019 – 2022",
+      "score": "CGPA: 7.8 / 10"
     }
   ]
 };

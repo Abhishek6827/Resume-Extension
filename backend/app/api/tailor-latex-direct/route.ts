@@ -11,7 +11,7 @@ export const maxDuration = 300;
 const AI_MODELS = [
   { id: "nvidia/nemotron-3.5-super-vl-120b-a12b", name: "Nemotron 120B (Preview)" },
   { id: "gemini:cascade", name: "Gemini Cascade (Google)" },
-  { id: "mistralai/mistral-large-4-1t-a52b", name: "Mistral Large 4 (Quality)" },
+  { id: "moonshotai/kimi-k3.1-pro", name: "Kimi K3.1 Pro (Quality)" },
   { id: "nvidia:nvidia/nemotron-3.5-lightning-30b-a3b", name: "Nemotron 30B (Speed)" },
 ];
 
@@ -603,6 +603,7 @@ GOLDEN BASE RESUME IN-PLACE CONTENT REPLACEMENT MANDATE (CRITICAL):
 - The input LaTeX is the candidate's perfected GOLDEN BASE RESUME TEMPLATE (calibrated for exact 1-page fit).
 - DO NOT rewrite or alter the LaTeX document framework, preamble, packages, geometry, margins, macros (\role, \project, etc.), or section ordering.
 - YOUR TASK IS STRICTLY IN-PLACE CONTENT REPLACEMENT ONLY:
+  0. Header Cleanliness Invariant: If updating the target title under candidate's name, keep it STRICTLY to the clean professional role title (max 2-4 words, e.g. \\textit{Senior Technical Support Engineer} or \\textit{Full Stack Engineer}). ABSOLUTE BAN on keyword stuffing in the title line (NEVER append tech stacks, tools, or buzzwords). Keep contact lines clean: Lucknow, India, phone, email, and verified links (LinkedIn, GitHub, getchintu.com). NEVER append shift schedules, work modes, or availability into the contact header (those belong in Summary or Cover Letter).
   1. Professional Summary: Update strictly to 3 dense lines matching the target JD role and core tech stack (~65-75 words, ~400-450 characters).
   2. Experience Section: Keep canonical company names and dates 100% UNCHANGED. Only update the 3-4 technologies subtitle and rewrite the existing bullet points in-place using Google XYZ format, embedding target JD tools and real production metrics. Maintain the edge-to-edge line-filling length of each bullet point (single-line bullets: 90-105 chars, 2-line bullets: 180-205 chars).
   3. Projects Section: Update project subtitle technologies (strictly 3-4 core tools) and bullet points to feature target JD requirements while keeping real project names intact.
