@@ -51,7 +51,7 @@ VERIFIED CANDIDATE PROFILE & FACT GROUNDING:
 CANONICAL WORK EXPERIENCE & REAL METRICS:
 1. CHINTU AI | Feb 2026 – Present | Remote, India
    - Founder & Lead Full Stack Engineer
-   - Solo-built and operating live SaaS platform (getchintu.com) serving 1,200+ registered users and 25k+ monthly requests with 99.8% uptime.
+   - Solo-built and operating live SaaS platform (getchintu.com) serving 500+ registered users and 25k+ monthly requests with 99.8% uptime.
    - Platform Domain: Document generation & AI-powered resume engine coupling responsive React.js frontends with Node.js and Python microservices.
    - Database: Normalized MySQL & PostgreSQL with composite indexing and connection pooling (sub-120ms p95 latency).
    - Payments & Security: Razorpay webhook event pipeline with HMAC signature validation and idempotent transaction processing (100% financial reconciliation).
@@ -97,7 +97,7 @@ CRITICAL ANTI-HALLUCINATION & FACT GROUNDING RULES:
      * High-concurrency RESTful microservices and sub-120ms p95 latency.
      * Fault-tolerant retry queues, background workers, and idempotent webhook pipelines with HMAC verification.
      * Normalized relational schemas, indexing, and connection pooling across MySQL and PostgreSQL.
-     * High agency: solo-built and operating live SaaS (getchintu.com) serving 1,200+ users with 99.8% uptime.
+     * High agency: solo-built and operating live SaaS (getchintu.com) serving 500+ registered users (40+ paying subscribers) with 99.8% uptime.
 `;
 
 function formatJd(jd: JDData | string | undefined): string {
@@ -187,7 +187,7 @@ ${ANTI_HALLUCINATION_RULES}
 AUDIT & SANITIZATION CRITERIA:
 1. FACT-CHECKING (CRITICAL):
    - Check every sentence and bullet point.
-   - If CHINTU AI is falsely claimed to handle "video uploads", "video processing", or any fake capability, IMMEDIATELY SCRUB IT and replace it with genuine CHINTU AI facts: solo-built live SaaS (getchintu.com) serving 1,200+ users, 25k+ monthly requests, 99.8% uptime, React frontend, Node.js and Python microservices, Razorpay HMAC webhooks.
+   - If CHINTU AI is falsely claimed to handle "video uploads", "video processing", or any fake capability, IMMEDIATELY SCRUB IT and replace it with genuine CHINTU AI facts: solo-built live SaaS (getchintu.com) serving 500+ registered users (40+ paying subscribers), 25k+ monthly requests, 99.8% uptime, React frontend, Node.js and Python microservices, Razorpay HMAC webhooks.
    - If any fictitious project (e.g. "logistics project") is cited, IMMEDIATELY SCRUB IT and replace it with real ICICL or Vasnaani experience.
 2. RELEVANCE & HONESTY:
    - Ensure the messaging addresses the JD's real engineering challenges (reliability, payments, retry queues, scale) using ONLY genuine accomplishments.
@@ -309,7 +309,7 @@ REQUIRED ASSETS:
    - subject: Strictly 35–50 characters max (e.g. "[Role] — Abhishek Tiwari").
    - body: Strictly 100–160 words, single-mobile-screen fit, 4 blocks:
      Block 1: Direct hook & target role.
-     Block 2: 2-3 bullet points with real production metrics (e.g. CHINTU AI 1,200+ users / 99.8% uptime, ICICL webhook lag 20m->3m).
+     Block 2: 2-3 bullet points with real production metrics (e.g. CHINTU AI 500+ registered users (40+ paying subscribers) / 99.8% uptime, ICICL webhook lag 20m->3m).
      Block 3: Location / relocation readiness (Lucknow, India; open to domestic relocation or remote).
      Block 4: Low-friction CTA and clean signature.
 2. LINKEDIN_CONNECTION_NOTE:
@@ -318,7 +318,7 @@ REQUIRED ASSETS:
    - Crisp, peer-to-peer developer tone, mentions the specific role/craft, zero corporate fluff.
 3. WHATSAPP_MESSAGE:
    - 3-4 lines max for WhatsApp chat to a founder or recruiter.
-   - Direct greeting, role applying for, 1-line proof of work (getchintu.com / 1,200+ users), portfolio link, and open invite to chat.
+   - Direct greeting, role applying for, 1-line proof of work (getchintu.com / 500+ registered users (40+ paying subscribers)), portfolio link, and open invite to chat.
 4. CONTACT_FORM_NOTE:
    - 50-80 words.
    - High-density proof of craft for generic job portal "Why you?" or "Tell us about yourself" boxes.

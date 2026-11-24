@@ -1,4 +1,17 @@
 
+## [2026-11-20] Canonical Fact Fix (CHINTU AI 500+ Users) & Globalization Partners Bounce Hardening
+
+### 1. Incident Diagnosis: CHINTU AI Metrics Hallucination
+- **Symptom:** Application email and project bank referenced '1,200+ users', which contradicted the user's base canonical resume (500+ registered users, 40+ paying subscribers).
+- **Root Cause:** An earlier synthetic prompt injection hallucinated '1,200+ users' in ackend/lib/application-outreach.ts and github_project_bank.json, propagating into email outreach templates.
+- **Resolution:** Replaced all occurrences across github_project_bank.json, pply_nov20_verified_batch.py, pply_20_verified_batch.py, pplication-outreach.ts, and master-security.ts with the strict canonical fact: **'500+ registered users, 40+ paying subscribers'**.
+
+### 2. Deliverability Incident: Globalization Partners Bounce (careers@g-p.com)
+- **Symptom:** Mailer-Daemon bounce received for careers@g-p.com with error 550 5.4.1 Recipient address rejected: Access denied (Microsoft 365 tenant rejects external unauthenticated SMTP senders).
+- **Root Cause:** Generic careers@ corporate alias had valid public MX records but internal tenant policy restricted external incoming mail.
+- **Resolution:** Added careers@g-p.com to BOUNCED_ADDRESSES_BLACKLIST in erify_email_deliverability.py. Updated job_search_tracker.csv row to ounced_external_access_denied. Enforced strict priority for personal, named recruiter email addresses.
+
+
 ## [2026-11-18] Golden Base Resume Guardrail Installation & CodeChavo Dispatch
 
 ### 1. Guardrail & Skill Implementation

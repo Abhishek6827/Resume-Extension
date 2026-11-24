@@ -16,7 +16,7 @@ export const tailoredResume = {
     "website": "getchintu.com",
     "location": "Lucknow, India (Remote)"
   },
-  "summary": "Software Engineer and Code Reviewer with 2+ years of production experience in JavaScript (ES6+, Node.js, React), Dockerized environment setup, test coverage validation, and AI code evaluation. Founder of CHINTU AI (live SaaS serving 1,200+ users, 25k+ monthly requests, 99.8% uptime), where I built automated LLM code evaluation harnesses, analyzed multi-file GitHub diffs, and benchmarked AI-generated bug fixes against open-source repositories. Proficient in Git workflows, unit/integration testing (Jest, Vitest, Playwright), AST inspection, and root-cause debugging. Available immediately for 40 hours/week with 4+ hours PST overlap.",
+  "summary": "Software Engineer and Code Reviewer with 2+ years of production experience in JavaScript (ES6+, Node.js, React), Dockerized environment setup, test coverage validation, and AI code evaluation. Founder of CHINTU AI (live SaaS serving 500+ registered users (40+ paying subscribers), 25k+ monthly requests, 99.8% uptime), where I built automated LLM code evaluation harnesses, analyzed multi-file GitHub diffs, and benchmarked AI-generated bug fixes against open-source repositories. Proficient in Git workflows, unit/integration testing (Jest, Vitest, Playwright), AST inspection, and root-cause debugging. Available immediately for 40 hours/week with 4+ hours PST overlap.",
   "experience": [
     {
       "company": "CHINTU AI",

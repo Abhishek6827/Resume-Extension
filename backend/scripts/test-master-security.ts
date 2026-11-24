@@ -39,7 +39,7 @@ async function runMasterSecurityTests() {
 Abhishek Tiwari | Lucknow, India | +91 70816 60941 | abhishektiwari6827@gmail.com
 Summary: Full Stack Developer with 2+ years of production experience building high-throughput web apps and transactional systems.
 Experience:
-- CHINTU AI (Feb 2026 – Present): Solo-built SaaS serving 1,200+ users, 25k+ monthly requests, 99.8% uptime, React, Node, Python, MySQL, PostgreSQL.
+- CHINTU AI (Feb 2026 – Present): Solo-built SaaS serving 500+ registered users (40+ paying subscribers), 25k+ monthly requests, 99.8% uptime, React, Node, Python, MySQL, PostgreSQL.
 - ICICL (Nov 2025 – Jan 2026): Java Maven & Node.js webhook pipeline cutting failure lag from 20m to under 3m, 100% financial reconciliation.
 - Vasnaani Sanskaran (Aug 2024 – Oct 2025): 4 production web apps, Redux memoized selectors 25% render boost.
 - Hoping Minds (Jan 2024 – Jun 2024): Software Developer Intern, Lighthouse 68 -> 94.

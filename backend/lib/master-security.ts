@@ -47,7 +47,7 @@ CANONICAL CANDIDATE INVARIANTS:
 
 2. CANONICAL EMPLOYMENT HISTORY (IMMUTABLE DATES & COMPANIES):
    - Company 1: CHINTU AI (or getchintu.com) | Feb 2026 – Present | Remote, India (Founder & Lead Full Stack Engineer)
-     Metrics: 1,200+ registered users, 25k+ monthly requests, 99.8% uptime, sub-120ms p95 query latency.
+     Metrics: 500+ registered users, 25k+ monthly requests, 99.8% uptime, sub-120ms p95 query latency.
    - Company 2: Indian Capital and Investment (Coimbatore) Limited (ICICL) | Nov 2025 – Jan 2026 | Remote, India (Full Stack & Data Engineer — Contract)
      Metrics: Webhook failure detection lag cut from 20m to under 3m, 100% financial reconciliation, 60% query speedup via EXPLAIN ANALYZE.
    - Company 3: Vasnaani Sanskaran | Aug 2024 – Oct 2025 | Noida, India (Full Stack Software Developer)
@@ -80,7 +80,7 @@ CORE AUDIT INVARIANTS:
 2. COMPANY & TENURE INTEGRITY:
    - Exactly the 4 canonical companies and dates. No side projects masquerading as employers.
 3. METRIC COHESION:
-   - Metrics cited across artifacts must match 100%: 1,200+ users, 25k+ requests/mo, 99.8% uptime, 20m -> <3m latency, sub-120ms p95. No contradictory numbers.
+   - Metrics cited across artifacts must match 100%: 500+ registered users (40+ paying subscribers), 25k+ requests/mo, 99.8% uptime, 20m -> <3m latency, sub-120ms p95. No contradictory numbers.
 4. TECH STACK HARMONY:
    - Technologies cited in Cover Letter, Email, and Messages must exist in the tailored resume or Skill Bank.
 5. ZERO-AI STYLE & BREVITY:

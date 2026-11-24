@@ -45,7 +45,7 @@ Abhishek Tiwari | Lucknow, India | +91 70816 60941 | abhishektiwari6827@gmail.co
 Portfolio: portfolio.getchintu.com | SaaS: getchintu.com
 Summary: Full Stack Developer with 2+ years of production experience building high-throughput web apps, transactional payment systems, and distributed backends.
 Experience:
-- Founder & Lead Full Stack Engineer at CHINTU AI (Feb 2026 – Present): Solo-built and operating live SaaS platform (getchintu.com) serving 1,200+ registered users with 99.8% uptime. React.js frontend, Node.js and Python microservices, normalized MySQL/PostgreSQL databases with sub-120ms p95 query latency, Razorpay webhook event pipeline with HMAC signature validation and idempotent transaction processing.
+- Founder & Lead Full Stack Engineer at CHINTU AI (Feb 2026 – Present): Solo-built and operating live SaaS platform (getchintu.com) serving 500+ registered users with 99.8% uptime. React.js frontend, Node.js and Python microservices, normalized MySQL/PostgreSQL databases with sub-120ms p95 query latency, Razorpay webhook event pipeline with HMAC signature validation and idempotent transaction processing.
 - Contract Full Stack & Data Engineer at ICICL (Nov 2025 – Jan 2026): Java Maven & Node.js backend services, replacing polling with event-driven webhook pipeline that cut failure detection lag from 20m to under 3m with 100% financial data reconciliation. Optimized PostgreSQL queries via EXPLAIN ANALYZE, eliminating full-table scans and boosting query speeds by 60%.
 - Full Stack Software Developer at Vasnaani Sanskaran (Aug 2024 – Oct 2025): 4 production web apps across React, Node, Java, MySQL. Memoized Redux selectors 25% render optimization.
 `;
